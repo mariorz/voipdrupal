@@ -1,0 +1,6 @@
+; $Id$
+name = "VoIP Twilio"
+description = "Allows the VoIP Drupal framework to work with the Twilio service."
+package = VoIP Drupal
+dependencies[] = voip
+core = 6.x
