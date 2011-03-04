@@ -56,11 +56,9 @@ function voip_dial($voipcall) {
 function voip_hangup($voipcall) {
   // make sure the user is allowed to hangup the call
   global $user;
-  $call_uid = $voipcall->uid;
   $allowed = user_access('hangup any calls')
-         || (($user->uid == $voipcall->uid) && user_access('hangup own calls'));
+         || (($user->uid == $voipcall->getUid()) && user_access('hangup own calls'));
   if(!$allowed) {
-    global $user;
     $variables['%uid'] = $user->uid;
     $msg = 'User %uid does not have permissions to hangup calls.';
     watchdog('voip', $msg, $variables, WATCHDOG_WARNING);
