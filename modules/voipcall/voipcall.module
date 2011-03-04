@@ -60,6 +60,7 @@ function voipcall_admin_form() {
     '#size' => 40,
     '#maxlength' => 255,
     '#default_value' => variable_get('voipcall_cid_number',''),
+    '#required' => TRUE,
   );
 
   $form['voipcall_pickup_script_name'] = array(
