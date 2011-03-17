@@ -540,7 +540,9 @@ class VoipCall {
   
       // initialize voice call script with the default inbound/outbound one
       if(!isset($details->field_voipcall_script[0]['value'])) {
-        $direction = $node->field_voipcall_direction[0]['value'];
+        $dir_tmp = $details->field_voipcall_direction[0]['value'];
+        $direction = $dir_tmp ? $dir_tmp
+                              : $node->field_voipcall_direction[0]['value'];
         if($direction == VoipCall::INBOUND){
           $script_name = voipcall_get_default_inbound_call_script_name();
         }
