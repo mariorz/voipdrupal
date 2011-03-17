@@ -47,7 +47,7 @@ function voipcall_admin_form() {
   $form['voipcall_cid_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Caller id name'),
-    '#description' => t('Caller id name to be used in Voip Drupal calls.'),
+    '#description' => t("Caller id name to be used in Voip Drupal calls. Note that, in the U.S., this value is ignored and replaced by the caller name stored in the telecommunications service's database"),
     '#size' => 40,
     '#maxlength' => 255,
     '#default_value' => variable_get('voipcall_cid_name',''),
@@ -63,12 +63,28 @@ function voipcall_admin_form() {
     '#required' => TRUE,
   );
 
-  $form['voipcall_pickup_script_name'] = array(
+  $form['voipcall_inbound_call_script_name'] = array(
     '#type' => 'select',
-    '#title' => t('Pickup script name'),
-    '#description' => t('Name of the of the dialplan script to be called upon call pickup.'),
+    '#title' => t('Inbound call script name'),
+    '#description' => t('Name of the dialplan script to be used whenever the system receives a phone call.'),
     '#options' => VoipScript::getScriptNames(),
-    '#default_value' => variable_get('voipcall_pickup_script_name', 'voipcall_call_pickup'),
+    '#default_value' => variable_get('voipcall_inbound_call_script_name', 'voipcall_default_inbound_call_script'),
+  );
+
+  $form['voipcall_outbound_call_script_name'] = array(
+    '#type' => 'select',
+    '#title' => t('Outbound call script name'),
+    '#description' => t('Name of the default dialplan script to be used in calls made by the system.'),
+    '#options' => VoipScript::getScriptNames(),
+    '#default_value' => variable_get('voipcall_outbound_call_script_name', 'voipcall_default_inbound_call_script'),
+  );
+
+  $form['voipcall_inbound_text_script_name'] = array(
+    '#type' => 'select',
+    '#title' => t('Inbound text script name'),
+    '#description' => t('Name of the dialplan script to be used whenever the system receives a text message.'),
+    '#options' => VoipScript::getScriptNames(),
+    '#default_value' => variable_get('voipcall_inbound_text_script_name', 'voipcall_default_inbound_call_script'),
   );
 
   $form['submit'] = array(
@@ -85,11 +101,21 @@ function voipcall_admin_form() {
  */
 function voipcall_admin_form_validate($form, &$form_state) {
   $values = $form_state['values'];
-  $script_name = $values['voipcall_pickup_script_name'];
 // TODO: provide feedback directly on the affected fields...
+  $script_name = $values['voipcall_inbound_call_script_name'];
   $script = VoipScript::loadScript($script_name);
   if(!$script){
-    form_set_error('', t('Invalid script name: @script_name.', array('@script_name' => $script_name)));
+    form_set_error('', t('Invalid inbound call script name: @script_name.', array('@script_name' => $script_name)));
+  }
+  $script_name = $values['voipcall_outbound_call_script_name'];
+  $script = VoipScript::loadScript($script_name);
+  if(!$script){
+    form_set_error('', t('Invalid outbound call script name: @script_name.', array('@script_name' => $script_name)));
+  }
+  $script_name = $values['voipcall_inbound_text_script_name'];
+  $script = VoipScript::loadScript($script_name);
+  if(!$script){
+    form_set_error('', t('Invalid inbound text script name: @script_name.', array('@script_name' => $script_name)));
   }
 }
 
@@ -102,7 +128,9 @@ function voipcall_admin_form_submit($form, &$form_state) {
   // store values
   variable_set('voipcall_cid_name', $form_state['values']['voipcall_cid_name']);
   variable_set('voipcall_cid_number', $form_state['values']['voipcall_cid_number']);
-  variable_set('voipcall_pickup_script_name', $form_state['values']['voipcall_pickup_script_name']);
+  variable_set('voipcall_inbound_call_script_name', $form_state['values']['voipcall_inbound_call_script_name']);
+  variable_set('voipcall_outbound_call_script_name', $form_state['values']['voipcall_outbound_call_script_name']);
+  variable_set('voipcall_inbound_text_script_name', $form_state['values']['voipcall_inbound_text_script_name']);
 
   drupal_set_message(t('The default call settings have been saved.'));
 
@@ -117,8 +145,24 @@ function voipcall_admin_form_submit($form, &$form_state) {
 /**
  * Return the name of the default script to be used with new incoming calls
  */
-function voipcall_get_default_script_name() {
-  $script_name = variable_get('voipcall_pickup_script_name', 'voipcall_call_pickup');
+function voipcall_get_default_inbound_call_script_name() {
+  $script_name = variable_get('voipcall_inbound_call_script_name', 'voipcall_default_inbound_call_script');
+  return $script_name;
+}
+
+/**
+ * Return the name of the default script to be used with new outgoing calls
+ */
+function voipcall_get_default_outbound_call_script_name() {
+  $script_name = variable_get('voipcall_outbound_call_script_name', 'voipcall_default_outbound_call_script');
+  return $script_name;
+}
+
+/**
+ * Return the name of the default script to be used with incoming text messages
+ */
+function voipcall_get_default_inbound_text_script_name() {
+  $script_name = variable_get('voipcall_inbound_text_script_name', 'voipcall_default_inbound_text_script');
   return $script_name;
 }
 
@@ -126,7 +170,9 @@ function voipcall_get_default_script_name() {
  * Implementation of hook_voipscript_get_script_names()
  */
 function voipcall_voipscript_get_script_names() {
-  $script_names[] = 'voipcall_call_pickup';
+  $script_names[] = 'voipcall_default_inbound_call_script';
+  $script_names[] = 'voipcall_default_outbound_call_script';
+  $script_names[] = 'voipcall_default_inbound_text_script';
   return $script_names;
 }
 
@@ -136,10 +182,21 @@ function voipcall_voipscript_get_script_names() {
  */
 function voipcall_voipscript_load_script($script_name) {
   $script = NULL;
-  if($script_name == 'voipcall_call_pickup') {
-    $script = new VoipScript('voipcall_call_pickup');
+  if($script_name == 'voipcall_default_inbound_call_script') {
+    $script = new VoipScript('voipcall_default_inbound_call_script');
     $script->addSay(t("Welcome to the Voip Drupal platform!"));
     $script->addSay(t("Bye bye."));
+    $script->addHangup();
+  }
+  if($script_name == 'voipcall_default_outbound_call_script') {
+    $script = new VoipScript('voipcall_default_outbound_call_script');
+    $script->addSay(t("This is a call from the Voip Drupal platform!"));
+    $script->addSay(t("Bye bye."));
+    $script->addHangup();
+  }
+  if($script_name == 'voipcall_default_inbound_text_script') {
+    $script = new VoipScript('voipcall_default_inbound_text_script');
+    $script->addSendSms(t("This is a SMS response from the Voip Drupal platform!"));
     $script->addHangup();
   }
 

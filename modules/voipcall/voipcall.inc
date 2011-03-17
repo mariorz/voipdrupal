@@ -538,11 +538,24 @@ class VoipCall {
         $node->field_voipcall_direction[0]['value'] = VoipCall::OUTBOUND;
       }
   
-      // initialize script with the default one
+      // initialize voice call script with the default inbound/outbound one
       if(!isset($details->field_voipcall_script[0]['value'])) {
-        $script_name = voipcall_get_default_script_name();
+        $direction = $node->field_voipcall_direction[0]['value'];
+        if($direction == VoipCall::INBOUND){
+          $script_name = voipcall_get_default_inbound_call_script_name();
+        }
+        else {
+          $script_name = voipcall_get_default_outbound_call_script_name();
+        }
         $default_script = VoipScript::loadScript($script_name);
         $node->field_voipcall_script[0]['value'] = serialize($default_script);
+      }
+  
+      // initialize text script with the default inbound one
+      if(!isset($details->field_voipcall_text_script[0]['value'])) {
+        $script_name = voipcall_get_default_inbound_text_script_name();
+        $default_script = VoipScript::loadScript($script_name);
+        $node->field_voipcall_text_script[0]['value'] = serialize($default_script);
       }
   
       // initialize 'Hangup Reason' field
@@ -628,6 +641,10 @@ class VoipCall {
     $new_script = $details->field_voipcall_script[0]['value'];
     if(isset($new_script))
       $node->field_voipcall_script[0]['value'] =  serialize($new_script);
+  
+    $text_script = $details->field_voipcall_text_script[0]['value'];
+    if(isset($new_script))
+      $node->field_voipcall_text_script[0]['value'] =  serialize($text_script);
   
     $new_hangup_script_name = $details->field_voipcall_hangup_script[0]['value'];
     if(isset($new_hangup_script_name))

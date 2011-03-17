@@ -49,7 +49,7 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Answered By',
-      'weight' => '4',
+      'weight' => '3',
       'description' => 'Indicates whether the call has been answered by a machine or a human',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -153,7 +153,7 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Caller Name',
-      'weight' => '2',
+      'weight' => '1',
       'description' => 'The name of the caller making the call.',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -252,7 +252,7 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Check Machine',
-      'weight' => '20',
+      'weight' => '19',
       'description' => 'Flag indicating whether or not the call should check for answering machines.',
       'type' => 'optionwidgets_onoff',
       'module' => 'optionwidgets',
@@ -402,7 +402,7 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Call Direction',
-      'weight' => '7',
+      'weight' => '6',
       'description' => 'Direction of the call. Can be any of the following values: VoipScript::INBOUND, VoipScript::OUTBOUND, VoipScript::OUTBOUND_DIAL',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -456,7 +456,7 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Duration',
-      'weight' => '10',
+      'weight' => '9',
       'description' => 'The duration of the call in seconds.',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -515,7 +515,7 @@ function voipcall_content_default_fields() {
       'label_position' => 'above',
       'default_value_php' => NULL,
       'label' => 'End time',
-      'weight' => '9',
+      'weight' => '8',
       'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -569,7 +569,7 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Error Message',
-      'weight' => '11',
+      'weight' => '10',
       'description' => 'Eventual error message associated with the call.',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -723,7 +723,7 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Script',
-      'weight' => '12',
+      'weight' => '11',
       'description' => 'The script associated with the call.',
       'type' => 'text_textarea',
       'module' => 'text',
@@ -773,7 +773,7 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'SMS Status',
-      'weight' => '5',
+      'weight' => '4',
       'description' => 'Status of the SMS transmission.',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -817,6 +817,8 @@ function voipcall_content_default_fields() {
     'allowed_values' => '',
     'allowed_values_php' => '',
     'widget' => array(
+      'rows' => 5,
+      'size' => '60',
       'default_value' => array(
         '0' => array(
           'value' => '',
@@ -824,10 +826,8 @@ function voipcall_content_default_fields() {
         ),
       ),
       'default_value_php' => NULL,
-      'rows' => 5,
-      'size' => '60',
       'label' => 'Call Source',
-      'weight' => '6',
+      'weight' => '5',
       'description' => 'The server that originated the call, i.e., \'drupal\', \'asterisk\', \'twilio\', etc.',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -886,7 +886,7 @@ function voipcall_content_default_fields() {
       'label_position' => 'above',
       'default_value_php' => NULL,
       'label' => 'Start time',
-      'weight' => '8',
+      'weight' => '7',
       'description' => '',
       'type' => 'number',
       'module' => 'number',
@@ -936,9 +936,59 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Call Status',
-      'weight' => '3',
+      'weight' => '2',
       'description' => '',
       'type' => 'text_textfield',
+      'module' => 'text',
+    ),
+  );
+
+  // Exported field: field_voipcall_text_script
+  $fields['voipcall-field_voipcall_text_script'] = array(
+    'field_name' => 'field_voipcall_text_script',
+    'type_name' => 'voipcall',
+    'display_settings' => array(
+      'label' => array(
+        'format' => 'above',
+        'exclude' => 0,
+      ),
+      'teaser' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '4' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+    ),
+    'widget_active' => '1',
+    'type' => 'text',
+    'required' => '0',
+    'multiple' => '0',
+    'module' => 'text',
+    'active' => '1',
+    'text_processing' => '0',
+    'max_length' => '',
+    'allowed_values' => '',
+    'allowed_values_php' => '',
+    'widget' => array(
+      'rows' => '10',
+      'size' => 60,
+      'default_value' => array(
+        '0' => array(
+          'value' => '',
+          '_error_element' => 'default_value_widget][field_voipcall_text_script][0][value',
+        ),
+      ),
+      'default_value_php' => NULL,
+      'label' => 'Text Script',
+      'weight' => '12',
+      'description' => 'Dial plan script that is activated whenever the system receives a text message.',
+      'type' => 'text_textarea',
       'module' => 'text',
     ),
   );
@@ -963,6 +1013,7 @@ function voipcall_content_default_fields() {
   t('SMS Status');
   t('Script');
   t('Start time');
+  t('Text Script');
 
   return $fields;
 }
