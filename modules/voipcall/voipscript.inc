@@ -565,29 +565,42 @@ class VoipScript {
    *   String combining text to be converted to speech and audio URLs to be
    *   played.
    *
+   * @param $as
+   *   String with value of ‘number’, ‘digits’ or ‘date’.
+   *
    * @param $loop
    *   Integer with the number of times that the prompt should be repeated
    *
-   * @param $voice
+   * @param $voice DEPRECATED
    *   String with the type of voice to be used.  If NULL, use the script's
    *   current voice as defined by the 'voipscript_voice' script variable. In
    *   case that variable is not set, use the default 'voice' setting defined
    *   by the voip server.
    *
-   * @param $language.
+   * @param $language. DEPRECATED
    *   String with the language entonation associated with the voice. If NULL,
    *   use the script's current language as defined by the 
    *   'voipscript_language' script variable. If that variable is not set,
    *   use the default 'language' setting defined by the voip server.
+   * 
    *
    * @return
    *   The execution of the 'say' command does not return anything.
    */
-  function addSay($prompt, $loop=1, $voice=NULL, $language=NULL) {
+  /*function addSay($prompt, $loop=1, $voice=NULL, $language=NULL) {
     $params['prompt'] = $prompt;
     $params['loop'] = $loop;
     $params['voice'] = $voice;
     $params['language'] = $language;
+    $this->commands[] = new VoipCommand('VoipCmdSay', $params);
+  }*/
+  
+  function addSay($prompt, $as='', $loop=1) {
+    $params['prompt'] = $prompt;
+    $params['loop'] = $loop;
+    $params['as'] = $as;
+    //$params['voice'] = $voice;
+    //$params['language'] = $language;
     $this->commands[] = new VoipCommand('VoipCmdSay', $params);
   }
 

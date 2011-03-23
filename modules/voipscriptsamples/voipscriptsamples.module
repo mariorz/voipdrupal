@@ -26,6 +26,7 @@ function voipscriptsamples_voipscript_get_script_names() {
   $script_names[] = 'voipscript_join_conference';
   $script_names[] = 'voipscript_record';
   $script_names[] = 'voipscript_send_sms';
+  $script_names[] = 'voipscript_say_demo';
   return $script_names;
 }
 
@@ -68,6 +69,15 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
 
   if($script_name == 'voipscript_send_sms') {
     $script = _voipscriptsamples_get_send_sms();
+  } 
+  if($script_name == 'voipscript_say_demo') {
+    $script = new VoipScript('voipscript_say_demo');
+    $script->addSay(t('Reading string as number. 12345'));
+    $script->addSay(t('Reading string as digits.'));
+    $script->addSay('12345', 'digits');
+    $script->addSay(t('Reading string as date.'));
+    $script->addSay('1.1.2011', 'date');
+    $script->addHangup();
   }
 
   return $script;
