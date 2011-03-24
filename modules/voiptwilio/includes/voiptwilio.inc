@@ -534,14 +534,15 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $prompt = $script->evalString($cmd->getParam('prompt'));
           $loop = $script->evalString($cmd->getParam('loop'));
+          $as = $script->evalString($cmd->getParam('as'));
           // determine the language to be used
-          $language = $script->evalString($cmd->getParam('language'));
-          $language = $language ? $language : $script->getLanguage();
+          //$language = $script->evalString($cmd->getParam('language'));
+          $language = $script->getLanguage();
           // determine the voice to be used
-          $voice = $script->evalString($cmd->getParam('voice'));
-          $voice = $voice ? $voice : $script->getVoice();
+          //$voice = $script->evalString($cmd->getParam('voice'));
+          $voice = $script->getVoice();
           $response .= _voiptwilio_generate_audio_response($prompt, $voice,
-                         $language, $loop);
+                         $language, $loop, $as);
           break;
 
         case 'VoipCmdSendSms';
@@ -776,7 +777,13 @@ define(VOIPTWILIO_URL_CHECK, '#(https?://\S+(?<![,.;?\:\!]))#');
 /**
  * Generate a combination of Say and Play TwiML based on the given string
  */
-function _voiptwilio_generate_audio_response($str, $voice, $language, $loop=1) {
+function _voiptwilio_generate_audio_response($str, $voice, $language, $loop=1, $as='') {
+  
+  if($as=='digits'){
+    //Convert numbers into digits
+    $str = _voiptwilio_parse_numbers($str);
+  }
+  
   $list = preg_split(VOIPTWILIO_URL_CHECK, $str, -1, PREG_SPLIT_DELIM_CAPTURE);
   $url_flag = FALSE;
   foreach($list as $element) {
@@ -815,4 +822,19 @@ function _voiptwilio_is_url($str) {
   //       http://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url , it seems to serve our purposes!
   $rc = preg_match(VOIPTWILIO_URL_CHECK, $str);
   return $rc;
+}
+
+function _voiptwilio_parse_numbers($str){
+//preg_match_all("{(\d+)}", $str, $result, PREG_PATTERN_ORDER);
+//return $result;
+return preg_replace_callback('{(\d+)}', '_voiptwilio_numbers_add_space', $str);
+
+}
+
+function _voiptwilio_numbers_add_space($matches) {
+  $string_array = str_split($matches[0]);
+  $number_with_space = implode(" ",$string_array);
+  return $number_with_space;
+  
+  //var_dump($string_array);die();
 }

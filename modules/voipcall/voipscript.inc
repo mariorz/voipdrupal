@@ -566,7 +566,7 @@ class VoipScript {
    *   played.
    *
    * @param $as
-   *   String with value of ‘number’, ‘digits’ or ‘date’.
+   *   String with value of '', ‘digits’ or ‘date’.
    *
    * @param $loop
    *   Integer with the number of times that the prompt should be repeated
