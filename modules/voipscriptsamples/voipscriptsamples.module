@@ -298,7 +298,7 @@ function _voipscriptsamples_get_send_sms() {
   $script->addLabel('accept number');
   $script->addSay(t('About to send text message'));
   $text = 'Hello from the Voip Drupal platform';
-  $script->addSendSms($text, '%sms_number');
+  $script->addSendText($text, '%sms_number');
   $args = array('@result' => '%sms_status');
   $script->addSay(t('The SMS command returned: @result', $args));
   $script->addGoto('end call');

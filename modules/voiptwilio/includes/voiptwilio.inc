@@ -545,7 +545,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
                          $language, $loop, $as);
           break;
 
-        case 'VoipCmdSendSms';
+        case 'VoipCmdSendText';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/twilio/callhandler';
           $call_nid = $call->getNodeId();
@@ -554,8 +554,9 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $callback_url = $menu_path . '/process_sms_callback/' . $call_nid;
           $callback = url($callback_url, array('absolute' => TRUE));
           $method = 'POST';
-          $number = $script->evalString($cmd->getParam('number'));
+          $to = $script->evalString($cmd->getParam('to'));
           $text = $script->evalString($cmd->getParam('text'));
+          $channel = $script->evalString($cmd->getParam('channel'));
           // Note: If no caller number provided, Twilio will automatically try
           //       to determine an appropriate value depending on whether the
           //       call is inbound or outbound. However, since that number might
@@ -564,18 +565,24 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $default_cid_number = variable_get('voipcall_cid_number', NULL);
           $caller_id = $script->evalString($cmd->getParam('caller_id',
                                                          $default_cid_number)); 
-          $response .= '<Sms action="' . $action
+          
+         switch(strtolower($channel)){
+           case 'SMS':
+           $response .= '<Sms action="' . $action
                             . '" statusCallback="' . $callback
                             . '" method="' . $method;
-          if($number){
-            $response .= '" to="' . $number;
-          }
-          if($caller_id){
-            $response .= '" from="' . $caller_id;
-          }
-          $response .= '" >';
-          $response .= $text;
-          $response .= '</Sms>';
+            if($to){
+              $response .= '" to="' . $to;
+            }
+            if($caller_id){
+              $response .= '" from="' . $caller_id;
+            }
+            $response .= '" >';
+            $response .= $text;
+            $response .= '</Sms>';
+           break;
+         }
+         
           $rc = TRUE;
           $processing = FALSE;
           break;

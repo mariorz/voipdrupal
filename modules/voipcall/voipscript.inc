@@ -566,7 +566,7 @@ class VoipScript {
    *   played.
    *
    * @param $as
-   *   String with value of '', ‘digits’ or ‘date’.
+   *   String with value either 'number' or 'digits'.
    *
    * @param $loop
    *   Integer with the number of times that the prompt should be repeated
@@ -599,8 +599,6 @@ class VoipScript {
     $params['prompt'] = $prompt;
     $params['loop'] = $loop;
     $params['as'] = $as;
-    //$params['voice'] = $voice;
-    //$params['language'] = $language;
     $this->commands[] = new VoipCommand('VoipCmdSay', $params);
   }
 
@@ -615,14 +613,17 @@ class VoipScript {
    * @param $text
    *   String with the text to be sent
    *
-   * @param $number
-   *   String with the SMS destination number. When sending an SMS on an 
-   *   incoming call, 'number' defaults to the caller.  When sending an SMS on
-   *   an outgoing call, 'number' defaults to the called party.
+   * @param $to
+   *   For SMS string with the SMS number, or string with destination username for IM. When sending on an 
+   *   incoming call, 'to' defaults to the caller.  When sending on
+   *   an outgoing call, 'to' defaults to the called party.
    *
+   * @param $channel
+   *   String withe channel to be used. By default the channel will be SMS. 
+   *   Allowed options are SMS, AIM, MSN, JABBER, YAHOO and GTALK.
    * @param $caller_id
-   *   String withe caller id to be used.  When sending an SMS on an incoming 
-   *   call, 'caller_id' defaults to the called party.  When sending an SMS
+   *   String with the caller id to be used. It can be either a number or IM username. When sending on an incoming 
+   *   call, 'caller_id' defaults to the called party.  When sending
    *   on an outgoing call, 'caller id' defaults to the calling party.
    * 
    * @return
@@ -633,11 +634,18 @@ class VoipScript {
    *   - VoipCall::SMS_SENDING
    *   - VoipCall::SMS_SENT
    */ 
-  function addSendSms($text, $number='', $caller_id=''){
+  /*function addSendSms($text, $number='', $caller_id=''){
     $params['number'] = $number;
     $params['text'] = $text;
     $params['caller_id'] = $caller_id;
     $this->commands[] = new VoipCommand('VoipCmdSendSms', $params);
+  }*/
+  function addSendText($text, $to='', $channel='sms', $caller_id=''){
+    $params['to'] = $to;
+    $params['text'] = $text;
+    $params['channel'] = $channel;
+    $params['caller_id'] = $caller_id;
+    $this->commands[] = new VoipCommand('VoipCmdSendText', $params);
   }
 
   /**
