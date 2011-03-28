@@ -24,7 +24,7 @@ function voipcall_menu() {
 
   $items['admin/voip/call'] = array(
     'title' => 'Default call configuration',
-    'description' => 'Defines default parameters used in Voip Drupal calls.',
+    'description' => 'Defines default parameters used in VoIP Drupal calls.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('voipcall_admin_form', NULL),
     'access arguments' => array('administer voipcall setup')
@@ -47,7 +47,7 @@ function voipcall_admin_form() {
   $form['voipcall_cid_name'] = array(
     '#type' => 'textfield',
     '#title' => t('Caller id name'),
-    '#description' => t("Caller id name to be used in Voip Drupal calls. Note that, in the U.S., this value is ignored and replaced by the caller name stored in the telecommunications service's database"),
+    '#description' => t("Caller id name to be used in VoIP Drupal calls. Note that, in the U.S., this value is ignored and replaced by the caller name stored in the telecommunications service's database"),
     '#size' => 40,
     '#maxlength' => 255,
     '#default_value' => variable_get('voipcall_cid_name',''),
@@ -56,7 +56,7 @@ function voipcall_admin_form() {
   $form['voipcall_cid_number'] = array(
     '#type' => 'textfield',
     '#title' => t('Caller id number'),
-    '#description' => t('Caller id number to be used in Voip Drupal calls.'),
+    '#description' => t('Caller id number to be used in VoIP Drupal calls.'),
     '#size' => 40,
     '#maxlength' => 255,
     '#default_value' => variable_get('voipcall_cid_number',''),
@@ -184,19 +184,19 @@ function voipcall_voipscript_load_script($script_name) {
   $script = NULL;
   if($script_name == 'voipcall_default_inbound_call_script') {
     $script = new VoipScript('voipcall_default_inbound_call_script');
-    $script->addSay(t("Welcome to the Voip Drupal platform!"));
+    $script->addSay(t("Welcome to the VoIP Drupal platform!"));
     $script->addSay(t("Bye bye."));
     $script->addHangup();
   }
   if($script_name == 'voipcall_default_outbound_call_script') {
     $script = new VoipScript('voipcall_default_outbound_call_script');
-    $script->addSay(t("This is a call from the Voip Drupal platform!"));
+    $script->addSay(t("This is a call from the VoIP Drupal platform!"));
     $script->addSay(t("Bye bye."));
     $script->addHangup();
   }
   if($script_name == 'voipcall_default_inbound_text_script') {
     $script = new VoipScript('voipcall_default_inbound_text_script');
-    $script->addSendText(t("This is a SMS response from the Voip Drupal platform!"));
+    $script->addSendText(t("This is a SMS response from the VoIP Drupal platform!"));
     $script->addHangup();
   }
 
