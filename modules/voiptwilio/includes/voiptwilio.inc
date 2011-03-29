@@ -536,11 +536,11 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $loop = $script->evalString($cmd->getParam('loop'));
           $as = $script->evalString($cmd->getParam('as'));
           // determine the language to be used
-          //$language = $script->evalString($cmd->getParam('language'));
-          $language = $script->getLanguage();
+          $language = $script->evalString($cmd->getParam('language'));
+          $language = $language ? $language : $script->getLanguage();
           // determine the voice to be used
-          //$voice = $script->evalString($cmd->getParam('voice'));
-          $voice = $script->getVoice();
+          $voice = $script->evalString($cmd->getParam('voice'));
+          $voice = $voice ? $voice : $script->getVoice();
           $response .= _voiptwilio_generate_audio_response($prompt, $voice,
                          $language, $loop, $as);
           break;

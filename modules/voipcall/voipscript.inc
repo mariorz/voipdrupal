@@ -571,16 +571,30 @@ class VoipScript {
    *   'digits' (to read '12' as 'one two'). By default, numbers should be read
    *   as 'number'
    *
+   * @param $voice
+   *   String with the type of voice to be used.  If NULL, use the script's
+   *   current voice as defined by the 'voipscript_voice' script variable. In
+   *   case that variable is not set, use the default 'voice' setting defined
+   *   by the voip server.
+   *
+   * @param $language.
+   *   String with the language entonation associated with the voice. If NULL,
+   *   use the script's current language as defined by the 
+   *   'voipscript_language' script variable. If that variable is not set,
+   *   use the default 'language' setting defined by the voip server.
+   *
    * @param $loop
    *   Integer with the number of times that the prompt should be repeated
    *
    * @return
    *   The execution of the 'say' command does not return anything.
    */
-  function addSay($prompt, $as='', $loop=1) {
+  function addSay($prompt, $as='', $voice=NULL, $language=NULL, $loop=1) {
     $params['prompt'] = $prompt;
     $params['loop'] = $loop;
     $params['as'] = $as;
+    $params['voice'] = $voice;
+    $params['language'] = $language;
     $this->commands[] = new VoipCommand('VoipCmdSay', $params);
   }
 

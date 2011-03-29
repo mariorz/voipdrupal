@@ -72,8 +72,8 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
   } 
   if($script_name == 'voipscript_say_demo') {
     $script = new VoipScript('voipscript_say_demo');
-    $script->addSay(t('Reading string as number: 12345'));
-    $script->addSay(t('Reading string as digits: 12345'), 'digits');
+    $script->addSay(t('Reading string as number: 12345'), '', 'man');
+    $script->addSay(t('Reading string as digits: 12345'), 'digits', 'woman');
     //Date should be only used with Tropo
     /*
     $script->addSay(t('Reading string as date.'));
