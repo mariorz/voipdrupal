@@ -176,7 +176,9 @@ watchdog('voiptwilio', "twilio status: $twilio_call_status, updated call status:
         break;
       case 'process_get_input':
         $script = $call->getScript();
-        $script->setVar('input_digits', $_REQUEST['Digits']);
+        $input = ($_REQUEST['Digits'] == 'no_input')
+                 ? '' :  $_REQUEST['Digits'];
+        $script->setVar('input_digits', $input);
         $call->setScript($script);
         break;
       case 'process_record':
@@ -347,8 +349,8 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
                             $language, 1);
           }
           $response .= '</Gather>';
-          // in case of timeout or empty input, set Digits to VoipScript::NO_INPUT
-          $action_timeout = $action . '&amp;Digits=' . VoipScript::NO_INPUT;
+          // in case of timeout or empty input, set Digits to 'no_input'
+          $action_timeout = $action . '&amp;Digits=' . 'no_input';
           $response .= '<Redirect method="GET">'
                          . $action_timeout
                          . '</Redirect>';

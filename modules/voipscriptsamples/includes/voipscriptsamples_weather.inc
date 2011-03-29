@@ -25,7 +25,7 @@ function _voipscriptsamples_get_weather_report() {
   $script->addSet('zip_code', '%input_digits');
 
   // If timeout or invalid zip code
-  $script->addGotoIf('invalid_zip', "^%input_digits == '" . VoipScript::NO_INPUT . "'");
+  $script->addGotoIf('invalid_zip', "^%input_digits == ''");
 
   // get the report
   $script->addSet('forecast_result', '^_voipscriptsamples_get_forecast(%zip_code)');

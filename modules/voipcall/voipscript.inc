@@ -91,11 +91,6 @@ class VoipScript {
  
 
   /**
-   * Indicator of no keypad input received
-   */
-  const NO_INPUT='no_input';
-
-  /**
    * 'Reject' command options
    */
   const REJECT_INVALID='reject_invalid';
@@ -379,10 +374,8 @@ class VoipScript {
    *
    * @return
    *   The 'get input' command sets the script variable input_digits to the
-   *   input received.  In case nothing is typed, input_digits gets set to
-   *   VoipScript::NO_INPUT
+   *   input received.  In case nothing is typed, input_digits gets set to ''
    */
-// TODO: consider creating a addIvr() command to generate a IVR menu and simplify the way getInput is used... That command should automatically check for valid inputs, repeat the question a number of times, etc.
   function addGetInput($prompt='', $timeout=5, $end_key='#', $num_digits=NULL) {
     $params['prompt'] = $prompt;
     $params['timeout'] = $timeout;
