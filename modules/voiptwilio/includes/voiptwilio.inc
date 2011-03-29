@@ -556,7 +556,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $method = 'POST';
           $to = $script->evalString($cmd->getParam('to'));
           $text = $script->evalString($cmd->getParam('text'));
-          $channel = $script->evalString($cmd->getParam('channel'));
+          $network = $script->evalString($cmd->getParam('network'));
           // Note: If no caller number provided, Twilio will automatically try
           //       to determine an appropriate value depending on whether the
           //       call is inbound or outbound. However, since that number might
@@ -565,26 +565,34 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $default_cid_number = variable_get('voipcall_cid_number', NULL);
           $caller_id = $script->evalString($cmd->getParam('caller_id',
                                                          $default_cid_number)); 
-          
-         switch(strtolower($channel)){
-           case 'SMS':
-           $response .= '<Sms action="' . $action
-                            . '" statusCallback="' . $callback
-                            . '" method="' . $method;
-            if($to){
-              $response .= '" to="' . $to;
-            }
-            if($caller_id){
-              $response .= '" from="' . $caller_id;
-            }
-            $response .= '" >';
-            $response .= $text;
-            $response .= '</Sms>';
-           break;
-         }
-         
-          $rc = TRUE;
-          $processing = FALSE;
+          switch(strtolower($network)){
+            default:
+              $params = array('@network' => $network,
+                              '@script_name' => $script->getName(),
+                              '@script' => print_r($script,true));
+              $msg = "Invalid 'network' parameter '@network' for SendText command in script '@script_name': @script";
+              $call->report_error('voiptwilio', $msg, $params);
+              $rc = FALSE;
+              $processing = FALSE;
+              break;
+
+            case 'sms':
+              $response .= '<Sms action="' . $action
+                           . '" statusCallback="' . $callback
+                           . '" method="' . $method;
+              if($to){
+                $response .= '" to="' . $to;
+              }
+              if($caller_id){
+                $response .= '" from="' . $caller_id;
+              }
+              $response .= '" >';
+              $response .= $text;
+              $response .= '</Sms>';
+              $rc = TRUE;
+              $processing = FALSE;
+              break;
+          }
           break;
 
         case 'VoipCmdSet';
@@ -744,7 +752,7 @@ function _voiptwilio_process_dial_response($call, $request){
 }
 
 /**
- * Process the response to a 'sms send' script command
+ * Process the response to a 'send text' script command
  */
 function _voiptwilio_process_sms_response($call, $request){
   $call_nid = $call->getNodeId();
@@ -760,22 +768,24 @@ function _voiptwilio_process_sms_response($call, $request){
       $msg = 'SMS sendind failed for call nid: @nid. Make sure your Twilio number is sms-enabled.';
       $params = array('@nid' => $call_nid);
       watchdog('voiptwilio', $msg, $params, WATCHDOG_WARNING);
-      $sms_status = VoipCall::SMS_FAILED;
+      $text_status = VoipCall::TEXT_FAILED;
       break;
     case 'invalid':
       $msg = 'Invalid SMS parameter for call nid: @nid';
       $params = array('@nid' => $call_nid);
       watchdog('voiptwilio', $msg, $params, WATCHDOG_WARNING);
-      $sms_status = VoipCall::SMS_INVALID;
+      $text_status = VoipCall::TEXT_INVALID;
       break;
     case 'sending':
-      $sms_status = VoipCall::SMS_SENDING;
+      $text_status = VoipCall::TEXT_SENDING;
       break;
     case 'sent':
-      $sms_status = VoipCall::SMS_SENT;
+      $text_status = VoipCall::TEXT_SENT;
       break;
   }
-  $call->setSmsStatus($sms_status);
+  $script = $call->getScript();
+  $script->setVar('send_text_status', $text_status);
+  $call->setScript($script);
   return $call;
 }
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * @file Provides sample scripts that demonstrate the capabilities of the Voip Drupal platform
+ * @file Provides sample scripts that demonstrate the capabilities of the VoIP Drupal platform
  */ 
 
 foreach (array('voipscriptsamples_weather.inc') as $file) {
@@ -33,7 +33,7 @@ function voipscriptsamples_voipscript_get_script_names() {
 
 
 /*
- * Sample scripts that highlight Voip Drupal capabilities
+ * Sample scripts that highlight VoIP Drupal capabilities
  */
 function _voipscriptsamples_load_sample_scripts($script_name) {
   if($script_name == 'voipscript_weather_report') {
@@ -276,7 +276,7 @@ function _voipscriptsamples_get_send_sms() {
                      "^%input_digits == '" . VoipScript::NO_INPUT . "'");
 
   $args = array('@digits' => '%input_digits');
-  $script->addSay(t('You typed @digits.', $args));
+  $script->addSay(t('You typed @digits.', $args), 'digits');
   $script->addSet('sms_number','%input_digits');
 
   $script->addLabel('accept menu');
@@ -297,9 +297,9 @@ function _voipscriptsamples_get_send_sms() {
 
   $script->addLabel('accept number');
   $script->addSay(t('About to send text message'));
-  $text = 'Hello from the Voip Drupal platform';
+  $text = 'Hello from the VoIP Drupal platform';
   $script->addSendText($text, '%sms_number');
-  $args = array('@result' => '%sms_status');
+  $args = array('@result' => '%send_text_status');
   $script->addSay(t('The SMS command returned: @result', $args));
   $script->addGoto('end call');
 

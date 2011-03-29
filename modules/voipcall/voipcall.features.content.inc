@@ -252,7 +252,7 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Check Machine',
-      'weight' => '19',
+      'weight' => '20',
       'description' => 'Flag indicating whether or not the call should check for answering machines.',
       'type' => 'optionwidgets_onoff',
       'module' => 'optionwidgets',
@@ -402,7 +402,7 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Call Direction',
-      'weight' => '6',
+      'weight' => '7',
       'description' => 'Direction of the call. Can be any of the following values: VoipScript::INBOUND, VoipScript::OUTBOUND, VoipScript::OUTBOUND_DIAL',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -456,7 +456,7 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Duration',
-      'weight' => '9',
+      'weight' => '10',
       'description' => 'The duration of the call in seconds.',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -515,7 +515,7 @@ function voipcall_content_default_fields() {
       'label_position' => 'above',
       'default_value_php' => NULL,
       'label' => 'End time',
-      'weight' => '8',
+      'weight' => '9',
       'description' => '',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -569,7 +569,7 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Error Message',
-      'weight' => '10',
+      'weight' => '11',
       'description' => 'Eventual error message associated with the call.',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -619,7 +619,7 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Hangup Reason',
-      'weight' => '14',
+      'weight' => '15',
       'description' => 'Stores a constant with reason for the call hangup. NULL otherwise.',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -673,7 +673,7 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Hangup Script Name',
-      'weight' => '13',
+      'weight' => '14',
       'description' => 'Name of the script that should be evoked whenever the system receives a "hangup-related event" leading to call status such as VoipScript::ERROR, VoipScript::NOT_CALLED, VoipScript::DIALING, VoipScript::NO_ANSWER, VoipScript::BUSY, VoipScript::INVALID, VoipScript::MACHINE_HANGUP, VoipScript::COMPLETED.  The only events that do not activate the hangup script are the ones that lead to the following call status: VoipScript::ANSWERED, VoipScript::ANSWERED_MACHINE, VoipScript::ANSWERED_HUMAN.',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -723,59 +723,9 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Script',
-      'weight' => '11',
+      'weight' => '12',
       'description' => 'The script associated with the call.',
       'type' => 'text_textarea',
-      'module' => 'text',
-    ),
-  );
-
-  // Exported field: field_voipcall_sms_status
-  $fields['voipcall-field_voipcall_sms_status'] = array(
-    'field_name' => 'field_voipcall_sms_status',
-    'type_name' => 'voipcall',
-    'display_settings' => array(
-      'label' => array(
-        'format' => 'above',
-        'exclude' => 0,
-      ),
-      'teaser' => array(
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      'full' => array(
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-      '4' => array(
-        'format' => 'default',
-        'exclude' => 0,
-      ),
-    ),
-    'widget_active' => '1',
-    'type' => 'text',
-    'required' => '0',
-    'multiple' => '0',
-    'module' => 'text',
-    'active' => '1',
-    'text_processing' => '0',
-    'max_length' => '',
-    'allowed_values' => '',
-    'allowed_values_php' => '',
-    'widget' => array(
-      'rows' => 5,
-      'size' => '60',
-      'default_value' => array(
-        '0' => array(
-          'value' => '',
-          '_error_element' => 'default_value_widget][field_voipcall_sms_status][0][value',
-        ),
-      ),
-      'default_value_php' => NULL,
-      'label' => 'SMS Status',
-      'weight' => '4',
-      'description' => 'Status of the SMS transmission.',
-      'type' => 'text_textfield',
       'module' => 'text',
     ),
   );
@@ -827,7 +777,7 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Call Source',
-      'weight' => '5',
+      'weight' => '6',
       'description' => 'The server that originated the call, i.e., \'drupal\', \'asterisk\', \'twilio\', etc.',
       'type' => 'text_textfield',
       'module' => 'text',
@@ -886,7 +836,7 @@ function voipcall_content_default_fields() {
       'label_position' => 'above',
       'default_value_php' => NULL,
       'label' => 'Start time',
-      'weight' => '7',
+      'weight' => '8',
       'description' => '',
       'type' => 'number',
       'module' => 'number',
@@ -986,9 +936,59 @@ function voipcall_content_default_fields() {
       ),
       'default_value_php' => NULL,
       'label' => 'Text Script',
-      'weight' => '12',
+      'weight' => '13',
       'description' => 'Dial plan script that is activated whenever the system receives a text message.',
       'type' => 'text_textarea',
+      'module' => 'text',
+    ),
+  );
+
+  // Exported field: field_voipcall_text_status
+  $fields['voipcall-field_voipcall_text_status'] = array(
+    'field_name' => 'field_voipcall_text_status',
+    'type_name' => 'voipcall',
+    'display_settings' => array(
+      'label' => array(
+        'format' => 'above',
+        'exclude' => 0,
+      ),
+      'teaser' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      'full' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+      '4' => array(
+        'format' => 'default',
+        'exclude' => 0,
+      ),
+    ),
+    'widget_active' => '1',
+    'type' => 'text',
+    'required' => '0',
+    'multiple' => '0',
+    'module' => 'text',
+    'active' => '1',
+    'text_processing' => '0',
+    'max_length' => '',
+    'allowed_values' => '',
+    'allowed_values_php' => '',
+    'widget' => array(
+      'rows' => 5,
+      'size' => '60',
+      'default_value' => array(
+        '0' => array(
+          'value' => '',
+          '_error_element' => 'default_value_widget][field_voipcall_text_status][0][value',
+        ),
+      ),
+      'default_value_php' => NULL,
+      'label' => 'Text status',
+      'weight' => '5',
+      'description' => 'Status of the original text message associated with this call.',
+      'type' => 'text_textfield',
       'module' => 'text',
     ),
   );
@@ -1010,10 +1010,10 @@ function voipcall_content_default_fields() {
   t('Error Message');
   t('Hangup Reason');
   t('Hangup Script Name');
-  t('SMS Status');
   t('Script');
   t('Start time');
   t('Text Script');
+  t('Text status');
 
   return $fields;
 }

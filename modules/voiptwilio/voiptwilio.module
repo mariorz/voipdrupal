@@ -74,7 +74,7 @@ function voiptwilio_menu() {
   $items = array();
 
   $items['voip/twilio/callhandler'] = array(
-    'title' => 'Voip Twilio call handler',
+    'title' => 'VoIP Twilio call handler',
     'description' => 'Handles incoming calls from Twilio.',
       // Note: Since both incoming calls and Twilio responses are received
       // via the same callhandler menu, the specific call permissions are to 

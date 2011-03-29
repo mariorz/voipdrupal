@@ -566,35 +566,17 @@ class VoipScript {
    *   played.
    *
    * @param $as
-   *   String with value either 'number' or 'digits'.
+   *   String that determines how numbers should be pronounced by the 'say'
+   *   command. Supported values include 'number' (to read '12' as 'twelve') or
+   *   'digits' (to read '12' as 'one two'). By default, numbers should be read
+   *   as 'number'
    *
    * @param $loop
    *   Integer with the number of times that the prompt should be repeated
    *
-   * @param $voice DEPRECATED
-   *   String with the type of voice to be used.  If NULL, use the script's
-   *   current voice as defined by the 'voipscript_voice' script variable. In
-   *   case that variable is not set, use the default 'voice' setting defined
-   *   by the voip server.
-   *
-   * @param $language. DEPRECATED
-   *   String with the language entonation associated with the voice. If NULL,
-   *   use the script's current language as defined by the 
-   *   'voipscript_language' script variable. If that variable is not set,
-   *   use the default 'language' setting defined by the voip server.
-   * 
-   *
    * @return
    *   The execution of the 'say' command does not return anything.
    */
-  /*function addSay($prompt, $loop=1, $voice=NULL, $language=NULL) {
-    $params['prompt'] = $prompt;
-    $params['loop'] = $loop;
-    $params['voice'] = $voice;
-    $params['language'] = $language;
-    $this->commands[] = new VoipCommand('VoipCmdSay', $params);
-  }*/
-  
   function addSay($prompt, $as='', $loop=1) {
     $params['prompt'] = $prompt;
     $params['loop'] = $loop;
@@ -603,10 +585,10 @@ class VoipScript {
   }
 
   /** 
-   * Adds a "send sms" command to the script.
+   * Adds a "send text" command to the script.
    * 
-   * When ran, this command sends the given text to the specified phone number. 
-   * The outcome of the command is stored in the 'sms_status' variable.
+   * When ran, this command sends the given text message to the specified phone
+   * number. 
    * 
    * @uses VoipScript::$variables
    *
@@ -614,36 +596,36 @@ class VoipScript {
    *   String with the text to be sent
    *
    * @param $to
-   *   For SMS string with the SMS number, or string with destination username for IM. When sending on an 
-   *   incoming call, 'to' defaults to the caller.  When sending on
-   *   an outgoing call, 'to' defaults to the called party.
+   *   The destination of the text message. For instance, for messages sent via
+   *   the SMS channel, $to contains the SMS number; for AIM messages, it
+   *   contains the AIM username. When sending text as part of an inbound call,
+   *   'to' defaults to the caller.  When sending text on an outbound call, 'to'
+   *   defaults to the called party.
    *
-   * @param $channel
-   *   String withe channel to be used. By default the channel will be SMS. 
-   *   Allowed options are SMS, AIM, MSN, JABBER, YAHOO and GTALK.
+   * @param $network
+   *   String with the network to be used. The default the network is 'sms'. 
+   *   Different VoIP servers might support other options such as 'aim', 'msn',
+   *   'jabber', 'yahoo', 'gtalk', etc.
+   *
    * @param $caller_id
-   *   String with the caller id to be used. It can be either a number or IM username. When sending on an incoming 
-   *   call, 'caller_id' defaults to the called party.  When sending
-   *   on an outgoing call, 'caller id' defaults to the calling party.
+   *   String with the caller id to be used. Depending on the network, it can be
+   *   a phone number, a IM username, etc. When sending on an inbound call,
+   *   'caller_id' defaults to the called party.  When sending on an outbound
+   *   call, 'caller id' defaults to the calling party.
    * 
    * @return
-   *   The execution of the 'send sms' command sets the variable sms_status to 
-   *   any of the following values:
-   *   - VoipCall::SMS_FAILED
-   *   - VoipCall::SMS_INVALID
-   *   - VoipCall::SMS_SENDING
-   *   - VoipCall::SMS_SENT
+   *   The execution of the 'send sms' command sets the script variable
+   *   'send_text_status' 
+   *   to any of the following values:
+   *   - VoipCall::TEXT_FAILED
+   *   - VoipCall::TEXT_INVALID
+   *   - VoipCall::TEXT_SENDING
+   *   - VoipCall::TEXT_SENT
    */ 
-  /*function addSendSms($text, $number='', $caller_id=''){
-    $params['number'] = $number;
-    $params['text'] = $text;
-    $params['caller_id'] = $caller_id;
-    $this->commands[] = new VoipCommand('VoipCmdSendSms', $params);
-  }*/
-  function addSendText($text, $to='', $channel='sms', $caller_id=''){
+  function addSendText($text, $to='', $network='sms', $caller_id=''){
     $params['to'] = $to;
     $params['text'] = $text;
-    $params['channel'] = $channel;
+    $params['network'] = $network;
     $params['caller_id'] = $caller_id;
     $this->commands[] = new VoipCommand('VoipCmdSendText', $params);
   }

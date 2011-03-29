@@ -196,7 +196,7 @@ function voipcall_voipscript_load_script($script_name) {
   }
   if($script_name == 'voipcall_default_inbound_text_script') {
     $script = new VoipScript('voipcall_default_inbound_text_script');
-    $script->addSendText(t("This is a SMS response from the VoIP Drupal platform!"));
+    $script->addSendText(t("This is a TEXT response from the VoIP Drupal platform!"));
     $script->addHangup();
   }
 

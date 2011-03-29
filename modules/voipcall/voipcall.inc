@@ -69,13 +69,13 @@ class VoipCall {
   const ANSWERED_HUMAN='answered_by_human';
 
   /**
-   * 'sms status' field values
+   * 'text status' field values
    */
-  const SMS_FAILED='sms_failed';
-  const SMS_INVALID='sms_invalid';
-  const SMS_NOT_SENT='sms_not_sent';
-  const SMS_SENDING='sms_sending';
-  const SMS_SENT='sms_sent';
+  const TEXT_FAILED='text_failed';
+  const TEXT_INVALID='text_invalid';
+  const TEXT_NOT_SENT='text_not_sent';
+  const TEXT_SENDING='text_sending';
+  const TEXT_SENT='text_sent';
 
   /**
    * 'hangup reason' field values
@@ -334,12 +334,12 @@ class VoipCall {
     $this->call_node->field_voipcall_answered_by[0]['value'] = $answered_by;
   }
 
-  public function getSmsStatus(){
-    return $this->call_node->field_voipcall_sms_status[0]['value'];
+  public function getTextStatus(){
+    return $this->call_node->field_voipcall_text_status[0]['value'];
   }
 
-  public function setSmsStatus($status){
-    $this->call_node->field_voipcall_sms_status[0]['value'] = $status;
+  public function setTextStatus($status){
+    $this->call_node->field_voipcall_text_status[0]['value'] = $status;
   }
     
   public function getSource(){
@@ -523,9 +523,9 @@ class VoipCall {
         $node->field_voipcall_answered_by[0]['value'] = VoipCall::NOT_CHECKED;
       }
   
-      // initialize 'SMS Status' field
-      if(!isset($details->field_voipcall_sms_status[0]['value'])) {
-        $node->field_voipcall_sms_status[0]['value'] = VoipCall::SMS_NOT_SENT;
+      // initialize 'Text Status' field
+      if(!isset($details->field_voipcall_text_status[0]['value'])) {
+        $node->field_voipcall_text_status[0]['value'] = VoipCall::TEXT_NOT_SENT;
       }
 
       // initialize 'Call Source' field
@@ -612,9 +612,9 @@ class VoipCall {
     if(isset($new_answered_by))
       $node->field_voipcall_answered_by[0]['value'] = $new_answered_by;
   
-    $new_sms_status = $details->field_voipcall_sms_status[0]['value'];
-    if(isset($new_sms_status))
-      $node->field_voipcall_sms_status[0]['value'] = $new_sms_status;
+    $new_text_status = $details->field_voipcall_text_status[0]['value'];
+    if(isset($new_text_status))
+      $node->field_voipcall_text_status[0]['value'] = $new_text_status;
 
     $new_source = $details->field_voipcall_source[0]['value'];
     if(isset($new_source))
@@ -710,8 +710,8 @@ class VoipCall {
     $script->setVar('answered_by',
       $call_node->field_voipcall_answered_by[0]['value']);
   
-    $script->setVar('sms_status',
-      $call_node->field_voipcall_sms_status[0]['value']);
+    $script->setVar('text_status',
+      $call_node->field_voipcall_text_status[0]['value']);
   
     $script->setVar('source',
       $call_node->field_voipcall_source[0]['value']);
