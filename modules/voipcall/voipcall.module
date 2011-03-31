@@ -35,6 +35,7 @@ function voipcall_menu() {
     'description' => 'Plays beep sound',
     'page callback' => 'voipcall_play_beep',
     'access callback' => TRUE, 
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
