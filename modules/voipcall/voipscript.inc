@@ -591,6 +591,15 @@ class VoipScript {
     $this->commands[] = new VoipCommand('VoipCmdSay', $params);
   }
 
+  
+  /**
+   * Adds a beep command to the script.
+   *
+   * Plays a beep from provided mp3 file.
+   */
+  function addBeep() {
+    $this->commands[] = new VoipCommand('VoipCmdBeep');
+  }
   /** 
    * Adds a "send text" command to the script.
    * 
@@ -621,7 +630,7 @@ class VoipScript {
    *   call, 'caller id' defaults to the calling party.
    * 
    * @return
-   *   The execution of the 'send sms' command sets the script variable
+   *   The execution of the 'send text' command sets the script variable
    *   'send_text_status' 
    *   to any of the following values:
    *   - VoipCall::TEXT_FAILED

@@ -596,7 +596,12 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
               break;
           }
           break;
-
+          
+        case 'VoipCmdBeep';
+           $beep_url = url('voip/sound/beep', array('absolute' => TRUE));
+           $response .= "<Play>$beep_url</Play>";
+        break;
+        
         case 'VoipCmdSet';
           $var_name = $script->evalString($cmd->getParam('var_name'));
           $var_value = $script->evalString($cmd->getParam('var_value'));
@@ -854,6 +859,4 @@ function _voiptwilio_numbers_add_space($matches) {
   $string_array = str_split($matches[0]);
   $number_with_space = implode(" ",$string_array);
   return $number_with_space;
-  
-  //var_dump($string_array);die();
 }

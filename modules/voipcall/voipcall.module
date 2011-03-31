@@ -29,6 +29,13 @@ function voipcall_menu() {
     'page arguments' => array('voipcall_admin_form', NULL),
     'access arguments' => array('administer voipcall setup')
   );
+  
+   $items['voip/sound/beep'] = array(
+    'title' => 'Beep sound',
+    'description' => 'Plays beep sound',
+    'page callback' => 'voipcall_play_beep',
+    'access callback' => TRUE, 
+  );
 
   return $items;
 }
@@ -203,3 +210,23 @@ function voipcall_voipscript_load_script($script_name) {
   return $script;
 }
 
+/**
+ * Implementation of hook_theme().
+ */
+function voipcall_theme() {
+  return array(
+    'voipcall_play_beep' => array(
+      'arguments' => array(),
+    ),
+  );
+}
+
+function voipcall_play_beep(){
+   print theme('voipcall_play_beep');
+}
+
+function theme_voipcall_play_beep(){
+   $filename = drupal_get_path('module', 'voipcall').'/sound/beep.mp3';
+   header('Content-Type: audio/mpeg');
+   return readfile($filename);
+}
