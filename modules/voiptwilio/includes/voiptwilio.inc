@@ -297,6 +297,11 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $processing = FALSE;
           break;
 
+        case 'VoipCmdBeep';
+           $beep_url = url('voip/sound/beep', array('absolute' => TRUE));
+           $response .= "<Play>$beep_url</Play>";
+        break;
+        
         case 'VoipCmdDial';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/twilio/callhandler';
@@ -597,11 +602,6 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           }
           break;
           
-        case 'VoipCmdBeep';
-           $beep_url = url('voip/sound/beep', array('absolute' => TRUE));
-           $response .= "<Play>$beep_url</Play>";
-        break;
-        
         case 'VoipCmdSet';
           $var_name = $script->evalString($cmd->getParam('var_name'));
           $var_value = $script->evalString($cmd->getParam('var_value'));

@@ -299,6 +299,13 @@ class VoipScript {
    */
 
   /**
+   * Adds a beep command to the script.
+   */
+  function addBeep() {
+    $this->commands[] = new VoipCommand('VoipCmdBeep');
+  }
+
+  /**
    * Adds a "dial" command to the script.
    *
    * When executed, the 'dial' command connects the current caller to another
@@ -591,15 +598,6 @@ class VoipScript {
     $this->commands[] = new VoipCommand('VoipCmdSay', $params);
   }
 
-  
-  /**
-   * Adds a beep command to the script.
-   *
-   * Plays a beep from provided mp3 file.
-   */
-  function addBeep() {
-    $this->commands[] = new VoipCommand('VoipCmdBeep');
-  }
   /** 
    * Adds a "send text" command to the script.
    * 
