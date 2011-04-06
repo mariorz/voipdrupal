@@ -297,6 +297,11 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $processing = FALSE;
           break;
 
+        case 'VoipCmdBeep';
+           $beep_url = url('voip/sound/beep', array('absolute' => TRUE));
+           $response .= "<Play>$beep_url</Play>";
+        break;
+        
         case 'VoipCmdDial';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/twilio/callhandler';
@@ -343,10 +348,15 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
                             . '" numDigits="' . $num_digits
                             . '" >';
           if($prompt) {
-            $language= $script->getLanguage();
-            $voice = $script->getVoice();
+            $as = $script->evalString($cmd->getParam('as'));
+            // determine the language to be used
+            $language = $script->evalString($cmd->getParam('language'));
+            $language = $language ? $language : $script->getLanguage();
+            // determine the voice to be used
+            $voice = $script->evalString($cmd->getParam('voice'));
+            $voice = $voice ? $voice : $script->getVoice();
             $response .=  _voiptwilio_generate_audio_response($prompt, $voice,
-                            $language, 1);
+                            $language, 1, $as);
           }
           $response .= '</Gather>';
           // in case of timeout or empty input, set Digits to 'no_input'
@@ -597,11 +607,6 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           }
           break;
           
-        case 'VoipCmdBeep';
-           $beep_url = url('voip/sound/beep', array('absolute' => TRUE));
-           $response .= "<Play>$beep_url</Play>";
-        break;
-        
         case 'VoipCmdSet';
           $var_name = $script->evalString($cmd->getParam('var_name'));
           $var_value = $script->evalString($cmd->getParam('var_value'));

@@ -299,6 +299,13 @@ class VoipScript {
    */
 
   /**
+   * Adds a beep command to the script.
+   */
+  function addBeep() {
+    $this->commands[] = new VoipCommand('VoipCmdBeep');
+  }
+
+  /**
    * Adds a "dial" command to the script.
    *
    * When executed, the 'dial' command connects the current caller to another
@@ -372,15 +379,36 @@ class VoipScript {
    * @param $num_digits
    *   Integer with the number of digits that are expected.
    *
+   * @param $as
+   *   String that determines how numbers should be pronounced by the 'say'
+   *   command. Supported values include 'number' (to read '12' as 'twelve') or
+   *   'digits' (to read '12' as 'one two'). By default, numbers should be read
+   *   as 'number'
+   *
+   * @param $voice
+   *   String with the type of voice to be used for the prompt.  If NULL, use
+   *   the script's current voice as defined by the 'voipscript_voice' script
+   *   variable. In case that variable is not set, use the default 'voice'
+   *   setting defined by the voip server.
+   *
+   * @param $language.
+   *   String with the language entonation to be used for the prompt. If NULL,
+   *   use the script's current language as defined by the 
+   *   'voipscript_language' script variable. If that variable is not set,
+   *   use the default 'language' setting defined by the voip server.
+   *
    * @return
    *   The 'get input' command sets the script variable input_digits to the
    *   input received.  In case nothing is typed, input_digits gets set to ''
    */
-  function addGetInput($prompt='', $timeout=5, $end_key='#', $num_digits=NULL) {
+  function addGetInput($prompt='', $timeout=5, $end_key='#', $num_digits=NULL, $as='', $voice=NULL, $language=NULL) {
     $params['prompt'] = $prompt;
     $params['timeout'] = $timeout;
     $params['end_key'] = $end_key;
     $params['num_digits'] = $num_digits;
+    $params['as'] = $as;
+    $params['voice'] = $voice;
+    $params['language'] = $language;
     $this->commands[] = new VoipCommand('VoipCmdGetInput', $params);
   }
 
@@ -591,15 +619,6 @@ class VoipScript {
     $this->commands[] = new VoipCommand('VoipCmdSay', $params);
   }
 
-  
-  /**
-   * Adds a beep command to the script.
-   *
-   * Plays a beep from provided mp3 file.
-   */
-  function addBeep() {
-    $this->commands[] = new VoipCommand('VoipCmdBeep');
-  }
   /** 
    * Adds a "send text" command to the script.
    * 
