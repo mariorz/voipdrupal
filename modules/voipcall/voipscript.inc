@@ -422,10 +422,15 @@ class VoipScript {
    * @param $script_name
    *   The name of the script to be loaded
    *
+   * @param $options
+   *   An array with options to be passed to the function that generates the
+   *   required script
+   *
    * @see VoipScript::addReturn()
    */
-  function addGosub($script_name) {
+  function addGosub($script_name, $options=array()) {
     $params['script_name'] = $script_name;
+    $params['options'] = $options;
     $this->commands[] = new VoipCommand('VoipCmdGosub', $params);
   }
 
@@ -703,12 +708,12 @@ class VoipScript {
    * Execution of basic script commands that are not dependent on the voip server
    */
 
-  function runGosub($script_name) {
+  function runGosub($script_name, $options) {
     $script_state = array('name' => $this->name,
                           'commands' => $this->commands,
                           'index' => $this->index);
     $this->stack[] = $script_state;
-    $rc =  $this->runLoad($script_name);
+    $rc =  $this->runLoad($script_name, $options);
     return $rc;
   }
 
