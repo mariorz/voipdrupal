@@ -521,6 +521,57 @@ class VoipScript {
   }
 
   /**
+   * Adds a "run IVR menu" command to the script
+   * 
+   * When executed, the "run IVR menu" command presents the user with a set of 
+   * options and expects for an input to be typed in.
+   *
+   * @input $menu_options
+   *   String presenting the different menu items available ('For x, press 1.
+   *   For y, press 2...'). If empty (''), the default message will be used:  
+   *   'Press any key from the telephone keypad.'
+   *
+   * @keys_allowed
+   *   String with the input options with no space in between them ("13#").
+   *   Default is all keys from the telephone keypad: '0123456789#*'
+   *
+   * @input $invalid_msg
+   *   String with the message to be played in case an invalid option is
+   *   selected. If empty (''), the default message will be used: 'Invalid
+   *   option selected.'
+   * 
+   * @input %no_input_msg
+   *   String with the message to be played in case no input is received. If
+   *   empty, will use the same message as $invalid_msg
+   *
+   * @input $max_attempts
+   *   String with the maximum number of attempts allowed.  Default is 3.
+   * 
+   * @input $timeout
+   *   String with the number of seconds to wait for an input digit to be
+   *   pressed. The default is 5
+   *
+   * @output
+   *  String with the option selected. Will be set to '' (empty string) in case
+   *  of timeout.  Will be set to -1 in case an invalid option is selected.
+   */
+
+  function addRunIvrMenu($menu_options='', $keys_allowed='01234567890#*', $invalid_msg='', $no_input_msg='', $max_attempts=3, $timeout=5) {
+    $default_options = t('Press any key from the telephone keypad.');
+    $menu_options = $menu_options ? $menu_options : $default_options;
+    $params['menu_options'] = $menu_options;
+    $params['keys_allowed'] = $keys_allowed;
+    $msg_tmp = t('Invalid option selected.');
+    $invalid_msg = $invalid_msg ? $invalid_msg : $msg_tmp;
+    $params['invalid_msg'] = $invalid_msg;
+    $no_input_msg = $no_input_msg ? $no_input_msg : $invalid_msg;
+    $params['no_input_msg'] = $no_input_msg;
+    $params['max_attempts'] = $max_attempts;
+    $params['timeout'] = $timeout;
+    $this->commands[] = new VoipCommand('VoipCmdRunIvrMenu', $params);
+  }
+
+  /**
    * Adds a 'record' command to the script.
    *
    * When executed, the 'record' command records audio input from the phone.
