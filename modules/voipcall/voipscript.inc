@@ -756,9 +756,13 @@ class VoipScript {
 
 
   /*
-   * Execution of basic script commands that are not dependent on the voip server
+   * Execution of basic script commands that are not dependent on the voip
+   * server
    */
 
+  /**
+   * Execute the specified script and then return to the current script
+   */
   function runGosub($script_name, $options) {
     $script_state = array('name' => $this->name,
                           'commands' => $this->commands,
@@ -768,6 +772,9 @@ class VoipScript {
     return $rc;
   }
 
+  /**
+   * Jump script execution to the command associated with the specified label
+   */
   function runGoto($label_name) {
     $rc = TRUE;
     $found = FALSE;
@@ -796,6 +803,15 @@ class VoipScript {
       }
     }
     return $rc;
+  }
+
+  /**
+   * Run the specified IVR menu
+   */
+  function runIvrMenu($ivr_options) {
+    // execute the predefined IVR script menu
+    $script_name = 'voipscript_run_ivr';
+    $this->runGosub($script_name, $ivr_options);
   }
 
   /**
@@ -843,6 +859,10 @@ class VoipScript {
     return $rc;
   } 
 
+  /**
+   * Return to the script that has originally issued the Gosub that started the 
+   * present script
+   */
   function runReturn() {
     $rc = TRUE;
     $script_state = array_pop($this->stack);
