@@ -552,8 +552,9 @@ class VoipScript {
    *   pressed. The default is 5
    *
    * @output
-   *  String with the option selected. Will be set to '' (empty string) in case
-   *  of timeout.  Will be set to -1 in case an invalid option is selected.
+   *  Set the %ivr_option_selected script variable with the option selected.
+   *  Will be set to '' (empty string) in case of timeout.  Will be set to -1 in
+   *  case an invalid option is selected.
    */
 
   function addRunIvrMenu($menu_options='', $keys_allowed='01234567890#*', $invalid_msg='', $no_input_msg='', $max_attempts=3, $timeout=5) {
