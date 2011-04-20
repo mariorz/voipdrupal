@@ -559,17 +559,12 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
 
         case 'VoipCmdSay':
           $call->setCallStatus(VoipCall::IN_PROGRESS);
-          $prompt = $script->evalString($cmd->getParam('prompt'));
+          $prompt = $cmd->getParam('prompt');
+          $default_voice = $script->getVoice();
+          $default_language = $script->getLanguage();
           $loop = $script->evalString($cmd->getParam('loop'));
-          $as = $script->evalString($cmd->getParam('as'));
-          // determine the language to be used
-          $language = $script->evalString($cmd->getParam('language'));
-          $language = $language ? $language : $script->getLanguage();
-          // determine the voice to be used
-          $voice = $script->evalString($cmd->getParam('voice'));
-          $voice = $voice ? $voice : $script->getVoice();
-          $response .= _voiptwilio_generate_audio_response($prompt, $voice,
-                         $language, $loop, $as);
+          $response .= _voiptwilio_generate_audio_response2($script, $prompt, $default_voice,
+                         $default_language, $loop);
           break;
 
         case 'VoipCmdSendText';
@@ -860,7 +855,10 @@ function _voiptwilio_generate_audio_response($str, $voice, $language, $loop=1, $
 
 //----------------------------------------
 
-function _voiptwilio_generate_audio_response2($prompt, $default_voice, $default_language, $loop=1) {
+function _voiptwilio_generate_audio_response2($script, $prompt, $default_voice, $default_language, $loop=1) {
+
+$prompt2 = print_r($prompt, true);
+watchdog('voipscript', "in response2: $prompt2 // $default_voice // $default_language");
 
   if(is_string($prompt)){
     $list[] = array('text' => $prompt);
@@ -870,10 +868,17 @@ function _voiptwilio_generate_audio_response2($prompt, $default_voice, $default_
   }
 
   foreach($list as $prompt) {
-    $text = $prompt['text'];
-    $voice = $prompt['voice'] ? $prompt['voice'] : $default_voice;
-    $language = $prompt['language'] ? $prompt['language'] : $default_language;
-    $as = $prompt['as'] ? $prompt['as'] : 'digits';
+    $text = $script->evalString($prompt['text']);
+    $voice_tmp = $prompt['voice'] ? $script->evalString($prompt['voice']) : '';
+    $voice = $voice_tmp ? $voice_tmp : $default_voice;
+//    $voice = $prompt['voice'] ? $prompt['voice'] : $default_voice;
+    $language_tmp =
+      $prompt['language'] ? $script->evalString($prompt['language']) : '';
+    $language = $language_tmp ? $language_tmp : $default_language;
+//    $language = $prompt['language'] ? $prompt['language'] : $default_language;
+    $as_tmp = $prompt['as'] ? $script->evalString($prompt['as']) : '';
+    $as = $as_tmp ? $as_tmp : 'digits';
+//    $as = $prompt['as'] ? $prompt['as'] : 'digits';
 
     if($as == 'digits'){
       //Convert numbers into digits
