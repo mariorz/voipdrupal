@@ -526,7 +526,7 @@ class VoipScript {
    * When executed, the "run IVR menu" command presents the user with a set of 
    * options and expects for an input to be typed in.
    *
-   * @input $menu_options
+   * @input $prompt
    *   String presenting the different menu items available ('For x, press 1.
    *   For y, press 2...'). If empty (''), the default message will be used:  
    *   'Press any key from the telephone keypad.'
@@ -557,10 +557,10 @@ class VoipScript {
    *  case an invalid option is selected.
    */
 
-  function addRunIvrMenu($menu_options='', $keys_allowed='01234567890#*', $invalid_msg='', $no_input_msg='', $max_attempts=3, $timeout=5) {
+  function addRunIvrMenu($prompt='', $keys_allowed='01234567890#*', $invalid_msg='', $no_input_msg='', $max_attempts=3, $timeout=5) {
     $default_options = t('Press any key from the telephone keypad.');
-    $menu_options = $menu_options ? $menu_options : $default_options;
-    $params['menu_options'] = $menu_options;
+    $prompt = $prompt ? $prompt : $default_options;
+    $params['prompt'] = $prompt;
     $params['keys_allowed'] = $keys_allowed;
     $msg_tmp = t('Invalid option selected.');
     $invalid_msg = $invalid_msg ? $invalid_msg : $msg_tmp;
@@ -809,10 +809,10 @@ class VoipScript {
   /**
    * Run the specified IVR menu
    */
-  function runIvrMenu($ivr_options) {
+  function runIvrMenu($options) {
     // execute the predefined IVR script menu
-    $script_name = 'voipscript_run_ivr';
-    $this->runGosub($script_name, $ivr_options);
+    $script_name = 'voipscript_run_ivr_menu';
+    $this->runGosub($script_name, $options);
   }
 
   /**
@@ -926,7 +926,74 @@ class VoipCommand {
   }
 }
     
+/**
+ * Utility functions
+ */
 
+/**
+ * Run an IVR menu based on the parameters provided by the given VoipCmdRunIvrMenu
+ */
+function voipscript_get_run_ivr_menu_script($options) {
+
+$prompt = $options['prompt'];
+$keys_allowed = $options['keys_allowed'];
+$invalid_msg = $options['invalid_msg'];
+$no_input_msg = $options['no_input_msg'];
+$max_attempts = $options['max_attempts'];
+$timeout = $options['timeout'];
+watchdog('voipscript', "in get_run_ivr_menu_script with $prompt // $keys_allowed // $invalid_msg // $no_input_msg // $max_attempts // $timeout //");
+
+//--------------------
+  $script = new VoipScript('voipscript_run_ivr_menu');
+
+// initialize script variables
+
+$script->addSet('_menu_options', $options['prompt']);
+$script->addSet('_keys_allowed', $options['keys_allowed']);
+$script->addSet('_counter', $options['max_attempts']);
+$script->addSet('_invalid_msg', $options['invalid_msg']);
+$script->addSet('_no_input_msg', $options['no_input_msg']);
+$script->addSet('_timeout', $options['timeout']);
+
+// run the script
+
+$script->addLabel('play_menu_options');
+$script->addSet('_counter', '^%_counter - 1');
+$script->addGotoIf('go_back', '^%_counter < 0');
+$script->addGetInput('%_menu_options', '%_timeout', '', 1, 'digits');
+$script->addGotoIf('no_input_received', "^%input_digits == ''");
+$script->addGotoIf('valid_option', "^strpos(' ' . '%_keys_allowed', %input_digits");
+$script->addGoto('invalid_option');
+
+$script->addLabel('no_input_received');
+$script->addSet('ivr_option_selected', '');
+$script->addSay('%_no_input_msg');
+$script->addGoto('play_menu_options');
+
+$script->addLabel('valid_option');
+$script->addSet('ivr_option_selected', '%input_digits');
+$script->addSay('Valid option selected: %ivr_option_selected');
+$script->addGoto('go_back');
+
+$script->addLabel('invalid_option');
+$script->addSet('ivr_option_selected', '-1');
+$script->addSay('%_invalid_msg');
+$script->addGoto('play_menu_options');
+
+$script->addLabel('go_back');
+$script->addSay('The user selected: %ivr_option_selected', 'digits');
+$script->addUnset('_menu_options');
+$script->addUnset('_keys_allowed');
+$script->addUnset('_counter');
+$script->addUnset('_invalid_msg');
+$script->addUnset('_no_input_msg');
+$script->addUnset('_timeout');
+$script->addReturn();
+
+
+//--------------------
+  return $script;
+}
 
 /**
  * Internal functions

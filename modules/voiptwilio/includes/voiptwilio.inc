@@ -543,6 +543,20 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           }
           break;
 
+        case 'VoipCmdRunIvrMenu':
+          $options['prompt'] = $script->evalString($cmd->getParam('prompt'));
+          $options['keys_allowed'] =
+            $script->evalString($cmd->getParam('keys_allowed'));
+          $options['invalid_msg'] =
+            $script->evalString($cmd->getParam('invalid_msg'));
+          $options['no_input_msg'] =
+            $script->evalString($cmd->getParam('no_input_msg'));
+          $options['max_attempts'] =
+            $script->evalString($cmd->getParam('max_attempts'));
+          $options['timeout'] = $script->evalString($cmd->getParam('timeout'));
+          $rc = $script->runIvrMenu($options);
+          break;
+
         case 'VoipCmdSay':
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $prompt = $script->evalString($cmd->getParam('prompt'));
