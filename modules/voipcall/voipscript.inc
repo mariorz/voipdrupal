@@ -379,36 +379,15 @@ class VoipScript {
    * @param $num_digits
    *   Integer with the number of digits that are expected.
    *
-   * @param $as
-   *   String that determines how numbers should be pronounced by the 'say'
-   *   command. Supported values include 'number' (to read '12' as 'twelve') or
-   *   'digits' (to read '12' as 'one two'). By default, numbers should be read
-   *   as 'number'
-   *
-   * @param $voice
-   *   String with the type of voice to be used for the prompt.  If NULL, use
-   *   the script's current voice as defined by the 'voipscript_voice' script
-   *   variable. In case that variable is not set, use the default 'voice'
-   *   setting defined by the voip server.
-   *
-   * @param $language.
-   *   String with the language entonation to be used for the prompt. If NULL,
-   *   use the script's current language as defined by the 
-   *   'voipscript_language' script variable. If that variable is not set,
-   *   use the default 'language' setting defined by the voip server.
-   *
    * @return
    *   The 'get input' command sets the script variable input_digits to the
    *   input received.  In case nothing is typed, input_digits gets set to ''
    */
-  function addGetInput($prompt='', $timeout=5, $end_key='#', $num_digits=NULL, $as='', $voice=NULL, $language=NULL) {
+  function addGetInput($prompt='', $num_digits=NULL, $end_key='#', $timeout=5) {
     $params['prompt'] = $prompt;
-    $params['timeout'] = $timeout;
-    $params['end_key'] = $end_key;
     $params['num_digits'] = $num_digits;
-    $params['as'] = $as;
-    $params['voice'] = $voice;
-    $params['language'] = $language;
+    $params['end_key'] = $end_key;
+    $params['timeout'] = $timeout;
     $this->commands[] = new VoipCommand('VoipCmdGetInput', $params);
   }
 
@@ -925,6 +904,67 @@ class VoipCommand {
     return $this->params[$param_name]?$this->params[$param_name]:$default;
   }
 }
+   
+
+class VoipPrompt {
+
+  /*
+   * @variable $text 
+   *   String combining text and audio URLs to be played to the user
+   */
+  private $text;
+    
+  /*
+   * @variable $voice
+   *   String with the type of voice to be used for the prompt.  If NULL, use
+   *   the script's current voice as defined by the 'voipscript_voice' script
+   *   variable. In case that variable is not set, use the default 'voice'
+   *   setting defined by the voip server.
+   */
+  private $voice;
+
+  /*
+   * @variable $language.
+   *   String with the language entonation to be used for the prompt. If NULL,
+   *   use the script's current language as defined by the 
+   *   'voipscript_language' script variable. If that variable is not set,
+   *   use the default 'language' setting defined by the voip server.
+   */
+  private $language;
+
+  /*
+   * @variable $as
+   *   String that determines how numbers should be pronounced by the 'say'
+   *   command. Supported values include 'number' (to read '12' as 'twelve') or
+   *   'digits' (to read '12' as 'one two'). By default, numbers should be read
+   *   as 'number'
+   */
+  private $as; // the way in which prompt numbers should be pronounced
+
+  function __construct($text, $voice=NULL, $language=NULL, $as=NULL) {
+    $this->text = $text;
+    $this->voice = $voice;
+    $this->language = $language;
+    $this->as = $as;
+  }
+
+  function getText() {
+    return $this->text;
+  }
+
+  function getVoice() {
+    return $this->voice;
+  }
+
+  function getLanguage() {
+    return $this->language;
+  }
+
+  function getAs() {
+    return $this->as;
+  }
+
+}
     
 /**
  * Utility functions
@@ -951,10 +991,16 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addLabel('play_menu_options');
   $script->addSet('_counter', '^%_counter - 1');
   $script->addGotoIf('go_back', '^%_counter < 0');
-  $script->addGetInput('%_menu_options', '%_timeout', '', 1, 'digits');
+  $script->addGetInput('%_menu_options', 1, '', '%_timeout');
   $script->addGotoIf('no_input_received', "^%input_digits == ''");
   $script->addGotoIf('valid_option',
-                     "^strpos(' ' . '%_keys_allowed', '%input_digits')");
+// TODO: ideally, the following line should be as below
+//                     "^strpos(' ' . '%_keys_allowed', '%input_digits')");
+// however, since the eval function is not processing '0' correctly,
+// I had to replace the line by the following. Hopefully, we'll be able to solve
+// this little bug soon (2011.04.20)
+// check http://stackoverflow.com/questions/3241070/php-recursive-variable-replacement
+                     "^(%input_digits === '0') ? strpos(' ' . '%_keys_allowed', %input_digits) : strpos(' ' . '%_keys_allowed', \"%input_digits\")");
   $script->addGoto('invalid_option');
 
   $script->addLabel('no_input_received');

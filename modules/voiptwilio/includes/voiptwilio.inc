@@ -844,28 +844,24 @@ $prompt2 = print_r($prompt, true);
 watchdog('voipscript', "in response2: $prompt2 // $loop");
 
   if(is_string($prompt)){
-    $list[] = array('text' => $prompt);
+    $prompt_list[] = new VoipPrompt($prompt);
   }
   else {
-    $list = $prompt;
+    $prompt_list = $prompt;
   }
 
   $default_language = $script->getLanguage();
   $default_voice = $script->getVoice();
 
-  foreach($list as $prompt) {
-    $text = $script->evalString($prompt['text']);
+  foreach($prompt_list as $p) {
+    $text = $script->evalString($p->getText());
 watchdog('voipscript', "text processed: $text");
-    $voice_tmp = $prompt['voice'] ? $script->evalString($prompt['voice']) : '';
+    $voice_tmp = $p->getVoice() ? $script->evalString($p->getVoice()) : '';
     $voice = $voice_tmp ? $voice_tmp : $default_voice;
-//    $voice = $prompt['voice'] ? $prompt['voice'] : $default_voice;
-    $language_tmp =
-      $prompt['language'] ? $script->evalString($prompt['language']) : '';
+    $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
     $language = $language_tmp ? $language_tmp : $default_language;
-//    $language = $prompt['language'] ? $prompt['language'] : $default_language;
-    $as_tmp = $prompt['as'] ? $script->evalString($prompt['as']) : '';
+    $as_tmp = $p->getAs() ? $script->evalString($p->getAs()) : '';
     $as = $as_tmp ? $as_tmp : 'digits';
-//    $as = $prompt['as'] ? $prompt['as'] : 'digits';
 
     if($as == 'digits'){
       //Convert numbers into digits
