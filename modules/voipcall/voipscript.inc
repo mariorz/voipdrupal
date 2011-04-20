@@ -935,15 +935,6 @@ class VoipCommand {
  */
 function voipscript_get_run_ivr_menu_script($options) {
 
-$prompt = $options['prompt'];
-$keys_allowed = $options['keys_allowed'];
-$invalid_msg = $options['invalid_msg'];
-$no_input_msg = $options['no_input_msg'];
-$max_attempts = $options['max_attempts'];
-$timeout = $options['timeout'];
-watchdog('voipscript', "in get_run_ivr_menu_script with $prompt // $keys_allowed // $invalid_msg // $no_input_msg // $max_attempts // $timeout //");
-
-//--------------------
   $script = new VoipScript('voipscript_run_ivr_menu');
 
   // initialize script variables

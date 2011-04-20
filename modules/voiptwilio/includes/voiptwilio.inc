@@ -340,7 +340,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $timeout = $script->evalString($cmd->getParam('timeout', 5)); 
           $end_key = $script->evalString($cmd->getParam('end_key', '')); 
           $num_digits = $script->evalString($cmd->getParam('num_digits')); 
-          $prompt = $script->evalString($cmd->getParam('prompt')); 
+          $prompt = $cmd->getParam('prompt'); 
           $response .= '<Gather action="' . $action
                             . '" method="' . $method
                             . '" timeout="' . $timeout
@@ -348,15 +348,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
                             . '" numDigits="' . $num_digits
                             . '" >';
           if($prompt) {
-            $as = $script->evalString($cmd->getParam('as'));
-            // determine the language to be used
-            $language = $script->evalString($cmd->getParam('language'));
-            $language = $language ? $language : $script->getLanguage();
-            // determine the voice to be used
-            $voice = $script->evalString($cmd->getParam('voice'));
-            $voice = $voice ? $voice : $script->getVoice();
-            $response .=  _voiptwilio_generate_audio_response($prompt, $voice,
-                            $language, 1, $as);
+            $response .=  _voiptwilio_generate_audio_response2($script, $prompt);
           }
           $response .= '</Gather>';
           // in case of timeout or empty input, set Digits to 'no_input'
@@ -482,19 +474,14 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           }
           $action = url($response_url, array('absolute' => TRUE));
           $method = 'POST';
-          $prompt = $script->evalString($cmd->getParam('prompt', ''));
+          $prompt = $cmd->getParam('prompt', '');
           $timeout = $script->evalString($cmd->getParam('timeout', 5));
           $end_key = $script->evalString($cmd->getParam('end_key', '#'));
           $max_length = $script->evalString($cmd->getParam('max_length', 3600));
 // TODO: implement the "transcribe" feature?"
           $play_beep = $script->evalString($cmd->getParam('play_beep', 'true'));
           if($prompt){
-            // determine the language to be used
-            $language = $script->getLanguage();
-            // determine the voice to be used
-            $voice = $script->getVoice();
-            $response .= _voiptwilio_generate_audio_response($prompt, $voice,
-                         $language, 1);
+            $response .= _voiptwilio_generate_audio_response2($script, $prompt);
           }
           $response .= '<Record action="' . $action
                             . '" method="' . $method
@@ -544,13 +531,11 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           break;
 
         case 'VoipCmdRunIvrMenu':
-          $options['prompt'] = $script->evalString($cmd->getParam('prompt'));
+          $options['prompt'] = $cmd->getParam('prompt');
           $options['keys_allowed'] =
             $script->evalString($cmd->getParam('keys_allowed'));
-          $options['invalid_msg'] =
-            $script->evalString($cmd->getParam('invalid_msg'));
-          $options['no_input_msg'] =
-            $script->evalString($cmd->getParam('no_input_msg'));
+          $options['invalid_msg'] = $cmd->getParam('invalid_msg');
+          $options['no_input_msg'] = $cmd->getParam('no_input_msg');
           $options['max_attempts'] =
             $script->evalString($cmd->getParam('max_attempts'));
           $options['timeout'] = $script->evalString($cmd->getParam('timeout'));
@@ -560,11 +545,9 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
         case 'VoipCmdSay':
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $prompt = $cmd->getParam('prompt');
-          $default_voice = $script->getVoice();
-          $default_language = $script->getLanguage();
           $loop = $script->evalString($cmd->getParam('loop'));
-          $response .= _voiptwilio_generate_audio_response2($script, $prompt, $default_voice,
-                         $default_language, $loop);
+          $response .=
+            _voiptwilio_generate_audio_response2($script, $prompt, $loop);
           break;
 
         case 'VoipCmdSendText';
@@ -855,10 +838,10 @@ function _voiptwilio_generate_audio_response($str, $voice, $language, $loop=1, $
 
 //----------------------------------------
 
-function _voiptwilio_generate_audio_response2($script, $prompt, $default_voice, $default_language, $loop=1) {
+function _voiptwilio_generate_audio_response2($script, $prompt, $loop=1) {
 
 $prompt2 = print_r($prompt, true);
-watchdog('voipscript', "in response2: $prompt2 // $default_voice // $default_language");
+watchdog('voipscript', "in response2: $prompt2 // $loop");
 
   if(is_string($prompt)){
     $list[] = array('text' => $prompt);
@@ -867,8 +850,12 @@ watchdog('voipscript', "in response2: $prompt2 // $default_voice // $default_lan
     $list = $prompt;
   }
 
+  $default_language = $script->getLanguage();
+  $default_voice = $script->getVoice();
+
   foreach($list as $prompt) {
     $text = $script->evalString($prompt['text']);
+watchdog('voipscript', "text processed: $text");
     $voice_tmp = $prompt['voice'] ? $script->evalString($prompt['voice']) : '';
     $voice = $voice_tmp ? $voice_tmp : $default_voice;
 //    $voice = $prompt['voice'] ? $prompt['voice'] : $default_voice;
