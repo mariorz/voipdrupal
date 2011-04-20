@@ -858,6 +858,67 @@ function _voiptwilio_generate_audio_response($str, $voice, $language, $loop=1, $
   return $response;
 }
 
+//----------------------------------------
+
+function _voiptwilio_generate_audio_response2($prompt, $default_voice, $default_language, $loop=1) {
+
+  if(is_string($prompt)){
+    $list[] = array('text' => $prompt);
+  }
+  else {
+    $list = $prompt;
+  }
+
+  foreach($list as $prompt) {
+    $text = $prompt['text'];
+    $voice = $prompt['voice'] ? $prompt['voice'] : $default_voice;
+    $language = $prompt['language'] ? $prompt['language'] : $default_language;
+    $as = $prompt['as'] ? $prompt['as'] : 'digits';
+
+    if($as == 'digits'){
+      //Convert numbers into digits
+      $text = _voiptwilio_parse_numbers($text);
+    }
+  
+    // split the text into audio URLs and text elements
+    $elements =
+      preg_split(VOIPTWILIO_URL_CHECK, $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+  
+    // process each element
+    $url_flag = FALSE;
+    foreach($elements as $element) {
+      $element = trim($element);
+      if($element) {
+        if(_voiptwilio_is_url($element)){
+          $response .= "<Play>$element</Play>";
+          $url_flag = TRUE;
+        } else {
+          if($url_flag) {
+            // remove punctuation associated with the previous url element
+            // i.e. the '!' in $text = 'Hello $audio_name!"
+            $element = ltrim($element,'?!.;,:');
+            $url_flag = FALSE;
+          }
+          if($element) {
+            $response .= "<Say voice='$voice' language='$language'>$element</Say>";
+          }
+        }
+      }
+    }
+  }
+  
+  // process the $loop parameter
+  $counter = $loop - 1;
+  while($counter > 0){
+    $response .= $response;
+    $counter--;
+  }
+
+  return $response;
+}
+
+//---------------------------------------
+
 /**
  * Check if the given string is a url
  */
