@@ -348,7 +348,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
                             . '" numDigits="' . $num_digits
                             . '" >';
           if($prompt) {
-            $response .=  _voiptwilio_generate_audio_response2($script, $prompt);
+            $response .=  _voiptwilio_generate_audio_response($script, $prompt);
           }
           $response .= '</Gather>';
           // in case of timeout or empty input, set Digits to 'no_input'
@@ -481,7 +481,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
 // TODO: implement the "transcribe" feature?"
           $play_beep = $script->evalString($cmd->getParam('play_beep', 'true'));
           if($prompt){
-            $response .= _voiptwilio_generate_audio_response2($script, $prompt);
+            $response .= _voiptwilio_generate_audio_response($script, $prompt);
           }
           $response .= '<Record action="' . $action
                             . '" method="' . $method
@@ -547,7 +547,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $prompt = $cmd->getParam('prompt');
           $loop = $script->evalString($cmd->getParam('loop'));
           $response .=
-            _voiptwilio_generate_audio_response2($script, $prompt, $loop);
+            _voiptwilio_generate_audio_response($script, $prompt, $loop);
           break;
 
         case 'VoipCmdSendText';
@@ -797,48 +797,6 @@ function _voiptwilio_process_sms_response($call, $request){
 define(VOIPTWILIO_URL_CHECK, '#(https?://\S+(?<![,.;?\:\!]))#');
 
 /**
- * Generate a combination of Say and Play TwiML based on the given string
- */
-function _voiptwilio_generate_audio_response($str, $voice, $language, $loop=1, $as='') {
-  
-  if($as=='digits'){
-    //Convert numbers into digits
-    $str = _voiptwilio_parse_numbers($str);
-  }
-  
-  $list = preg_split(VOIPTWILIO_URL_CHECK, $str, -1, PREG_SPLIT_DELIM_CAPTURE);
-  $url_flag = FALSE;
-  foreach($list as $element) {
-    $element = trim($element);
-    if($element) {
-      if(_voiptwilio_is_url($element)){
-        $response .= "<Play>$element</Play>";
-        $url_flag = TRUE;
-      } else {
-        if($url_flag) {
-          // remove punctuation associated with the previous url element
-          // i.e. the '!' in $str = 'Hello $audio_name!"
-          $element = ltrim($element,'?!.;,:');
-          $url_flag = FALSE;
-        }
-        if($element) {
-          $response .= "<Say voice='$voice' language='$language'>$element</Say>";
-        }
-      }
-    }
-  }
-  // process the $loop
-  $counter = $loop - 1;
-  while($counter > 0){
-    $response .= $response;
-    $counter--;
-  }
-  return $response;
-}
-
-//----------------------------------------
-
-/*
  * Generate a prompt to be played to the user
  *
  * @param $script
@@ -857,18 +815,12 @@ function _voiptwilio_generate_audio_response($str, $voice, $language, $loop=1, $
  * @return
  *   The prompt as a TwilioML sequence to be sent to Twilio
  */
-function _voiptwilio_generate_audio_response2($script, $prompt, $loop=1) {
-
-$prompt2 = print_r($prompt, true);
-watchdog('voipscript', "in response2: $prompt2 // $loop");
+function _voiptwilio_generate_audio_response($script, $prompt, $loop=1) {
 
   if(is_string($prompt) && (substr($prompt, 0, 1) == '^')){
     $prompt = $script->evalString($prompt);
   }
   
-$prompt2 = print_r($prompt, true);
-watchdog('voipscript', "new prompt: $prompt2");
-
   if(is_string($prompt)){
     $prompt_list[] = new VoipPrompt($prompt);
   }
@@ -881,13 +833,12 @@ watchdog('voipscript', "new prompt: $prompt2");
 
   foreach($prompt_list as $p) {
     $text = $script->evalString($p->getText());
-watchdog('voipscript', "text processed: " . print_r($text, true));
     $voice_tmp = $p->getVoice() ? $script->evalString($p->getVoice()) : '';
     $voice = $voice_tmp ? $voice_tmp : $default_voice;
     $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
     $language = $language_tmp ? $language_tmp : $default_language;
     $as_tmp = $p->getAs() ? $script->evalString($p->getAs()) : '';
-    $as = $as_tmp ? $as_tmp : 'digits';
+    $as = $as_tmp ? $as_tmp : 'number';
 
     if($as == 'digits'){
       //Convert numbers into digits
@@ -931,7 +882,6 @@ watchdog('voipscript', "text processed: " . print_r($text, true));
   return $response;
 }
 
-//---------------------------------------
 
 /**
  * Check if the given string is a url

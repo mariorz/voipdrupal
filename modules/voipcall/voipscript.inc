@@ -914,12 +914,11 @@ class VoipPrompt {
 
   /*
    * @variable $as
-   *   String that determines how numbers should be pronounced by the 'say'
-   *   command. Supported values include 'number' (to read '12' as 'twelve') or
-   *   'digits' (to read '12' as 'one two'). By default, numbers should be read
-   *   as 'number'
+   *   String that determines how numbers should be pronounced. Supported
+   *   values include 'number' (to read '12' as 'twelve') or 'digits' (to read
+   *   '12' as 'one two'). By default, numbers should be read as 'number'
    */
-  private $as; // the way in which prompt numbers should be pronounced
+  private $as;
 
   function __construct($text, $voice=NULL, $language=NULL, $as=NULL) {
     $this->text = $text;
