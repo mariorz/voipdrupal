@@ -959,12 +959,11 @@ function voipscript_get_run_ivr_menu_script($options) {
 
   // initialize script variables
 
-  $script->addSet('_menu_options', $options['prompt']);
+  $script->addSet('_menu_options', serialize($options['prompt']));
   $script->addSet('_keys_allowed', $options['keys_allowed']);
   $script->addSet('_counter', $options['max_attempts']);
   $script->addSet('_invalid_msg', serialize($options['invalid_msg']));
-$script->addSet('_invalid_msg', serialize($options['invalid_msg']));
-  $script->addSet('_no_input_msg', $options['no_input_msg']);
+  $script->addSet('_no_input_msg', serialize($options['no_input_msg']));
   $script->addSet('_timeout', $options['timeout']);
   
   // run the script
@@ -972,7 +971,7 @@ $script->addSet('_invalid_msg', serialize($options['invalid_msg']));
   $script->addLabel('play_menu_options');
   $script->addSet('_counter', '^%_counter - 1');
   $script->addGotoIf('go_back', '^%_counter < 0');
-  $script->addGetInput('%_menu_options', 1, '', '%_timeout');
+  $script->addGetInput('^unserialize(%_menu_options)', 1, '', '%_timeout');
   $script->addGotoIf('no_input_received', "^%input_digits == ''");
   $script->addGotoIf('valid_option',
 // TODO: ideally, the following line should be as below
@@ -986,7 +985,7 @@ $script->addSet('_invalid_msg', serialize($options['invalid_msg']));
 
   $script->addLabel('no_input_received');
   $script->addSet('ivr_option_selected', '');
-  $script->addSay('%_no_input_msg');
+  $script->addSay('^unserialize(%_no_input_msg)');
   $script->addGoto('play_menu_options');
   
   $script->addLabel('valid_option');

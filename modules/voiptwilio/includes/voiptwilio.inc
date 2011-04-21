@@ -838,10 +838,36 @@ function _voiptwilio_generate_audio_response($str, $voice, $language, $loop=1, $
 
 //----------------------------------------
 
+/*
+ * Generate a prompt to be played to the user
+ *
+ * @param $script
+ *   The VoipScript instance being executed
+ *
+ * @param $prompt
+ *   Mixed. Can be either of 3 things:
+ *   - an executable string to be processed into a prompt string or
+ *     VoipPrompt array
+ *   - a prompt string to played to the user
+ *   - an array of VoipPrompt instances to be processed
+ *
+ * @param $loop
+ *   Integer with the number of times to repeat the prompt
+ *
+ * @return
+ *   The prompt as a TwilioML sequence to be sent to Twilio
+ */
 function _voiptwilio_generate_audio_response2($script, $prompt, $loop=1) {
 
 $prompt2 = print_r($prompt, true);
 watchdog('voipscript', "in response2: $prompt2 // $loop");
+
+  if(is_string($prompt) && (substr($prompt, 0, 1) == '^')){
+    $prompt = $script->evalString($prompt);
+  }
+  
+$prompt2 = print_r($prompt, true);
+watchdog('voipscript', "new prompt: $prompt2");
 
   if(is_string($prompt)){
     $prompt_list[] = new VoipPrompt($prompt);
@@ -855,7 +881,7 @@ watchdog('voipscript', "in response2: $prompt2 // $loop");
 
   foreach($prompt_list as $p) {
     $text = $script->evalString($p->getText());
-watchdog('voipscript', "text processed: $text");
+watchdog('voipscript', "text processed: " . print_r($text, true));
     $voice_tmp = $p->getVoice() ? $script->evalString($p->getVoice()) : '';
     $voice = $voice_tmp ? $voice_tmp : $default_voice;
     $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
