@@ -479,7 +479,8 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $end_key = $script->evalString($cmd->getParam('end_key', '#'));
           $max_length = $script->evalString($cmd->getParam('max_length', 3600));
 // TODO: implement the "transcribe" feature?"
-          $play_beep = $script->evalString($cmd->getParam('play_beep', 'true'));
+          $play_beep = $script->evalString($cmd->getParam('play_beep'));
+          $play_beep = $play_beep ? 'true' : 'false';
           if($prompt){
             $response .= _voiptwilio_generate_audio_response($script, $prompt);
           }

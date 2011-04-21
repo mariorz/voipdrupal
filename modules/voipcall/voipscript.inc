@@ -578,6 +578,10 @@ class VoipScript {
    *   The format in which to record. By default, servers should support at
    *   least the 'mp3' format
    *
+   * @param $play_beep
+   *   Boolean indicating whether or not to play a beep before the recording begins
+   *   It's set to TRUE by default.
+   *
    * @return
    *   The execution of the 'record' command sets the following script
    *   variables: 
@@ -585,12 +589,13 @@ class VoipScript {
    *   - recording_duration, with the duration in seconds of the recording
    *   - recording_digits, the key (if any) pressed to end the recording
    */
-  function addRecord($prompt='', $timeout=5, $end_key='#', $max_length=3600, $format='mp3') {
+  function addRecord($prompt='', $timeout=5, $end_key='#', $max_length=3600, $format='mp3', $play_beep=TRUE) {
     $params['prompt'] = $prompt;
     $params['timeout'] = $timeout;
     $params['end_key'] = $end_key;
     $params['max_length'] = $max_length;
     $params['format'] = $format;
+    $params['play_beep'] = $play_beep;
     $this->commands[] = new VoipCommand('VoipCmdRecord', $params);
   }
 
