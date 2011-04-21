@@ -555,7 +555,8 @@ class VoipScript {
    * Adds a 'record' command to the script.
    *
    * When executed, the 'record' command records audio input from the phone.
-   * The system stops recording whenever there is a timeout, the user presses    * the predefined 'end' key, or the maximum length of the recording is
+   * The system stops recording whenever there is a timeout, the user presses
+   * the predefined 'end' key, or the maximum length of the recording is
    * reached.
    *
    * @param $prompt 
@@ -622,36 +623,15 @@ class VoipScript {
    *   String combining text to be converted to speech and audio URLs to be
    *   played.
    *
-   * @param $as
-   *   String that determines how numbers should be pronounced by the 'say'
-   *   command. Supported values include 'number' (to read '12' as 'twelve') or
-   *   'digits' (to read '12' as 'one two'). By default, numbers should be read
-   *   as 'number'
-   *
-   * @param $voice
-   *   String with the type of voice to be used.  If NULL, use the script's
-   *   current voice as defined by the 'voipscript_voice' script variable. In
-   *   case that variable is not set, use the default 'voice' setting defined
-   *   by the voip server.
-   *
-   * @param $language.
-   *   String with the language entonation associated with the voice. If NULL,
-   *   use the script's current language as defined by the 
-   *   'voipscript_language' script variable. If that variable is not set,
-   *   use the default 'language' setting defined by the voip server.
-   *
    * @param $loop
    *   Integer with the number of times that the prompt should be repeated
    *
    * @return
    *   The execution of the 'say' command does not return anything.
    */
-  function addSay($prompt, $as='', $voice=NULL, $language=NULL, $loop=1) {
+  function addSay($prompt, $loop=1) {
     $params['prompt'] = $prompt;
     $params['loop'] = $loop;
-    $params['as'] = $as;
-    $params['voice'] = $voice;
-    $params['language'] = $language;
     $this->commands[] = new VoipCommand('VoipCmdSay', $params);
   }
 
@@ -982,7 +962,8 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addSet('_menu_options', $options['prompt']);
   $script->addSet('_keys_allowed', $options['keys_allowed']);
   $script->addSet('_counter', $options['max_attempts']);
-  $script->addSet('_invalid_msg', $options['invalid_msg']);
+  $script->addSet('_invalid_msg', serialize($options['invalid_msg']));
+$script->addSet('_invalid_msg', serialize($options['invalid_msg']));
   $script->addSet('_no_input_msg', $options['no_input_msg']);
   $script->addSet('_timeout', $options['timeout']);
   
@@ -1014,7 +995,7 @@ function voipscript_get_run_ivr_menu_script($options) {
   
   $script->addLabel('invalid_option');
   $script->addSet('ivr_option_selected', '-1');
-  $script->addSay('%_invalid_msg');
+  $script->addSay("^unserialize(%_invalid_msg)");
   $script->addGoto('play_menu_options');
   
   $script->addLabel('go_back');
