@@ -553,12 +553,14 @@ class VoipCall {
         $node->field_voipcall_script[0]['value'] = serialize($default_script);
       }
   
+/** TODO: Awaiting SMS integration
       // initialize text script with the default inbound one
       if(!isset($details->field_voipcall_text_script[0]['value'])) {
         $script_name = voipcall_get_default_inbound_text_script_name();
         $default_script = VoipScript::loadScript($script_name);
         $node->field_voipcall_text_script[0]['value'] = serialize($default_script);
       }
+************/
   
       // initialize 'Hangup Reason' field
       if(!isset($details->field_voipcall_hangup_reason[0]['value'])) {

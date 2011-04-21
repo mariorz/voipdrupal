@@ -87,6 +87,7 @@ function voipcall_admin_form() {
     '#default_value' => variable_get('voipcall_outbound_call_script_name', 'voipcall_default_outbound_call_script'),
   );
 
+/** TODO: Commented out until SMS is better integrated into VoIP Drupal
   $form['voipcall_inbound_text_script_name'] = array(
     '#type' => 'select',
     '#title' => t('Inbound text script name'),
@@ -94,6 +95,7 @@ function voipcall_admin_form() {
     '#options' => VoipScript::getScriptNames(),
     '#default_value' => variable_get('voipcall_inbound_text_script_name', 'voipcall_default_inbound_text_script'),
   );
+****/
 
   $form['submit'] = array(
     '#type' => 'submit', 
@@ -120,11 +122,15 @@ function voipcall_admin_form_validate($form, &$form_state) {
   if(!$script){
     form_set_error('', t('Invalid outbound call script name: @script_name.', array('@script_name' => $script_name)));
   }
+
+/** TODO: Awaiting SMS integration
   $script_name = $values['voipcall_inbound_text_script_name'];
   $script = VoipScript::loadScript($script_name);
   if(!$script){
     form_set_error('', t('Invalid inbound text script name: @script_name.', array('@script_name' => $script_name)));
   }
+*******************/
+
 }
 
 
@@ -138,7 +144,10 @@ function voipcall_admin_form_submit($form, &$form_state) {
   variable_set('voipcall_cid_number', $form_state['values']['voipcall_cid_number']);
   variable_set('voipcall_inbound_call_script_name', $form_state['values']['voipcall_inbound_call_script_name']);
   variable_set('voipcall_outbound_call_script_name', $form_state['values']['voipcall_outbound_call_script_name']);
+
+/** TODO: Awaiting SMS integration
   variable_set('voipcall_inbound_text_script_name', $form_state['values']['voipcall_inbound_text_script_name']);
+******************/
 
   drupal_set_message(t('The default call settings have been saved.'));
 
@@ -169,10 +178,12 @@ function voipcall_get_default_outbound_call_script_name() {
 /**
  * Return the name of the default script to be used with incoming text messages
  */
+/** TODO: Awaiting SMS integration
 function voipcall_get_default_inbound_text_script_name() {
   $script_name = variable_get('voipcall_inbound_text_script_name', 'voipcall_default_inbound_text_script');
   return $script_name;
 }
+**************************/
 
 /**
  * Implementation of hook_voipscript_get_script_names()
@@ -180,7 +191,11 @@ function voipcall_get_default_inbound_text_script_name() {
 function voipcall_voipscript_get_script_names() {
   $script_names[] = 'voipcall_default_inbound_call_script';
   $script_names[] = 'voipcall_default_outbound_call_script';
+
+/** TODO: Awaiting SMS integration
   $script_names[] = 'voipcall_default_inbound_text_script';
+**************************/
+
   return $script_names;
 }
 
@@ -205,11 +220,13 @@ function voipcall_voipscript_load_script($script_name, $options=NULL) {
       $script->addSay(t("Bye bye."));
       $script->addHangup();
       break;
+/** TODO: Awaiting SMS integration
     case 'voipcall_default_inbound_text_script':
       $script = new VoipScript('voipcall_default_inbound_text_script');
       $script->addSendText(t("This is a TEXT response from the VoIP Drupal platform!"));
       $script->addHangup();
       break; 
+**************************/
     case 'voipscript_run_ivr_menu':
       $script = voipscript_get_run_ivr_menu_script($options);
       break;
