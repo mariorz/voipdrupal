@@ -72,12 +72,19 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
   } 
   if($script_name == 'voipscript_say_demo') {
     $script = new VoipScript('voipscript_say_demo');
-    $script->addSay(t('Reading string as number: 12345'), '', 'man');
-    $script->addSay(t('Reading string as digits: 12345'), 'digits', 'woman');
+    $p1 = new VoipPrompt(t('Reading string as number: 12345'), 'man','us_en');
+    $say = array($p1);
+    $script->addSay($say);
+    $p2 = new VoipPrompt(t('Reading string as digits: 12345'), 'woman', 'us_en', 'digits');
+    $say = array($p2);
+    $script->addSay($say);
     //Date should be only used with Tropo
     /*
+    
     $script->addSay(t('Reading string as date.'));
-    $script->addSay('1.1.2011', 'date');
+    $p3 = new VoipPrompt('1.1.2011', NULL, NULL, 'date');
+    $say = array($p3);
+    $script->addSay($say);
     */
     $script->addHangup();
   }
@@ -97,7 +104,7 @@ function _voipscriptsamples_get_dial_test_script() {
   $timeout = 5;
   $end_key = '';
   $num_digits = 10;
-  $script->addGetInput($prompt, $timeout, $end_key, $num_digits);
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
 
   $script->addGotoIf('no input received', "^%input_digits == ''");
 
@@ -110,7 +117,7 @@ function _voipscriptsamples_get_dial_test_script() {
   $timeout = 5;
   $end_key = '';
   $num_digits = 1;
-  $script->addGetInput($prompt, $timeout, $end_key, $num_digits);
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
 
   $script->addGotoIf('dial', "^%input_digits == '1'");
 
@@ -150,7 +157,7 @@ function _voipscriptsamples_get_join_conference_script() {
   $timeout = 5;
   $end_key = '';
   $num_digits = 3;
-  $script->addGetInput($prompt, $timeout, $end_key, $num_digits);
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
 
   $script->addGotoIf('no input received', "^%input_digits == ''");
 
@@ -163,7 +170,7 @@ function _voipscriptsamples_get_join_conference_script() {
   $timeout = 5;
   $end_key = '';
   $num_digits = 1;
-  $script->addGetInput($prompt, $timeout, $end_key, $num_digits);
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
 
   $script->addGotoIf('join', "^%input_digits == '1'");
 
@@ -216,7 +223,7 @@ function _voipscriptsamples_get_record_script() {
   $timeout = 5;
   $end_key = '';
   $num_digits = 1;
-  $script->addGetInput($prompt, $timeout, $end_key, $num_digits);
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
 
   $script->addGotoIf('accept recording', "^%input_digits == '1'");
 
@@ -268,7 +275,7 @@ function _voipscriptsamples_get_send_sms() {
   $timeout = 5;
   $end_key = '';
   $num_digits = 10;
-  $script->addGetInput($prompt, $timeout, $end_key, $num_digits);
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
 
   $script->addGotoIf('no input received', "^%input_digits == ''");
 
@@ -281,7 +288,7 @@ function _voipscriptsamples_get_send_sms() {
   $timeout = 5;
   $end_key = '';
   $num_digits = 1;
-  $script->addGetInput($prompt, $timeout, $end_key, $num_digits);
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
 
   $script->addGotoIf('accept number', "^%input_digits == '1'");
 

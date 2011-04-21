@@ -20,7 +20,7 @@ function _voipscriptsamples_get_weather_report() {
   $timeout = 5;
   $end_key = '';
   $num_digits = 5;
-  $script->addGetInput($prompt, $timeout, $end_key, $num_digits);
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
 
   $script->addSet('zip_code', '%input_digits');
 
@@ -44,7 +44,7 @@ function _voipscriptsamples_get_weather_report() {
   $timeout = 5;
   $end_key = '';
   $num_digits = 1;
-  $script->addGetInput($prompt, $timeout, $end_key, $num_digits);
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
 
   // process options
   $script->addLabel('process_options');
