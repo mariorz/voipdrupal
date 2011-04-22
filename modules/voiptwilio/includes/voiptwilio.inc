@@ -804,9 +804,9 @@ define(VOIPTWILIO_URL_CHECK, '#(https?://\S+(?<![,.;?\:\!]))#');
  *   The VoipScript instance being executed
  *
  * @param $prompt
- *   Mixed. Can be either of 3 things:
- *   - an executable string to be processed into a prompt string or
- *     VoipPrompt array
+ *   Mixed. Can be any of the following
+ *   - an executable string to be processed into a prompt string, a VoipPrompt
+ *     instance, or an array of VoipPrompt instances
  *   - a prompt string to played to the user
  *   - an array of VoipPrompt instances to be processed
  *
@@ -824,6 +824,9 @@ function _voiptwilio_generate_audio_response($script, $prompt, $loop=1) {
   
   if(is_string($prompt)){
     $prompt_list[] = new VoipPrompt($prompt);
+  }
+  else if (is_object($prompt)){
+    $prompt_list[] = $prompt;
   }
   else {
     $prompt_list = $prompt;
