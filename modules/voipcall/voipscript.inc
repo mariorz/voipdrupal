@@ -530,10 +530,28 @@ class VoipScript {
    *   - an array of VoipPrompt instances to be processed
    *
    *
-   * @param keys_allowed
-   *   String with the input options with no space in between them ("13#").
-   *   Default is all keys from the telephone keypad: '0123456789#*'
-   *
+   * @param $input_options
+   *   Array whose associating keys pressed with a respective script label.
+   *   The indexes of the array are the keys allowed for the IVR. The contents
+   *   are the script labels associated with each of those keys.  For instance,
+   *   $options[1] = 'story_playback' would associate the 1 with the
+   *   'story_playback' label of the script.
+   *   By default, $input_options is set to the following:
+   *     $input_options = Array (
+   *       0 => 'option_0', 
+   *       1 => 'option_1', 
+   *       2 => 'option_2', 
+   *       3 => 'option_3', 
+   *       4 => 'option_4', 
+   *       5 => 'option_5', 
+   *       '*' => 'option_star', 
+   *       '#' => 'option_hash', 
+   *       't' => 'no_input_received', // used to report timeout situations 
+   *       'i' => 'invalid_option'
+   *     ) 
+   *   If the option 't' is not provided, it will be set to 'no_input_received'
+   *   by default. Similarly, by default 'i' will be set to 'invalid_option'.
+   *     
    * @param input $invalid_msg
    *   Mixed. The message to be played in case an invalid option is
    *   selected. If empty (''), the default message will be used: 'Invalid
@@ -554,16 +572,31 @@ class VoipScript {
    *   pressed. The default is 5
    *
    * @output
-   *  Set the %ivr_option_selected script variable with the option selected.
-   *  Will be set to '' (empty string) in case of timeout.  Will be set to -1 in
-   *  case an invalid option is selected.
+   *   Set the %ivr_option_selected script variable with the label associated
+   *   with the option selected.
    */
 
-  function addRunIvrMenu($prompt='', $keys_allowed='01234567890#*', $invalid_msg='', $no_input_msg='', $max_attempts=3, $timeout=5) {
-    $default_options = t('Press any key from the telephone keypad.');
-    $prompt = $prompt ? $prompt : $default_options;
+  function addRunIvrMenu($prompt='', $input_options=NULL, $invalid_msg='', $no_input_msg='', $max_attempts=3, $timeout=5) {
+    $default_prompt = t('Press any key from the telephone keypad.');
+    $prompt = $prompt ? $prompt : $default_prompt;
     $params['prompt'] = $prompt;
-    $params['keys_allowed'] = $keys_allowed;
+    $default_input_options = Array (
+      0 => 'option_0', 
+      1 => 'option_1', 
+      2 => 'option_2', 
+      3 => 'option_3', 
+      4 => 'option_4', 
+      5 => 'option_5', 
+      '*' => 'option_star', 
+      '#' => 'option_hash', 
+      't' => 'no_input_received', // used to report timeout situations 
+      'i' => 'invalid_option'
+    );
+    $input_options = $input_options ? $input_options : $default_input_options;
+    $input_options['t'] = $input_options['t']
+                        ? $input_options['t'] : 'no_input_received';
+    $input_options['i'] = $input_options['i']
+                        ? $input_options['i'] : 'invalid_option';
     $msg_tmp = t('Invalid option selected.');
     $invalid_msg = $invalid_msg ? $invalid_msg : $msg_tmp;
     $params['invalid_msg'] = $invalid_msg;
@@ -1012,8 +1045,19 @@ function voipscript_get_run_ivr_menu_script($options) {
 
   // initialize script variables
 
+// function addRunIvrMenu($prompt='', $input_options=NULL, $invalid_msg='', $no_input_msg='', $max_attempts=3, $timeout=5) {
+
   $script->addSet('_menu_options', serialize($options['prompt']));
-  $script->addSet('_keys_allowed', $options['keys_allowed']);
+
+//---------------
+  $input_options = $options['input_options'];
+  $script->addSet('_input_options', serialize($input_options));
+
+  $keys_allowed = implode(array_keys($input_options));
+
+//--------------
+  $script->addSet('_keys_allowed', $keys_allowed);
+//  $script->addSet('_keys_allowed', $options['keys_allowed']);
   $script->addSet('_counter', $options['max_attempts']);
   $script->addSet('_invalid_msg', serialize($options['invalid_msg']));
   $script->addSet('_no_input_msg', serialize($options['no_input_msg']));
@@ -1037,21 +1081,28 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addGoto('invalid_option');
 
   $script->addLabel('no_input_received');
-  $script->addSet('ivr_option_selected', '');
+//  $script->addSet('ivr_option_selected', '');
+  $script->addSet('ivr_option_selected', 
+              "^_voipscript_get_element('t', unserialize(%_input_options))");
   $script->addSay('^unserialize(%_no_input_msg)');
   $script->addGoto('play_menu_options');
   
   $script->addLabel('valid_option');
-  $script->addSet('ivr_option_selected', '%input_digits');
+//  $script->addSet('ivr_option_selected', '%input_digits');
+  $script->addSet('ivr_option_selected',
+      "^_voipscript_get_element(%input_digits, unserialize(%_input_options))");
   $script->addGoto('go_back');
   
   $script->addLabel('invalid_option');
-  $script->addSet('ivr_option_selected', '-1');
+//  $script->addSet('ivr_option_selected', '-1');
+  $script->addSet('ivr_option_selected',
+              "^_voipscript_get_element('i', unserialize(%_input_options))");
   $script->addSay("^unserialize(%_invalid_msg)");
   $script->addGoto('play_menu_options');
   
   $script->addLabel('go_back');
   $script->addUnset('_menu_options');
+  $script->addUnset('_input_options');
   $script->addUnset('_keys_allowed');
   $script->addUnset('_counter');
   $script->addUnset('_invalid_msg');
@@ -1124,3 +1175,7 @@ function _voipscript_replace_variable($var_name, $vars, $eval) {
   }
 }
 
+
+function _voipscript_get_element($index, $array){
+  return $array[$index];
+}
