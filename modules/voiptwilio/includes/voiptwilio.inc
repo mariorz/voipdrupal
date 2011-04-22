@@ -539,8 +539,8 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
 
         case 'VoipCmdRunIvrMenu':
           $options['prompt'] = $cmd->getParam('prompt');
-          $options['keys_allowed'] =
-            $script->evalString($cmd->getParam('keys_allowed'));
+          $options['input_options'] =
+            $script->evalString($cmd->getParam('input_options'));
           $options['invalid_msg'] = $cmd->getParam('invalid_msg');
           $options['no_input_msg'] = $cmd->getParam('no_input_msg');
           $options['max_attempts'] =
