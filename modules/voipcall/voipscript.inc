@@ -843,9 +843,6 @@ class VoipScript {
    * Run the specified IVR menu
    */
   function runIvrMenu($options) {
-
-watchdog('voipscript', 'runIvrMenu: ' . print_r($options, true));
-
     // execute the predefined IVR script menu
     $script_name = 'voipscript_run_ivr_menu';
     $this->runGosub($script_name, $options);
@@ -1045,8 +1042,6 @@ class VoipPrompt {
  */
 function voipscript_get_run_ivr_menu_script($options) {
 
-watchdog('voipscript', 'ivr_script options: ' . print_r($options, true));
-
   $script = new VoipScript('voipscript_run_ivr_menu');
 
   // initialize script variables
@@ -1055,11 +1050,9 @@ watchdog('voipscript', 'ivr_script options: ' . print_r($options, true));
 
   $input_options = $options['input_options'];
   $script->addSet('_input_options', serialize($input_options));
-$script->addLog('^print_r(unserialize(%_input_options), true)', '_input_options');
 
   $keys_allowed = implode(array_keys($input_options));
   $script->addSet('_keys_allowed', $keys_allowed);
-$script->addLog('%_keys_allowed', '_keys_allowed');
 
   $script->addSet('_counter', $options['max_attempts']);
   $script->addSet('_invalid_msg', serialize($options['invalid_msg']));
@@ -1072,7 +1065,6 @@ $script->addLog('%_keys_allowed', '_keys_allowed');
   $script->addSet('_counter', '^%_counter - 1');
   $script->addGotoIf('go_back', '^%_counter < 0');
   $script->addGetInput('^unserialize(%_menu_options)', 1, '', '%_timeout');
-$script->addLog('%input_digits', 'input_digits');
   $script->addGotoIf('no_input_received', "^%input_digits == ''");
   $script->addGotoIf('valid_option',
 /**
