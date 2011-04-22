@@ -504,6 +504,15 @@ class VoipScript {
   }
 
   /**
+   * Adds a log command to the script.
+   */
+  function addLog($input, $name=NULL) {
+    $params['input'] = $input;
+    $params['name'] = $name;
+    $this->commands[] = new VoipCommand('VoipCmdLog', $params);
+  }
+
+  /**
    * Adds a "run IVR menu" command to the script
    * 
    * When executed, the "run IVR menu" command presents the user with a set of 
@@ -851,7 +860,21 @@ class VoipScript {
   } 
 
   /**
-   * Return to the script that has originally issued the Gosub that started the 
+   * Log the given message
+   */
+  function runLog($input, $name=NULL) {
+    $options = array('@name' => $name, '@input' => $input);
+    if($name) {
+      $msg = "(log) @name :: @input";
+    }
+    else {
+      $msg = "(log) @input";
+    }
+    watchdog('voipscript', $msg, $options);
+  }
+
+  /**
+   * Return to the script that has originally issued the Gosub that started the
    * present script
    */
   function runReturn() {

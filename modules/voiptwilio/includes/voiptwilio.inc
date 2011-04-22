@@ -460,6 +460,12 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           // don't do anything. Labels are just placeholders that mark a position within the script.
           break;
 
+        case 'VoipCmdLog':
+          $input = $script->evalString($cmd->getParam('input', ''));
+          $name = $script->evalString($cmd->getParam('name', NULL));
+          $script->runLog($input, $name);
+          break;
+
         case 'VoipCmdRecord':
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/twilio/callhandler';
