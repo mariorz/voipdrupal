@@ -1,0 +1,30 @@
+VoIP Drupal change log
+----------------------
+
+Version 6.x-1.0-beta2
+---------------------
+
+* Bug fixes of different kinds
+
+* New commands added to VoipScript
+** addBeep()
+** addLog()
+** addRunIvrMenu()
+
+* Changed parameter sequence of addSay()
+
+* Renamed addSendSms() to addSendText() and included new parameters
+
+* Changed parameters for addGetInput(), addRecord() and addSay()
+
+* Got rid of the "NO_INPUT" constant associated with addGetInput()
+
+* Created a new VoipPrompt class that defines how the system should play messages to the user in terms of voice, language and number pronounciation
+
+* added a way for admins to define separate scripts for inbound and outbound calls
+
+
+Version 6.x-1.0-beta1
+---------------------
+
+* First version released on drupal.org
