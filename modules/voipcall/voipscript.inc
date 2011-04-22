@@ -365,8 +365,12 @@ class VoipScript {
    * maximum number of digits expected.
    *
    * @param $prompt 
-   *   String combining text and audio URLs to be played to the user prompting
-   *   him/her to type something.
+   *   Mixed. Can be any of the following
+   *   - an executable string to be processed into a prompt string, a
+   *     VoipPrompt instance, or an array of VoipPrompt instances
+   *   - a prompt string combining text and audio URLs to be played to the user   *     prompting him/her to type something
+   *   - a VoipPrompt instance
+   *   - an array of VoipPrompt instances to be processed
    *
    * @param $timeout
    *   Integer specifying the maximum number of seconds to wait in between
@@ -505,28 +509,38 @@ class VoipScript {
    * When executed, the "run IVR menu" command presents the user with a set of 
    * options and expects for an input to be typed in.
    *
-   * @input $prompt
-   *   String presenting the different menu items available ('For x, press 1.
-   *   For y, press 2...'). If empty (''), the default message will be used:  
-   *   'Press any key from the telephone keypad.'
+   * @param $prompt
+   *   Mixed element presenting the different menu items available ('For x,
+   *   press 1. For y, press 2...'). If empty (''), the default message will
+   *   be used: 'Press any key from the telephone keypad.'
+   *   Can be any of the following
+   *   - an executable string to be processed into a prompt string, a
+   *     VoipPrompt instance, or an array of VoipPrompt instances
+   *   - a prompt string combining text and audio URLs to be played to the user
+   *   - a VoipPrompt instance
+   *   - an array of VoipPrompt instances to be processed
    *
-   * @keys_allowed
+   *
+   * @param keys_allowed
    *   String with the input options with no space in between them ("13#").
    *   Default is all keys from the telephone keypad: '0123456789#*'
    *
-   * @input $invalid_msg
-   *   String with the message to be played in case an invalid option is
+   * @param input $invalid_msg
+   *   Mixed. The message to be played in case an invalid option is
    *   selected. If empty (''), the default message will be used: 'Invalid
-   *   option selected.'
+   *   option selected.' Similar to the $prompt parameter, might be either a
+   *   string, a VoipPrompt instance, or an array of VoipPrompt instances.
    * 
-   * @input %no_input_msg
-   *   String with the message to be played in case no input is received. If
-   *   empty, will use the same message as $invalid_msg
+   * @param %no_input_msg
+   *   Mixed. The message to be played in case no input is received. If
+   *   empty, will use the same message as $invalid_msg. Similar to the $prompt
+   *   parameter, might be either a string, a VoipPrompt instance, or an array
+   *   of VoipPrompt instances.
    *
-   * @input $max_attempts
+   * @param $max_attempts
    *   String with the maximum number of attempts allowed.  Default is 3.
    * 
-   * @input $timeout
+   * @param $timeout
    *   String with the number of seconds to wait for an input digit to be
    *   pressed. The default is 5
    *
@@ -560,8 +574,13 @@ class VoipScript {
    * reached.
    *
    * @param $prompt 
-   *   String combining text and audio URLs to be played to the user prompting
-   *   him/her to start recording.
+   *   Mixed. Can be any of the following
+   *   - an executable string to be processed into a prompt string, a
+   *     VoipPrompt instance, or an array of VoipPrompt instances
+   *   - a prompt string combining text and audio URLs to be played to the user
+   *     prompting him/her to start recording
+   *   - a VoipPrompt instance
+   *   - an array of VoipPrompt instances to be processed
    *
    * @param $timeout
    *   Integer specifying the maximum number of seconds of silence to wait
@@ -627,6 +646,13 @@ class VoipScript {
    * @param $prompt
    *   String combining text to be converted to speech and audio URLs to be
    *   played.
+   *   Mixed. Can be any of the following
+   *   - an executable string to be processed into a prompt string, a
+   *     VoipPrompt instance, or an array of VoipPrompt instances
+   *   - a prompt string combining text to be converted to speech and audio
+   *     URLs to be played to the user
+   *   - a VoipPrompt instance
+   *   - an array of VoipPrompt instances to be processed
    *
    * @param $loop
    *   Integer with the number of times that the prompt should be repeated
