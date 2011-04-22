@@ -20,12 +20,12 @@ function _voipscriptsamples_get_weather_report() {
   $timeout = 5;
   $end_key = '';
   $num_digits = 5;
-  $script->addGetInput($prompt, $timeout, $end_key, $num_digits);
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
 
   $script->addSet('zip_code', '%input_digits');
 
   // If timeout or invalid zip code
-  $script->addGotoIf('invalid_zip', "^%input_digits == '" . VoipScript::NO_INPUT . "'");
+  $script->addGotoIf('invalid_zip', "^%input_digits == ''");
 
   // get the report
   $script->addSet('forecast_result', '^_voipscriptsamples_get_forecast(%zip_code)');
@@ -44,7 +44,7 @@ function _voipscriptsamples_get_weather_report() {
   $timeout = 5;
   $end_key = '';
   $num_digits = 1;
-  $script->addGetInput($prompt, $timeout, $end_key, $num_digits);
+  $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
 
   // process options
   $script->addLabel('process_options');

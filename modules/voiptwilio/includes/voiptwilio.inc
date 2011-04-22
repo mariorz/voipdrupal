@@ -176,7 +176,9 @@ watchdog('voiptwilio', "twilio status: $twilio_call_status, updated call status:
         break;
       case 'process_get_input':
         $script = $call->getScript();
-        $script->setVar('input_digits', $_REQUEST['Digits']);
+        $input = ($_REQUEST['Digits'] == 'no_input')
+                 ? '' :  $_REQUEST['Digits'];
+        $script->setVar('input_digits', $input);
         $call->setScript($script);
         break;
       case 'process_record':
@@ -295,6 +297,11 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $processing = FALSE;
           break;
 
+        case 'VoipCmdBeep';
+           $beep_url = url('voip/sound/beep', array('absolute' => TRUE));
+           $response .= "<Play>$beep_url</Play>";
+        break;
+        
         case 'VoipCmdDial';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/twilio/callhandler';
@@ -333,24 +340,19 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $timeout = $script->evalString($cmd->getParam('timeout', 5)); 
           $end_key = $script->evalString($cmd->getParam('end_key', '')); 
           $num_digits = $script->evalString($cmd->getParam('num_digits')); 
-          $prompt = $script->evalString($cmd->getParam('prompt')); 
+          $prompt = $cmd->getParam('prompt'); 
           $response .= '<Gather action="' . $action
                             . '" method="' . $method
                             . '" timeout="' . $timeout
-                            . '" finishOnKey="' . $end_key;
-          if($num_digits) {
-            $response .= '" numDigits="' . $num_digits;
-          }
-          $response .= '" >';
+                            . '" finishOnKey="' . $end_key
+                            . '" numDigits="' . $num_digits
+                            . '" >';
           if($prompt) {
-            $language= $script->getLanguage();
-            $voice = $script->getVoice();
-            $response .=  _voiptwilio_generate_audio_response($prompt, $voice,
-                            $language, 1);
+            $response .=  _voiptwilio_generate_audio_response($script, $prompt);
           }
           $response .= '</Gather>';
-          // in case of timeout or empty input, set Digits to VoipScript::NO_INPUT
-          $action_timeout = $action . '&amp;Digits=' . VoipScript::NO_INPUT;
+          // in case of timeout or empty input, set Digits to 'no_input'
+          $action_timeout = $action . '&amp;Digits=' . 'no_input';
           $response .= '<Redirect method="GET">'
                          . $action_timeout
                          . '</Redirect>';
@@ -360,7 +362,8 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
 
         case 'VoipCmdGosub':
           $script_name = $script->evalString($cmd->getParam('script_name'));
-          $rc = $script->runGosub($script_name);
+          $options = $script->evalString($cmd->getParam('options'));
+          $rc = $script->runGosub($script_name, $options);
           if($script->isError()){
               $msg = $script->getErrorMessage();
               $params = array();
@@ -457,6 +460,12 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           // don't do anything. Labels are just placeholders that mark a position within the script.
           break;
 
+        case 'VoipCmdLog':
+          $input = $script->evalString($cmd->getParam('input', ''));
+          $name = $script->evalString($cmd->getParam('name', NULL));
+          $script->runLog($input, $name);
+          break;
+
         case 'VoipCmdRecord':
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/twilio/callhandler';
@@ -471,19 +480,15 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           }
           $action = url($response_url, array('absolute' => TRUE));
           $method = 'POST';
-          $prompt = $script->evalString($cmd->getParam('prompt', ''));
+          $prompt = $cmd->getParam('prompt', '');
           $timeout = $script->evalString($cmd->getParam('timeout', 5));
           $end_key = $script->evalString($cmd->getParam('end_key', '#'));
           $max_length = $script->evalString($cmd->getParam('max_length', 3600));
 // TODO: implement the "transcribe" feature?"
-          $play_beep = $script->evalString($cmd->getParam('play_beep', 'true'));
+          $play_beep = $script->evalString($cmd->getParam('play_beep'));
+          $play_beep = $play_beep ? 'true' : 'false';
           if($prompt){
-            // determine the language to be used
-            $language = $script->getLanguage();
-            // determine the voice to be used
-            $voice = $script->getVoice();
-            $response .= _voiptwilio_generate_audio_response($prompt, $voice,
-                         $language, 1);
+            $response .= _voiptwilio_generate_audio_response($script, $prompt);
           }
           $response .= '<Record action="' . $action
                             . '" method="' . $method
@@ -532,21 +537,27 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           }
           break;
 
-        case 'VoipCmdSay':
-          $call->setCallStatus(VoipCall::IN_PROGRESS);
-          $prompt = $script->evalString($cmd->getParam('prompt'));
-          $loop = $script->evalString($cmd->getParam('loop'));
-          // determine the language to be used
-          $language = $script->evalString($cmd->getParam('language'));
-          $language = $language ? $language : $script->getLanguage();
-          // determine the voice to be used
-          $voice = $script->evalString($cmd->getParam('voice'));
-          $voice = $voice ? $voice : $script->getVoice();
-          $response .= _voiptwilio_generate_audio_response($prompt, $voice,
-                         $language, $loop);
+        case 'VoipCmdRunIvrMenu':
+          $options['prompt'] = $cmd->getParam('prompt');
+          $options['keys_allowed'] =
+            $script->evalString($cmd->getParam('keys_allowed'));
+          $options['invalid_msg'] = $cmd->getParam('invalid_msg');
+          $options['no_input_msg'] = $cmd->getParam('no_input_msg');
+          $options['max_attempts'] =
+            $script->evalString($cmd->getParam('max_attempts'));
+          $options['timeout'] = $script->evalString($cmd->getParam('timeout'));
+          $rc = $script->runIvrMenu($options);
           break;
 
-        case 'VoipCmdSendSms';
+        case 'VoipCmdSay':
+          $call->setCallStatus(VoipCall::IN_PROGRESS);
+          $prompt = $cmd->getParam('prompt');
+          $loop = $script->evalString($cmd->getParam('loop'));
+          $response .=
+            _voiptwilio_generate_audio_response($script, $prompt, $loop);
+          break;
+
+        case 'VoipCmdSendText';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/twilio/callhandler';
           $call_nid = $call->getNodeId();
@@ -555,8 +566,9 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $callback_url = $menu_path . '/process_sms_callback/' . $call_nid;
           $callback = url($callback_url, array('absolute' => TRUE));
           $method = 'POST';
-          $number = $script->evalString($cmd->getParam('number'));
+          $to = $script->evalString($cmd->getParam('to'));
           $text = $script->evalString($cmd->getParam('text'));
+          $network = $script->evalString($cmd->getParam('network'));
           // Note: If no caller number provided, Twilio will automatically try
           //       to determine an appropriate value depending on whether the
           //       call is inbound or outbound. However, since that number might
@@ -565,22 +577,36 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $default_cid_number = variable_get('voipcall_cid_number', NULL);
           $caller_id = $script->evalString($cmd->getParam('caller_id',
                                                          $default_cid_number)); 
-          $response .= '<Sms action="' . $action
-                            . '" statusCallback="' . $callback
-                            . '" method="' . $method;
-          if($number){
-            $response .= '" to="' . $number;
-          }
-          if($caller_id){
-            $response .= '" from="' . $caller_id;
-          }
-          $response .= '" >';
-          $response .= $text;
-          $response .= '</Sms>';
-          $rc = TRUE;
-          $processing = FALSE;
-          break;
+          switch(strtolower($network)){
+            default:
+              $params = array('@network' => $network,
+                              '@script_name' => $script->getName(),
+                              '@script' => print_r($script,true));
+              $msg = "Invalid 'network' parameter '@network' for SendText command in script '@script_name': @script";
+              $call->report_error('voiptwilio', $msg, $params);
+              $rc = FALSE;
+              $processing = FALSE;
+              break;
 
+            case 'sms':
+              $response .= '<Sms action="' . $action
+                           . '" statusCallback="' . $callback
+                           . '" method="' . $method;
+              if($to){
+                $response .= '" to="' . $to;
+              }
+              if($caller_id){
+                $response .= '" from="' . $caller_id;
+              }
+              $response .= '" >';
+              $response .= $text;
+              $response .= '</Sms>';
+              $rc = TRUE;
+              $processing = FALSE;
+              break;
+          }
+          break;
+          
         case 'VoipCmdSet';
           $var_name = $script->evalString($cmd->getParam('var_name'));
           $var_value = $script->evalString($cmd->getParam('var_value'));
@@ -738,7 +764,7 @@ function _voiptwilio_process_dial_response($call, $request){
 }
 
 /**
- * Process the response to a 'sms send' script command
+ * Process the response to a 'send text' script command
  */
 function _voiptwilio_process_sms_response($call, $request){
   $call_nid = $call->getNodeId();
@@ -754,60 +780,118 @@ function _voiptwilio_process_sms_response($call, $request){
       $msg = 'SMS sendind failed for call nid: @nid. Make sure your Twilio number is sms-enabled.';
       $params = array('@nid' => $call_nid);
       watchdog('voiptwilio', $msg, $params, WATCHDOG_WARNING);
-      $sms_status = VoipCall::SMS_FAILED;
+      $text_status = VoipCall::TEXT_FAILED;
       break;
     case 'invalid':
       $msg = 'Invalid SMS parameter for call nid: @nid';
       $params = array('@nid' => $call_nid);
       watchdog('voiptwilio', $msg, $params, WATCHDOG_WARNING);
-      $sms_status = VoipCall::SMS_INVALID;
+      $text_status = VoipCall::TEXT_INVALID;
       break;
     case 'sending':
-      $sms_status = VoipCall::SMS_SENDING;
+      $text_status = VoipCall::TEXT_SENDING;
       break;
     case 'sent':
-      $sms_status = VoipCall::SMS_SENT;
+      $text_status = VoipCall::TEXT_SENT;
       break;
   }
-  $call->setSmsStatus($sms_status);
+  $script = $call->getScript();
+  $script->setVar('send_text_status', $text_status);
+  $call->setScript($script);
   return $call;
 }
 
 define(VOIPTWILIO_URL_CHECK, '#(https?://\S+(?<![,.;?\:\!]))#');
 
 /**
- * Generate a combination of Say and Play TwiML based on the given string
+ * Generate a prompt to be played to the user
+ *
+ * @param $script
+ *   The VoipScript instance being executed
+ *
+ * @param $prompt
+ *   Mixed. Can be any of the following
+ *   - an executable string to be processed into a prompt string, a VoipPrompt
+ *     instance, or an array of VoipPrompt instances
+ *   - a prompt string to played to the user
+ *   - an array of VoipPrompt instances to be processed
+ *
+ * @param $loop
+ *   Integer with the number of times to repeat the prompt
+ *
+ * @return
+ *   The prompt as a TwilioML sequence to be sent to Twilio
  */
-function _voiptwilio_generate_audio_response($str, $voice, $language, $loop=1) {
-  $list = preg_split(VOIPTWILIO_URL_CHECK, $str, -1, PREG_SPLIT_DELIM_CAPTURE);
-  $url_flag = FALSE;
-  foreach($list as $element) {
-    $element = trim($element);
-    if($element) {
-      if(_voiptwilio_is_url($element)){
-        $response .= "<Play>$element</Play>";
-        $url_flag = TRUE;
-      } else {
-        if($url_flag) {
-          // remove punctuation associated with the previous url element
-          // i.e. the '!' in $str = 'Hello $audio_name!"
-          $element = ltrim($element,'?!.;,:');
-          $url_flag = FALSE;
-        }
-        if($element) {
-          $response .= "<Say voice='$voice' language='$language'>$element</Say>";
+function _voiptwilio_generate_audio_response($script, $prompt, $loop=1) {
+
+  if(is_string($prompt) && (substr($prompt, 0, 1) == '^')){
+    $prompt = $script->evalString($prompt);
+  }
+  
+  if(is_string($prompt)){
+    $prompt_list[] = new VoipPrompt($prompt);
+  }
+  else if (is_object($prompt)){
+    $prompt_list[] = $prompt;
+  }
+  else {
+    $prompt_list = $prompt;
+  }
+
+  $default_language = $script->getLanguage();
+  $default_voice = $script->getVoice();
+
+  foreach($prompt_list as $p) {
+    $text = $script->evalString($p->getText());
+    $voice_tmp = $p->getVoice() ? $script->evalString($p->getVoice()) : '';
+    $voice = $voice_tmp ? $voice_tmp : $default_voice;
+    $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
+    $language = $language_tmp ? $language_tmp : $default_language;
+    $as_tmp = $p->getAs() ? $script->evalString($p->getAs()) : '';
+    $as = $as_tmp ? $as_tmp : 'number';
+
+    if($as == 'digits'){
+      //Convert numbers into digits
+      $text = _voiptwilio_parse_numbers($text);
+    }
+  
+    // split the text into audio URLs and text elements
+    $elements =
+      preg_split(VOIPTWILIO_URL_CHECK, $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+  
+    // process each element
+    $url_flag = FALSE;
+    foreach($elements as $element) {
+      $element = trim($element);
+      if($element) {
+        if(_voiptwilio_is_url($element)){
+          $response .= "<Play>$element</Play>";
+          $url_flag = TRUE;
+        } else {
+          if($url_flag) {
+            // remove punctuation associated with the previous url element
+            // i.e. the '!' in $text = 'Hello $audio_name!"
+            $element = ltrim($element,'?!.;,:');
+            $url_flag = FALSE;
+          }
+          if($element) {
+            $response .= "<Say voice='$voice' language='$language'>$element</Say>";
+          }
         }
       }
     }
   }
-  // process the $loop
+  
+  // process the $loop parameter
   $counter = $loop - 1;
   while($counter > 0){
     $response .= $response;
     $counter--;
   }
+
   return $response;
 }
+
 
 /**
  * Check if the given string is a url
@@ -817,4 +901,17 @@ function _voiptwilio_is_url($str) {
   //       http://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url , it seems to serve our purposes!
   $rc = preg_match(VOIPTWILIO_URL_CHECK, $str);
   return $rc;
+}
+
+function _voiptwilio_parse_numbers($str){
+//preg_match_all("{(\d+)}", $str, $result, PREG_PATTERN_ORDER);
+//return $result;
+return preg_replace_callback('{(\d+)}', '_voiptwilio_numbers_add_space', $str);
+
+}
+
+function _voiptwilio_numbers_add_space($matches) {
+  $string_array = str_split($matches[0]);
+  $number_with_space = implode(" ",$string_array);
+  return $number_with_space;
 }

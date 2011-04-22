@@ -91,11 +91,6 @@ class VoipScript {
  
 
   /**
-   * Indicator of no keypad input received
-   */
-  const NO_INPUT='no_input';
-
-  /**
    * 'Reject' command options
    */
   const REJECT_INVALID='reject_invalid';
@@ -304,6 +299,13 @@ class VoipScript {
    */
 
   /**
+   * Adds a beep command to the script.
+   */
+  function addBeep() {
+    $this->commands[] = new VoipCommand('VoipCmdBeep');
+  }
+
+  /**
    * Adds a "dial" command to the script.
    *
    * When executed, the 'dial' command connects the current caller to another
@@ -363,8 +365,12 @@ class VoipScript {
    * maximum number of digits expected.
    *
    * @param $prompt 
-   *   String combining text and audio URLs to be played to the user prompting
-   *   him/her to type something.
+   *   Mixed. Can be any of the following
+   *   - an executable string to be processed into a prompt string, a
+   *     VoipPrompt instance, or an array of VoipPrompt instances
+   *   - a prompt string combining text and audio URLs to be played to the user   *     prompting him/her to type something
+   *   - a VoipPrompt instance
+   *   - an array of VoipPrompt instances to be processed
    *
    * @param $timeout
    *   Integer specifying the maximum number of seconds to wait in between
@@ -379,15 +385,13 @@ class VoipScript {
    *
    * @return
    *   The 'get input' command sets the script variable input_digits to the
-   *   input received.  In case nothing is typed, input_digits gets set to
-   *   VoipScript::NO_INPUT
+   *   input received.  In case nothing is typed, input_digits gets set to ''
    */
-// TODO: consider creating a addIvr() command to generate a IVR menu and simplify the way getInput is used... That command should automatically check for valid inputs, repeat the question a number of times, etc.
-  function addGetInput($prompt='', $timeout=5, $end_key='#', $num_digits=NULL) {
+  function addGetInput($prompt='', $num_digits=NULL, $end_key='#', $timeout=5) {
     $params['prompt'] = $prompt;
-    $params['timeout'] = $timeout;
-    $params['end_key'] = $end_key;
     $params['num_digits'] = $num_digits;
+    $params['end_key'] = $end_key;
+    $params['timeout'] = $timeout;
     $this->commands[] = new VoipCommand('VoipCmdGetInput', $params);
   }
 
@@ -401,10 +405,15 @@ class VoipScript {
    * @param $script_name
    *   The name of the script to be loaded
    *
+   * @param $options
+   *   An array with options to be passed to the function that generates the
+   *   required script
+   *
    * @see VoipScript::addReturn()
    */
-  function addGosub($script_name) {
+  function addGosub($script_name, $options=array()) {
     $params['script_name'] = $script_name;
+    $params['options'] = $options;
     $this->commands[] = new VoipCommand('VoipCmdGosub', $params);
   }
 
@@ -495,15 +504,92 @@ class VoipScript {
   }
 
   /**
+   * Adds a log command to the script.
+   */
+  function addLog($input, $name=NULL) {
+    $params['input'] = $input;
+    $params['name'] = $name;
+    $this->commands[] = new VoipCommand('VoipCmdLog', $params);
+  }
+
+  /**
+   * Adds a "run IVR menu" command to the script
+   * 
+   * When executed, the "run IVR menu" command presents the user with a set of 
+   * options and expects for an input to be typed in.
+   *
+   * @param $prompt
+   *   Mixed element presenting the different menu items available ('For x,
+   *   press 1. For y, press 2...'). If empty (''), the default message will
+   *   be used: 'Press any key from the telephone keypad.'
+   *   Can be any of the following
+   *   - an executable string to be processed into a prompt string, a
+   *     VoipPrompt instance, or an array of VoipPrompt instances
+   *   - a prompt string combining text and audio URLs to be played to the user
+   *   - a VoipPrompt instance
+   *   - an array of VoipPrompt instances to be processed
+   *
+   *
+   * @param keys_allowed
+   *   String with the input options with no space in between them ("13#").
+   *   Default is all keys from the telephone keypad: '0123456789#*'
+   *
+   * @param input $invalid_msg
+   *   Mixed. The message to be played in case an invalid option is
+   *   selected. If empty (''), the default message will be used: 'Invalid
+   *   option selected.' Similar to the $prompt parameter, might be either a
+   *   string, a VoipPrompt instance, or an array of VoipPrompt instances.
+   * 
+   * @param %no_input_msg
+   *   Mixed. The message to be played in case no input is received. If
+   *   empty, will use the same message as $invalid_msg. Similar to the $prompt
+   *   parameter, might be either a string, a VoipPrompt instance, or an array
+   *   of VoipPrompt instances.
+   *
+   * @param $max_attempts
+   *   String with the maximum number of attempts allowed.  Default is 3.
+   * 
+   * @param $timeout
+   *   String with the number of seconds to wait for an input digit to be
+   *   pressed. The default is 5
+   *
+   * @output
+   *  Set the %ivr_option_selected script variable with the option selected.
+   *  Will be set to '' (empty string) in case of timeout.  Will be set to -1 in
+   *  case an invalid option is selected.
+   */
+
+  function addRunIvrMenu($prompt='', $keys_allowed='01234567890#*', $invalid_msg='', $no_input_msg='', $max_attempts=3, $timeout=5) {
+    $default_options = t('Press any key from the telephone keypad.');
+    $prompt = $prompt ? $prompt : $default_options;
+    $params['prompt'] = $prompt;
+    $params['keys_allowed'] = $keys_allowed;
+    $msg_tmp = t('Invalid option selected.');
+    $invalid_msg = $invalid_msg ? $invalid_msg : $msg_tmp;
+    $params['invalid_msg'] = $invalid_msg;
+    $no_input_msg = $no_input_msg ? $no_input_msg : $invalid_msg;
+    $params['no_input_msg'] = $no_input_msg;
+    $params['max_attempts'] = $max_attempts;
+    $params['timeout'] = $timeout;
+    $this->commands[] = new VoipCommand('VoipCmdRunIvrMenu', $params);
+  }
+
+  /**
    * Adds a 'record' command to the script.
    *
    * When executed, the 'record' command records audio input from the phone.
-   * The system stops recording whenever there is a timeout, the user presses    * the predefined 'end' key, or the maximum length of the recording is
+   * The system stops recording whenever there is a timeout, the user presses
+   * the predefined 'end' key, or the maximum length of the recording is
    * reached.
    *
    * @param $prompt 
-   *   String combining text and audio URLs to be played to the user prompting
-   *   him/her to start recording.
+   *   Mixed. Can be any of the following
+   *   - an executable string to be processed into a prompt string, a
+   *     VoipPrompt instance, or an array of VoipPrompt instances
+   *   - a prompt string combining text and audio URLs to be played to the user
+   *     prompting him/her to start recording
+   *   - a VoipPrompt instance
+   *   - an array of VoipPrompt instances to be processed
    *
    * @param $timeout
    *   Integer specifying the maximum number of seconds of silence to wait
@@ -520,6 +606,10 @@ class VoipScript {
    *   The format in which to record. By default, servers should support at
    *   least the 'mp3' format
    *
+   * @param $play_beep
+   *   Boolean indicating whether or not to play a beep before the recording begins
+   *   It's set to TRUE by default.
+   *
    * @return
    *   The execution of the 'record' command sets the following script
    *   variables: 
@@ -527,12 +617,13 @@ class VoipScript {
    *   - recording_duration, with the duration in seconds of the recording
    *   - recording_digits, the key (if any) pressed to end the recording
    */
-  function addRecord($prompt='', $timeout=5, $end_key='#', $max_length=3600, $format='mp3') {
+  function addRecord($prompt='', $timeout=5, $end_key='#', $max_length=3600, $format='mp3', $play_beep=TRUE) {
     $params['prompt'] = $prompt;
     $params['timeout'] = $timeout;
     $params['end_key'] = $end_key;
     $params['max_length'] = $max_length;
     $params['format'] = $format;
+    $params['play_beep'] = $play_beep;
     $this->commands[] = new VoipCommand('VoipCmdRecord', $params);
   }
 
@@ -564,67 +655,70 @@ class VoipScript {
    * @param $prompt
    *   String combining text to be converted to speech and audio URLs to be
    *   played.
+   *   Mixed. Can be any of the following
+   *   - an executable string to be processed into a prompt string, a
+   *     VoipPrompt instance, or an array of VoipPrompt instances
+   *   - a prompt string combining text to be converted to speech and audio
+   *     URLs to be played to the user
+   *   - a VoipPrompt instance
+   *   - an array of VoipPrompt instances to be processed
    *
    * @param $loop
    *   Integer with the number of times that the prompt should be repeated
    *
-   * @param $voice
-   *   String with the type of voice to be used.  If NULL, use the script's
-   *   current voice as defined by the 'voipscript_voice' script variable. In
-   *   case that variable is not set, use the default 'voice' setting defined
-   *   by the voip server.
-   *
-   * @param $language.
-   *   String with the language entonation associated with the voice. If NULL,
-   *   use the script's current language as defined by the 
-   *   'voipscript_language' script variable. If that variable is not set,
-   *   use the default 'language' setting defined by the voip server.
-   *
    * @return
    *   The execution of the 'say' command does not return anything.
    */
-  function addSay($prompt, $loop=1, $voice=NULL, $language=NULL) {
+  function addSay($prompt, $loop=1) {
     $params['prompt'] = $prompt;
     $params['loop'] = $loop;
-    $params['voice'] = $voice;
-    $params['language'] = $language;
     $this->commands[] = new VoipCommand('VoipCmdSay', $params);
   }
 
   /** 
-   * Adds a "send sms" command to the script.
+   * Adds a "send text" command to the script.
    * 
-   * When ran, this command sends the given text to the specified phone number. 
-   * The outcome of the command is stored in the 'sms_status' variable.
+   * When ran, this command sends the given text message to the specified phone
+   * number. 
    * 
    * @uses VoipScript::$variables
    *
    * @param $text
    *   String with the text to be sent
    *
-   * @param $number
-   *   String with the SMS destination number. When sending an SMS on an 
-   *   incoming call, 'number' defaults to the caller.  When sending an SMS on
-   *   an outgoing call, 'number' defaults to the called party.
+   * @param $to
+   *   The destination of the text message. For instance, for messages sent via
+   *   the SMS channel, $to contains the SMS number; for AIM messages, it
+   *   contains the AIM username. When sending text as part of an inbound call,
+   *   'to' defaults to the caller.  When sending text on an outbound call, 'to'
+   *   defaults to the called party.
+   *
+   * @param $network
+   *   String with the network to be used. The default the network is 'sms'. 
+   *   Different VoIP servers might support other options such as 'aim', 'msn',
+   *   'jabber', 'yahoo', 'gtalk', etc.
    *
    * @param $caller_id
-   *   String withe caller id to be used.  When sending an SMS on an incoming 
-   *   call, 'caller_id' defaults to the called party.  When sending an SMS
-   *   on an outgoing call, 'caller id' defaults to the calling party.
+   *   String with the caller id to be used. Depending on the network, it can be
+   *   a phone number, a IM username, etc. When sending on an inbound call,
+   *   'caller_id' defaults to the called party.  When sending on an outbound
+   *   call, 'caller id' defaults to the calling party.
    * 
    * @return
-   *   The execution of the 'send sms' command sets the variable sms_status to 
-   *   any of the following values:
-   *   - VoipCall::SMS_FAILED
-   *   - VoipCall::SMS_INVALID
-   *   - VoipCall::SMS_SENDING
-   *   - VoipCall::SMS_SENT
+   *   The execution of the 'send text' command sets the script variable
+   *   'send_text_status' 
+   *   to any of the following values:
+   *   - VoipCall::TEXT_FAILED
+   *   - VoipCall::TEXT_INVALID
+   *   - VoipCall::TEXT_SENDING
+   *   - VoipCall::TEXT_SENT
    */ 
-  function addSendSms($text, $number='', $caller_id=''){
-    $params['number'] = $number;
+  function addSendText($text, $to='', $network='sms', $caller_id=''){
+    $params['to'] = $to;
     $params['text'] = $text;
+    $params['network'] = $network;
     $params['caller_id'] = $caller_id;
-    $this->commands[] = new VoipCommand('VoipCmdSendSms', $params);
+    $this->commands[] = new VoipCommand('VoipCmdSendText', $params);
   }
 
   /**
@@ -657,23 +751,30 @@ class VoipScript {
    */
   function addUnset($var_name) {
     $params['var_name'] = $var_name;
-    $this->commands[] = new VoipCommand('VoipCmdUnset');
+    $this->commands[] = new VoipCommand('VoipCmdUnset', $params);
   }
 
 
   /*
-   * Execution of basic script commands that are not dependent on the voip server
+   * Execution of basic script commands that are not dependent on the voip
+   * server
    */
 
-  function runGosub($script_name) {
+  /**
+   * Execute the specified script and then return to the current script
+   */
+  function runGosub($script_name, $options) {
     $script_state = array('name' => $this->name,
                           'commands' => $this->commands,
                           'index' => $this->index);
     $this->stack[] = $script_state;
-    $rc =  $this->runLoad($script_name);
+    $rc =  $this->runLoad($script_name, $options);
     return $rc;
   }
 
+  /**
+   * Jump script execution to the command associated with the specified label
+   */
   function runGoto($label_name) {
     $rc = TRUE;
     $found = FALSE;
@@ -702,6 +803,15 @@ class VoipScript {
       }
     }
     return $rc;
+  }
+
+  /**
+   * Run the specified IVR menu
+   */
+  function runIvrMenu($options) {
+    // execute the predefined IVR script menu
+    $script_name = 'voipscript_run_ivr_menu';
+    $this->runGosub($script_name, $options);
   }
 
   /**
@@ -749,6 +859,24 @@ class VoipScript {
     return $rc;
   } 
 
+  /**
+   * Log the given message
+   */
+  function runLog($input, $name=NULL) {
+    $options = array('@name' => $name, '@input' => $input);
+    if($name) {
+      $msg = "(log) @name :: @input";
+    }
+    else {
+      $msg = "(log) @input";
+    }
+    watchdog('voipscript', $msg, $options);
+  }
+
+  /**
+   * Return to the script that has originally issued the Gosub that started the
+   * present script
+   */
   function runReturn() {
     $rc = TRUE;
     $script_state = array_pop($this->stack);
@@ -810,8 +938,129 @@ class VoipCommand {
     return $this->params[$param_name]?$this->params[$param_name]:$default;
   }
 }
-    
+   
 
+class VoipPrompt {
+
+  /*
+   * @variable $text 
+   *   String combining text and audio URLs to be played to the user
+   */
+  private $text;
+    
+  /*
+   * @variable $voice
+   *   String with the type of voice to be used for the prompt.  If NULL, use
+   *   the script's current voice as defined by the 'voipscript_voice' script
+   *   variable. In case that variable is not set, use the default 'voice'
+   *   setting defined by the voip server.
+   */
+  private $voice;
+
+  /*
+   * @variable $language.
+   *   String with the language entonation to be used for the prompt. If NULL,
+   *   use the script's current language as defined by the 
+   *   'voipscript_language' script variable. If that variable is not set,
+   *   use the default 'language' setting defined by the voip server.
+   */
+  private $language;
+
+  /*
+   * @variable $as
+   *   String that determines how numbers should be pronounced. Supported
+   *   values include 'number' (to read '12' as 'twelve') or 'digits' (to read
+   *   '12' as 'one two'). By default, numbers should be read as 'number'
+   */
+  private $as;
+
+  function __construct($text, $voice=NULL, $language=NULL, $as=NULL) {
+    $this->text = $text;
+    $this->voice = $voice;
+    $this->language = $language;
+    $this->as = $as;
+  }
+
+  function getText() {
+    return $this->text;
+  }
+
+  function getVoice() {
+    return $this->voice;
+  }
+
+  function getLanguage() {
+    return $this->language;
+  }
+
+  function getAs() {
+    return $this->as;
+  }
+
+}
+    
+/**
+ * Utility functions
+ */
+
+/**
+ * Run an IVR menu based on the parameters provided by the given VoipCmdRunIvrMenu
+ */
+function voipscript_get_run_ivr_menu_script($options) {
+
+  $script = new VoipScript('voipscript_run_ivr_menu');
+
+  // initialize script variables
+
+  $script->addSet('_menu_options', serialize($options['prompt']));
+  $script->addSet('_keys_allowed', $options['keys_allowed']);
+  $script->addSet('_counter', $options['max_attempts']);
+  $script->addSet('_invalid_msg', serialize($options['invalid_msg']));
+  $script->addSet('_no_input_msg', serialize($options['no_input_msg']));
+  $script->addSet('_timeout', $options['timeout']);
+  
+  // run the script
+
+  $script->addLabel('play_menu_options');
+  $script->addSet('_counter', '^%_counter - 1');
+  $script->addGotoIf('go_back', '^%_counter < 0');
+  $script->addGetInput('^unserialize(%_menu_options)', 1, '', '%_timeout');
+  $script->addGotoIf('no_input_received', "^%input_digits == ''");
+  $script->addGotoIf('valid_option',
+// TODO: ideally, the following line should be as below
+//                     "^strpos(' ' . '%_keys_allowed', '%input_digits')");
+// however, since the eval function is not processing '0' correctly,
+// I had to replace the line by the following. Hopefully, we'll be able to solve
+// this little bug soon (2011.04.20)
+// check http://stackoverflow.com/questions/3241070/php-recursive-variable-replacement
+                     "^(%input_digits === '0') ? strpos(' ' . '%_keys_allowed', %input_digits) : strpos(' ' . '%_keys_allowed', \"%input_digits\")");
+  $script->addGoto('invalid_option');
+
+  $script->addLabel('no_input_received');
+  $script->addSet('ivr_option_selected', '');
+  $script->addSay('^unserialize(%_no_input_msg)');
+  $script->addGoto('play_menu_options');
+  
+  $script->addLabel('valid_option');
+  $script->addSet('ivr_option_selected', '%input_digits');
+  $script->addGoto('go_back');
+  
+  $script->addLabel('invalid_option');
+  $script->addSet('ivr_option_selected', '-1');
+  $script->addSay("^unserialize(%_invalid_msg)");
+  $script->addGoto('play_menu_options');
+  
+  $script->addLabel('go_back');
+  $script->addUnset('_menu_options');
+  $script->addUnset('_keys_allowed');
+  $script->addUnset('_counter');
+  $script->addUnset('_invalid_msg');
+  $script->addUnset('_no_input_msg');
+  $script->addUnset('_timeout');
+  $script->addReturn();
+
+  return $script;
+}
 
 /**
  * Internal functions

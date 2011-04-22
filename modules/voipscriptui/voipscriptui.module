@@ -23,7 +23,7 @@ function voipscriptui_voipscript_get_script_names() {
 /**
  * Implementation of hook_voipscript_load_script()
  */
-function voipscriptui_voipscript_load_script($script_name, $params=NULL) {
+function voipscriptui_voipscript_load_script($script_name, $options=NULL) {
   $script = NULL;
   $param = array('type' => 'voipscriptui', 'title' => $script_name, 'status' => 1);
   $script_node = node_load($param);
