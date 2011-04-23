@@ -529,7 +529,6 @@ class VoipScript {
    *   - a VoipPrompt instance
    *   - an array of VoipPrompt instances to be processed
    *
-   *
    * @param $input_options
    *   Array whose associating keys pressed with a respective script label.
    *   The indexes of the array are the keys allowed for the IVR. The contents
@@ -575,7 +574,6 @@ class VoipScript {
    *   Set the %ivr_option_selected script variable with the label associated
    *   with the option selected.
    */
-
   function addRunIvrMenu($prompt='', $input_options=NULL, $invalid_msg='', $no_input_msg='', $max_attempts=3, $timeout=5) {
     $default_prompt = t('Press any key from the telephone keypad.');
     $prompt = $prompt ? $prompt : $default_prompt;
