@@ -27,6 +27,7 @@ function voipscriptsamples_voipscript_get_script_names() {
   $script_names[] = 'voipscript_record';
   $script_names[] = 'voipscript_send_sms';
   $script_names[] = 'voipscript_say_demo';
+  $script_names[] = 'voipscript_small_office_ivr';
   return $script_names;
 }
 
@@ -86,6 +87,42 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     $say = array($p3);
     $script->addSay($say);
     */
+    $script->addHangup();
+  }
+
+  if($script_name == 'voipscript_small_office_ivr') {
+    $script = new VoipScript('voipscript_small_office_ivr');
+    
+    $script->addSay(t('Welcome to our office hot line. '));
+    
+    $script->addLabel('office_menu');
+    $options_menu = t('For sales, dial 1. For customer support, dial 2. For hours of operation, dial 3. To hang up, dial the star key. ');
+    $input_options = array(
+      '1' => 'sales',
+      '2' => 'customer support',
+      '3' => 'hours',
+      '*' => 'hang up',
+      'i' => 'hang up',
+      't' => 'hang up'
+    );
+    $invalid_msg = t('Invalid option selected.');
+    $script->addRunIvrMenu($options_menu, $input_options, $invalid_msg);
+    $script->addGoto('%ivr_option_selected');
+    
+    $script->addLabel('sales');
+    $script->addSay('Sales department');
+    $script->addGoto('hang up');
+    
+    $script->addLabel('customer support');
+    $script->addSay(t('Customer support department'));
+    $script->addGoto('hang up');
+    
+    $script->addLabel('hours');
+    $script->addSay(t('Our office is open Monday to Friday from 9am to 5pm.'));
+    $script->addGoto('office_menu');
+    
+    $script->addLabel('hang up');
+    $script->addSay(t('Thanks so much for calling our office. Bye bye.'));
     $script->addHangup();
   }
 
