@@ -1051,6 +1051,7 @@ function voipscript_get_run_ivr_menu_script($options) {
 
   $keys_allowed = implode(array_keys($input_options));
   $script->addSet('_keys_allowed', $keys_allowed);
+$script->addLog('_keys_allowed: %_keys_allowed');
 
   $script->addSet('_counter', $options['max_attempts']);
   $script->addSet('_invalid_msg', serialize($options['invalid_msg']));
@@ -1063,12 +1064,13 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addSet('_counter', '^%_counter - 1');
   $script->addGotoIf('go_back', '^%_counter < 0');
   $script->addGetInput('^unserialize(%_menu_options)', 1, '', '%_timeout');
+$script->addLog('user typed: %input_digits, allowed: %_keys_allowed');
   $script->addGotoIf('no_input_received', "^%input_digits == ''");
-  $script->addGotoIf('valid_option',
 /**
   TODO: ideally, the correct line should be as follows
+  $script->addGotoIf('valid_option',
                      "^strpos(' ' . '%_keys_allowed', '%input_digits')");
-   however, since the eval function is not processing '0' correctly,
+   however, since the eval function is not processing '0' and '*' correctly,
    I had to replace the line by the following. Hopefully, we'll be able to
    solve this little bug soon (2011.04.20)
    check http://stackoverflow.com/questions/3241070/php-recursive-variable-replacement
@@ -1076,24 +1078,26 @@ function voipscript_get_run_ivr_menu_script($options) {
          non-numeric strings.  Since %_keys_allowed always includes 'ti',
          we don't need to include single quotes when referring to it.
 **/
-                     "^(%input_digits === '0') ? strpos(' ' . %_keys_allowed, %input_digits) : strpos(' ' . %_keys_allowed, \"%input_digits\")");
+  $script->addGotoIf('valid_option',
+                     "^(%input_digits === '0') ? strpos(' ' . %_keys_allowed, %input_digits) : FALSE");
+  $script->addGotoIf('valid_option',
+                     "^(%input_digits === '*') ? strpos(' ' . %_keys_allowed, %input_digits) : FALSE");
+  $script->addGotoIf('valid_option',
+                     "^strpos(' ' . %_keys_allowed, \"%input_digits\")");
   $script->addGoto('invalid_option');
 
   $script->addLabel('no_input_received');
-//  $script->addSet('ivr_option_selected', '');
   $script->addSet('ivr_option_selected', 
               "^_voipscript_get_element('t', unserialize(%_input_options))");
   $script->addSay('^unserialize(%_no_input_msg)');
   $script->addGoto('play_menu_options');
   
   $script->addLabel('valid_option');
-//  $script->addSet('ivr_option_selected', '%input_digits');
   $script->addSet('ivr_option_selected',
       "^_voipscript_get_element(%input_digits, unserialize(%_input_options))");
   $script->addGoto('go_back');
   
   $script->addLabel('invalid_option');
-//  $script->addSet('ivr_option_selected', '-1');
   $script->addSet('ivr_option_selected',
               "^_voipscript_get_element('i', unserialize(%_input_options))");
   $script->addSay("^unserialize(%_invalid_msg)");

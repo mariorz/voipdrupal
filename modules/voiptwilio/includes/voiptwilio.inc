@@ -358,6 +358,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
                          . '</Redirect>';
           $rc = TRUE;
           $processing = FALSE;
+watchdog('voiptwilio', '(GetInput) cmd: ' . print_r($cmd, true). ", response: " . htmlspecialchars($response));
           break;
 
         case 'VoipCmdGosub':
