@@ -527,7 +527,7 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
         case 'VoipCmdGosub':
           $script_name = $script->evalString($cmd->getParam('script_name'));
           $options = $script->evalString($cmd->getParam('options'));
-          $rc = $script->runGosub($script_name);
+          $rc = $script->runGosub($script_name, $options);
           if($script->isError()){
               $msg = $script->getErrorMessage();
               $params = array();
