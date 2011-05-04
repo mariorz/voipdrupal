@@ -1051,7 +1051,6 @@ function voipscript_get_run_ivr_menu_script($options) {
 
   $keys_allowed = implode(array_keys($input_options));
   $script->addSet('_keys_allowed', $keys_allowed);
-$script->addLog('_keys_allowed: %_keys_allowed');
 
   $script->addSet('_counter', $options['max_attempts']);
   $script->addSet('_invalid_msg', serialize($options['invalid_msg']));
@@ -1064,7 +1063,6 @@ $script->addLog('_keys_allowed: %_keys_allowed');
   $script->addSet('_counter', '^%_counter - 1');
   $script->addGotoIf('go_back', '^%_counter < 0');
   $script->addGetInput('^unserialize(%_menu_options)', 1, '', '%_timeout');
-$script->addLog('user typed: %input_digits, allowed: %_keys_allowed');
   $script->addGotoIf('no_input_received', "^%input_digits == ''");
 /**
   TODO: ideally, the correct line should be as follows
