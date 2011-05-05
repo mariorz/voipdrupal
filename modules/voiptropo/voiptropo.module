@@ -111,11 +111,11 @@ function voiptropo_menu() {
 }
 
 /*Generate GrXML grammar which allows digits with star and hash keys*/
-function _voiptropo_grammar_numeric_star_hash($num_digits=1){
+function _voiptropo_grammar_numeric_star_hash($num_digits=1) {
 $grxml = '<?xml version="1.0" encoding="UTF-8"?>
 <grammar xmlns="http://www.w3.org/2001/06/grammar" xml:lang="en-US" root="myRule">  
 <rule id="myRule" scope="public">
-<item repeat="'.$num_digits.'">
+<item repeat="'. $num_digits .'">
 <ruleref uri="#digits" />
 </item>
 

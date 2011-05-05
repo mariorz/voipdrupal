@@ -38,10 +38,10 @@ class VoipTropoServer extends VoipServer {
    * Public methods
    */
 
-  static function getVoicesList(){
+  static function getVoicesList() {
     $voices_available = self::_get_available_voices();
     $list = array();
-    foreach($voices_available as $id => $voice) {
+    foreach ($voices_available as $id => $voice) {
       $list[$id] = $voice['description'];
     }
     asort($list);
@@ -51,7 +51,7 @@ class VoipTropoServer extends VoipServer {
   /**
    * Implementation of VoipServer() API method
    */
-  function getDefaultLanguage(){
+  function getDefaultLanguage() {
     $server_config = $this->getConfig();
     $voice_id = $server_config['voiptropo_voice_id'];
     $voices_available = self::_get_available_voices();
@@ -63,7 +63,7 @@ class VoipTropoServer extends VoipServer {
   /**
    * Implementation of VoipServer() API method
    */
-  function getDefaultVoice(){
+  function getDefaultVoice() {
     $server_config = $this->getConfig();
     $voice_id = $server_config['voiptropo_voice_id'];
     return $voice_id;
@@ -81,7 +81,7 @@ class VoipTropoServer extends VoipServer {
 
     voip_error_reset();
 
-    if(!$server_config) {
+    if (!$server_config) {
       $server_config = $this->getConfig();
     }
 
@@ -118,8 +118,6 @@ class VoipTropoServer extends VoipServer {
 	  'call_nid' => $call_nid,
     );
 	
-	
-
     //TODO: TZ:What is this?
     //	Handle answering machine options
     /*if($voipcall->getCheckMachine() == TRUE) {
@@ -132,56 +130,17 @@ class VoipTropoServer extends VoipServer {
 	try{
 	  $response = $client->createSession($token, $vars);
 	}
-	catch (Exception $e){
-	  // differentiate between processing errors and higher-level errors
-      //$tropo_error_code = (string)$response->ResponseXml->RestException->Code;
-    /*  switch($tropo_error_code){
-        // the following codes are listed in
-        //   https://www.tropo.com/docs/rest/response_codes.htm
-        case '13214': // Dial: Invalid callerId value
-        case '21210': // Caller phone number not verified
-        case '21212': // Invalid Caller Phone Number
-          $error_msg = t('Invalid caller id value');
-          $voipcall->setErrorMessage($error_msg);
-          $voipcall->setCallStatus(VoipCall::ERROR);
-          $voipcall->save();
-          break;
-        case '13223': // Dial: Invalid phone number format
-        case '13224': // Dial: Invalid phone number
-        case '21211': // Invalid Called Phone Number
-        case '21213': // Caller phone number is required
-        case '21401': // Invalid Phone Number
-          $error_msg = t('Invalid phone number');
-          $voipcall->setErrorMessage($error_msg);
-          $voipcall->setCallStatus(VoipCall::ERROR);
-          $voipcall->save();
-          break;
-        case '13225': // Dial: Forbidden phone number 
-        case '21215': // Account not authorized to call NNN
-          $error_msg = t('Forbidden phone number');
-          $voipcall->setErrorMessage($error_msg);
-          $voipcall->setCallStatus(VoipCall::ERROR);
-          $voipcall->save();
-          break;
-        default: // processing error
-          $tropo_error_msg = $response->ErrorMessage;
-          $msg = "Processing failure. Please contact your system's administrator. tropo error @tropo_code: @tropo_msg";
-          $params = array('@tropo_code' => $tropo_error_code, 
-                          '@tropo_msg' => $tropo_error_msg);
-          $voipcall->report_error('voiptropo', $msg, $params);
-          break;
-      }*/
-	    $msg = "Processing failure. Please contact your system's administrator.";
-        $voipcall->report_error('voiptropo', $msg);
-	    //$voipcall->setErrorMessage($error_msg);
-        $voipcall->setCallStatus(VoipCall::ERROR);
-        $voipcall->save();
-        return FALSE;
+	catch (Exception $e) {
+      $msg = "Processing failure. Please contact your system's administrator.";
+      $voipcall->report_error('voiptropo', $msg);
+	  //$voipcall->setErrorMessage($error_msg);
+      $voipcall->setCallStatus(VoipCall::ERROR);
+      $voipcall->save();
+      return FALSE;
 	}
     #Else: 
     $voipcall->save();
-    watchdog('voiptropo', 'new call: ' . print_r($voipcall, true));
-
+    watchdog('voiptropo', 'new call: ' . print_r($voipcall, TRUE));
     return TRUE;
   }
 
@@ -197,7 +156,7 @@ class VoipTropoServer extends VoipServer {
     $rc = FALSE;
     voip_error_reset();
 
-    if(!$server_config) {
+    if (!$server_config) {
       $server_config = $this->getConfig();
     }
 
@@ -210,7 +169,7 @@ class VoipTropoServer extends VoipServer {
     $client=new EventAPI($username, $password);
 
     $call_id = $voipcall->getCallId();
-    if(!$call_id){
+    if (!$call_id) {
       $msg = "Attempt to hangup a tropo call (nid = @nid) without a call id";
       $params = array('@nid' => $voipcall->getNodeId());
       $voipcall->report_error('voiptropo', $msg, $params);
@@ -218,13 +177,13 @@ class VoipTropoServer extends VoipServer {
     }
     else {
       $event = 'hangup';
-      try{
+      try {
         $client->sendEvent($call_id, $event);
         $voipcall->setHangupReason(VoipCall::HANGUP_API_REQUEST);
         $voipcall->save();
         $rc = TRUE;
       }
-	  catch (Exception $e){
+	  catch (Exception $e) {
         $msg = "tropo hangup command failed: @error";
         $params = array('@error' => $e->getMessage());
         $voipcall->report_error('voiptropo', $msg, $params);
@@ -252,7 +211,7 @@ class VoipTropoServer extends VoipServer {
       // Request a list of applications as a way to test the server connectivity
       $response = $provisioning->viewApplications();
 	}
-	catch (Exception $e){
+	catch (Exception $e) {
 	  voip_error("Tropo command Ping failed: " . $e->getMessage());
 	  return FALSE;
 	}
@@ -261,45 +220,43 @@ class VoipTropoServer extends VoipServer {
   }
 
 public static function _get_available_voices() {
-    $voices = array();
-    $voices['carmen'] = array('language' => 'es', 'voice' => 'woman',
+  $voices = array();
+  $voices['carmen'] = array('language' => 'es', 'voice' => 'woman',
                         'description' => t('female voice in Castilian Spanish'));
-    $voices['jorge'] = array('language' => 'es', 'voice' => 'man',
+  $voices['jorge'] = array('language' => 'es', 'voice' => 'man',
                         'description' => t('male voice in Castilian Spanish'));				
-	$voices['florence'] = array('language' => 'fr', 'voice' => 'woman',
+  $voices['florence'] = array('language' => 'fr', 'voice' => 'woman',
                         'description' => t('female voice in French'));
-    $voices['bernard'] = array('language' => 'fr', 'voice' => 'man',
+  $voices['bernard'] = array('language' => 'fr', 'voice' => 'man',
                         'description' => t('male voice in French'));								
-    $voices['allison'] = array('language' => 'us_en', 'voice' => 'woman',
+  $voices['allison'] = array('language' => 'us_en', 'voice' => 'woman',
                         'description' => t('female voice in US English'));
-    $voices['dave'] = array('language' => 'us_en', 'voice' => 'man',
+  $voices['dave'] = array('language' => 'us_en', 'voice' => 'man',
                         'description' => t('male voice in US English'));
-    $voices['kate'] = array('language' => 'en', 'voice' => 'woman',
+  $voices['kate'] = array('language' => 'en', 'voice' => 'woman',
                         'description' => t('female voice in British English'));
-    $voices['simon'] = array('language' => 'en', 'voice' => 'man',
+  $voices['simon'] = array('language' => 'en', 'voice' => 'man',
                         'description' => t('male voice in British English'));
-	$voices['katrin'] = array('language' => 'de', 'voice' => 'woman',
+  $voices['katrin'] = array('language' => 'de', 'voice' => 'woman',
                         'description' => t('female voice in German'));
-    $voices['stefan'] = array('language' => 'de', 'voice' => 'man',
+  $voices['stefan'] = array('language' => 'de', 'voice' => 'man',
                         'description' => t('male voice in German'));
-	$voices['paola'] = array('language' => 'de', 'voice' => 'woman',
+  $voices['paola'] = array('language' => 'de', 'voice' => 'woman',
                         'description' => t('female voice in Italian'));
-    $voices['luca'] = array('language' => 'de', 'voice' => 'man',
+  $voices['luca'] = array('language' => 'de', 'voice' => 'man',
                         'description' => t('male voice in Italian'));		
-    $voices['saskia'] = array('language' => 'nl', 'voice' => 'woman',
+  $voices['saskia'] = array('language' => 'nl', 'voice' => 'woman',
                         'description' => t('female voice in Dutch'));
-    $voices['willem'] = array('language' => 'nl', 'voice' => 'man',
+  $voices['willem'] = array('language' => 'nl', 'voice' => 'man',
                         'description' => t('male voice in Dutch'));
-	$voices['soledad'] = array('language' => 'mx', 'voice' => 'woman',
+  $voices['soledad'] = array('language' => 'mx', 'voice' => 'woman',
                         'description' => t('female voice in Mexican Spanish'));
-    $voices['carlos'] = array('language' => 'mx', 'voice' => 'man',
+  $voices['carlos'] = array('language' => 'mx', 'voice' => 'man',
                         'description' => t('male voice in Mexican Spanish'));
-    $voices['zosia'] = array('language' => 'pl', 'voice' => 'woman',
+  $voices['zosia'] = array('language' => 'pl', 'voice' => 'woman',
                         'description' => t('female voice in Polish'));
-    $voices['krzysztof'] = array('language' => 'pl', 'voice' => 'man',
+  $voices['krzysztof'] = array('language' => 'pl', 'voice' => 'man',
                         'description' => t('male voice in Polish'));							
-    return $voices;
-  }
-
+  return $voices;
 }
-
+}
