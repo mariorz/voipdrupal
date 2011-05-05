@@ -391,20 +391,22 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
           $menu_path = 'voip/tropo/callhandler';
           $call_nid = $call->getNodeId();
           $number = $script->evalString($cmd->getParam('number'));
-          
+          $number = str_replace(" ","",$number);
           $timeout = $script->evalString($cmd->getParam('timeout', 30));
-          $hangup_on_star =  $script->evalString($cmd->getParam('hangup_on_star', false));
+          //TODO: What command for timeLimit, hangupOnStar?
+		  /*$hangup_on_star =  $script->evalString($cmd->getParam('hangup_on_star', false));
           $hangup_on_star =  $hangup_on_star? 'true':'false';
-          $time_limit = $script->evalString($cmd->getParam('time_limit', '14400'));
+          $time_limit = $script->evalString($cmd->getParam('time_limit', '14400'));*/
           $caller_number = $script->evalString($script->getVar('caller_number'));
           $caller_id = $script->evalString($cmd->getParam('caller_id', $caller_number)); 
           
-		  //TODO: What command for timeLimit, hangupOnStar?
+		  
 		  $params = array(
-		    'timeout' => $timeout,
+		    //'timeout' => $timeout,  //TODO: Timeout causes immediate hangup, disabled for now.
 		    'from' => $caller_number,
 		  );
-		  $tropo->call($number, $params);
+		  //$tropo->call($number, $params);
+		  $tropo->transfer($number, $params);
 		  
 		  //Add events
 		  $response_url = $menu_path . '/process_dial/' . $call_nid . '/error';
