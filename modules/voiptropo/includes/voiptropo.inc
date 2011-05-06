@@ -241,11 +241,11 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
     }
   }
 
-  if($is_hangup) {
+  if ($is_hangup) {
     // determine call duration
     $end_time = $call->setEndTime();
     $start_time = $call->getStartTime();
-    if($start_time) {
+    if ($start_time) {
       $duration  = $end_time - $start_time;
     }
     else {
@@ -260,7 +260,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
   $menu_path = 'voip/tropo/callhandler';
   $tropo = new Tropo();
   
-  if($tropo_action == 'process_outbound_calls') {
+  if ($tropo_action == 'process_outbound_calls') {
     //Make outbound call
     $dest_number =$call->getDestNumber();
 	$params = array(
@@ -311,7 +311,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
   */
   
   //TESTING:
-    $msg = "Tropo output ".print_r($tropo, TRUE);
+    $msg = "Tropo output ". print_r($tropo, TRUE);
 	$vars = array();
 	watchdog('voiptropo', $msg, $vars, WATCHDOG_INFO);
   // send response back to tropo
@@ -329,7 +329,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
  * @return boolean.  TRUE on success or FALSE on failure.  Check voip_error() for processing failure.
  */
 function _voiptropo_script_handler($call, &$tropo) {
-$msg = 'Entering script_handler with voipcall: ' . print_r($call,true);
+$msg = 'Entering script_handler with voipcall: ' . print_r($call, TRUE);
 watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
 
   $rc = TRUE;
@@ -338,16 +338,16 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
   $script = $call->getScript();
   // check if call is in a hangup state
   $hangup = $call->isHangup();
-  if($hangup) {
+  if ($hangup) {
     $hangup_script_name = $call->getHangupScriptName();
     // Stop processing if no hangup script defined
-    if(!$hangup_script_name) {
+    if (!$hangup_script_name) {
       return TRUE;
     }
     else {
       // load hangup script commands
       $rc = $script->runGosub($hangup_script_name);
-      if($script->isError()){
+      if ($script->isError()) {
         $msg = $script->getErrorMessage();
         $params = array();
         $call->report_error('voiptropo', $msg, $params);
@@ -355,15 +355,19 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
       }
     }
   }
-
   // process script commands
   $processing = TRUE;
   $response = '';
   
-  while($processing) {
+   //Set script language
+  $language= $script->getLanguage();
+  $voice = $script->getVoice();
+  $tropo->setVoice($voice);
+  
+  while ($processing) {
    
     $cmd = $script->getNextCommand();
-    if(!$cmd) {
+    if (!$cmd) {
       // no more commands to be processed
       // send a final hangup request 
 	  $tropo->hangup();
@@ -377,10 +381,10 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
     else {
       $cmd_id = $cmd->getId();
 
-      switch($cmd_id) {
+      switch ($cmd_id) {
         default:
           $msg = "Invalid command id '@cmd_id' in script '@script_name': @script";
-          $params = array('@cmd_id' => $cmd_id, '@script_name' => $script->getName(), '@script' => print_r($script,true));
+          $params = array('@cmd_id' => $cmd_id, '@script_name' => $script->getName(), '@script' => print_r($script, TRUE));
           $call->report_error('voiptropo', $msg, $params);
           $rc = FALSE;
           $processing = FALSE;
@@ -391,7 +395,7 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
           $menu_path = 'voip/tropo/callhandler';
           $call_nid = $call->getNodeId();
           $number = $script->evalString($cmd->getParam('number'));
-          $number = str_replace(" ","",$number);
+          $number = str_replace(" ", "", $number);
           $timeout = $script->evalString($cmd->getParam('timeout', 30));
           //TODO: What command for timeLimit, hangupOnStar?
 		  /*$hangup_on_star =  $script->evalString($cmd->getParam('hangup_on_star', false));
@@ -430,9 +434,9 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
            
 		  $timeout = $script->evalString($cmd->getParam('timeout', 5.0)); 
           $end_key = $script->evalString($cmd->getParam('end_key', '')); 
-          $num_digits = $script->evalString($cmd->getParam('num_digits'),1);
+          $num_digits = $script->evalString($cmd->getParam('num_digits'), 1);
 
-		  if(empty($num_digits)){
+		  if (empty($num_digits)) {
             $num_digits = 1;
           }
           $mode='dtmf';
@@ -468,13 +472,13 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
              $voice = $voice_id ? $voice_id : $script->getVoice();
              $as = $last_say->getAs() ? $script->evalString($last_say->getAs()) : '';
              
-             if(!empty($as) && in_array($as, array('digits', 'date'))){
+             if (!empty($as) && in_array($as, array('digits', 'date'))) {
                $params['as'] = $as; 
              }
              $params['voice'] = $voice;
              $say_text = $text;
              
-           foreach($prompt as $p) {
+           foreach ($prompt as $p) {
              $text = $script->evalString($p->getText());
              $voice_tmp = $p->getVoice() ? $script->evalString($p->getVoice()) : '';
              $voice = $voice_tmp ? $voice_tmp : $default_voice;
@@ -484,7 +488,7 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
              $voice = $voice_id ? $voice_id : $script->getVoice();
              $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
              $say_params = array();
-             if(!empty($as) && in_array($as, array('digits', 'date'))){
+             if (!empty($as) && in_array($as, array('digits', 'date'))) {
                $say_params['as'] = $as; 
              }
              $say_params['voice'] = $voice;
@@ -530,7 +534,7 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
           $script_name = $script->evalString($cmd->getParam('script_name'));
           $options = $script->evalString($cmd->getParam('options'));
           $rc = $script->runGosub($script_name, $options);
-          if($script->isError()){
+          if ($script->isError()) {
               $msg = $script->getErrorMessage();
               $params = array();
               $call->report_error('voiptropo', $msg, $params);
@@ -547,7 +551,7 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
         case 'VoipCmdGoto';
           $label_name = $script->evalString($cmd->getParam('label_name', ''));
           $rc = $script->runGoto($label_name);
-          if($script->isError()){
+          if ($script->isError()) {
             $msg = $script->getErrorMessage();
             $params = array();
             $call->report_error('voiptropo', $msg, $params);
@@ -560,10 +564,10 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
 
         case 'VoipCmdGotoIf';
           $condition = $script->evalString($cmd->getParam('condition', ''));
-          if($condition) { 
+          if ($condition) { 
             $label_name = $script->evalString($cmd->getParam('label_name', ''));
             $rc = $script->runGoto($label_name, $condition);
-            if($script->isError()){
+            if ($script->isError()) {
               $msg = $script->getErrorMessage();
               $params = array();
               $call->report_error('voiptropo', $msg, $params);
@@ -591,7 +595,7 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
           $action = url($response_url, array('absolute' => TRUE));
           
           $room = $script->evalString($cmd->getParam('room'));
-          $muted =  $script->evalString($cmd->getParam('muted', false));
+          $muted =  $script->evalString($cmd->getParam('muted', FALSE));
           $muted =  $muted? 'true':'false';
           /*$beep =  $script->evalString($cmd->getParam('beep', false));
           $beep =  $beep? 'true':'false';
@@ -600,9 +604,9 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
           $end_on_exit =  $script->evalString($cmd->getParam('end_on_exit', false));
           $end_on_exit =  $end_on_exit? 'true':'false';*/
           $wait_url =  $script->evalString($cmd->getParam('wait_url', ''));
-          $hangup_on_star =  $script->evalString($cmd->getParam('hangup_on_star', false));
+          $hangup_on_star =  $script->evalString($cmd->getParam('hangup_on_star', FALSE));
           //$hangup_on_star =  $hangup_on_star? 'true':'false';
-		  if($hangup_on_star){
+		  if ($hangup_on_star) {
 		    $terminator="*";
 		  }
 		  else{
@@ -640,7 +644,7 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
           $menu_path = 'voip/tropo/callhandler';
           $call_nid = $call->getNodeId();
           $format = $script->evalString($cmd->getParam('format'));
-          if($format == 'mp3') {
+          if ($format == 'mp3') {
 			$record_format = 'audio/mp3';
           }
           else {
@@ -671,7 +675,7 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
 			'format' => $record_format,
 			'method' => $method,
 			'url' => $record_action, 
-			'choices' => $choices,	
+			'choices' => $choices,
 		  );	
           
           $prompt = _voiptropo_prompt_validate($script, $cmd->getParam('prompt'));
@@ -688,13 +692,13 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
              $voice = $voice_id ? $voice_id : $script->getVoice();
              $as = $last_say->getAs() ? $script->evalString($last_say->getAs()) : '';
              
-             if(!empty($as) && in_array($as, array('digits', 'date'))){
+             if (!empty($as) && in_array($as, array('digits', 'date'))) {
                $params['as'] = $as; 
              }
              $params['voice'] = $voice;
              $params['say'] = $text;
              
-           foreach($prompt as $p) {
+           foreach ($prompt as $p) {
              $text = $script->evalString($p->getText());
              $voice_tmp = $p->getVoice() ? $script->evalString($p->getVoice()) : '';
              $voice = $voice_tmp ? $voice_tmp : $default_voice;
@@ -704,7 +708,7 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
              $voice = $voice_id ? $voice_id : $script->getVoice();
              $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
              $say_params = array();
-             if(!empty($as) && in_array($as, array('digits', 'date'))){
+             if (!empty($as) && in_array($as, array('digits', 'date'))) {
                $say_params['as'] = $as; 
              }
              $say_params['voice'] = $voice;
@@ -732,7 +736,7 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
 
         case 'VoipCmdReturn':
           $rc = $script->runReturn();
-          if($script->isError()){
+          if ($script->isError()) {
             $msg = $script->getErrorMessage();
             $params = array();
             $call->report_error('voiptropo', $msg, $params);
@@ -763,8 +767,8 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
           $loop = $script->evalString($cmd->getParam('loop'));
           $prompt = _voiptropo_prompt_validate($script, $cmd->getParam('prompt'));
           
-          for($i=0;$i<$loop;$i++){              
-               foreach($prompt as $p) {
+          for ($i=0;$i<$loop;$i++) {              
+               foreach ($prompt as $p) {
                  $text = $script->evalString($p->getText());
                  $voice_tmp = $p->getVoice() ? $script->evalString($p->getVoice()) : '';
                  $voice = $voice_tmp ? $voice_tmp : $default_voice;
@@ -774,7 +778,7 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
                  $voice = $voice_id ? $voice_id : $script->getVoice();
                  $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
                  $say_params = array();
-                 if(!empty($as) && in_array($as, array('digits', 'date'))){
+                 if (!empty($as) && in_array($as, array('digits', 'date'))) {
                    $say_params['as'] = $as; 
                  }
                  $say_params['voice'] = $voice;
@@ -804,7 +808,7 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
             'network' => $network,
           );
          
-          if(strtolower($network) == 'sms'){
+          if (strtolower($network) == 'sms') {
             //We need caller id only for sms
             // Note: If no caller number provided, use the system's number as the default caller id
             $default_cid_number = variable_get('voipcall_cid_number', NULL);
@@ -854,10 +858,7 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
     }
   }
  
- //Set script language
-	$language= $script->getLanguage();
-    $voice = $script->getVoice();
-    $tropo->setVoice($voice);
+
   
   // save script for next iteration
   $call->setScript($script);
@@ -865,7 +866,7 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
   return $rc;
 }
 
-function _voiptropo_file_save_upload($source, $validators, $dest){
+function _voiptropo_file_save_upload($source, $validators, $dest) {
   global $user;
   $extensions='mp3 wav';
    // Add in our check of the the file name length.
@@ -911,7 +912,7 @@ function _voiptropo_file_save_upload($source, $validators, $dest){
       else {
         $message .= ' ' . array_pop($errors);
       }
-       drupal_set_message($message);
+      drupal_set_message($message);
       return 0;
     }
 
@@ -930,18 +931,17 @@ function _voiptropo_file_save_upload($source, $validators, $dest){
     $file->timestamp = time();
     drupal_write_record('files', $file);
     return $file;
-
 }
 
 /**
  * Update 'call status' and 'hangup reason' based on tropo's response
  */
-function voiptropo_update_call_status($call, $tropo_call_status, $request=null) {
+function voiptropo_update_call_status($call, $tropo_call_status, $request=NULL) {
 /*if(!empty($request)){
 watchdog('voiptropostatus', "json:".print_r($request, TRUE), $vars, WATCHDOG_INFO);
 }*/
 
-  switch($tropo_call_status) {
+  switch ($tropo_call_status) {
     default:
       $msg = 'Invalid CallStatus: @status for call nid: @nid';
       $call_nid = $call->getNodeId();
@@ -953,9 +953,6 @@ watchdog('voiptropostatus', "json:".print_r($request, TRUE), $vars, WATCHDOG_INF
       $call->setCallStatus(VoipCall::INVALID);
       $call->setHangupReason(VoipCall::HANGUP_INVALID_NUMBER);
       break;
-   /* case 'queued':
-      $call->setCallStatus(VoipCall::QUEUED);
-      break;*/
     case 'ringing':
       $call->setCallStatus(VoipCall::RINGING);
       break;
@@ -965,7 +962,7 @@ watchdog('voiptropostatus', "json:".print_r($request, TRUE), $vars, WATCHDOG_INF
     case 'continue':
       $call->setCallStatus(VoipCall::COMPLETED);
       $hangup_reason = $call->getHangupReason();
-      if(!$hangup_reason){
+      if (!$hangup_reason) {
         $call->setHangupReason(VoipCall::HANGUP_BY_USER);
       }
       break;
@@ -989,15 +986,14 @@ watchdog('voiptropostatus', "json:".print_r($request, TRUE), $vars, WATCHDOG_INF
 /**
  * Process the response to a "dial" script command
  */ 
-function _voiptropo_process_dial_response($call, $request, $dial_response_name){
+function _voiptropo_process_dial_response($call, $request, $dial_response_name) {
   $script = $call->getScript();
- watchdog('voiptropo', "DIAL STATE  ".print_r($request->getState(), TRUE)."DIAL name  ".$dial_response_name, $vars, WATCHDOG_INFO);
   // update the 'dial_sid' script variable
   $script->setVar('dial_sid', $request->getSessionId());//TODO: What is this? I used session id
 
   // update the 'dial_status' script variable
   $dial_status = $request->getState();
-  switch($dial_status) {
+  switch ($dial_status) {
     default:
       $call_nid = $call->getNodeId();
       $msg = 'Invalid DialCallStatus: @status for call nid: @nid';
@@ -1022,12 +1018,6 @@ function _voiptropo_process_dial_response($call, $request, $dial_response_name){
       break;
   }
 
-  // update the 'dial_duration' script variable
-  /*$duration = $request['DialCallDuration'];
-  if(isset($duration)){
-    $script->setVar('dial_duration', $duration);
-  }*/
-
   $call->setScript($script);
   return $call;
 }
@@ -1035,10 +1025,10 @@ function _voiptropo_process_dial_response($call, $request, $dial_response_name){
 /**
  * Process the response to a 'sms send' script command
  */
-function _voiptropo_process_sms_response($call, $sms_status_tmp){
+function _voiptropo_process_sms_response($call, $sms_status_tmp) {
   $call_nid = $call->getNodeId();
-  //$sms_status_tmp = $request->getState();
-  switch($sms_status_tmp) {
+  
+  switch ($sms_status_tmp) {
     default:
       $msg = 'Invalid SmsStatus: @status for call nid: @nid';
       $params = array('@status' => $sms_status_tmp, '@nid' => $call_nid);
@@ -1071,7 +1061,7 @@ function _voiptropo_process_sms_response($call, $sms_status_tmp){
 class VoipTropoScript extends VoipScript {
   
   function __construct($name, $variables=array()) {
-     parent::__construct($name, $variables);
+    parent::__construct($name, $variables);
   }
   
   function addGetVoiceInput($choices, $prompt='', $end_key='#' , $timeout=5) {
@@ -1084,30 +1074,29 @@ class VoipTropoScript extends VoipScript {
   }
 }
 
-function _get_voice_id($voice, $language){
+function _get_voice_id($voice, $language) {
   $voices=VoipTropoServer::_get_available_voices();
-  foreach($voices as $key=>$voice_array){
-    if($voice_array['language'] == $language && $voice_array['voice'] == $voice){
+  foreach ($voices as $key => $voice_array) {
+    if ($voice_array['language'] == $language && $voice_array['voice'] == $voice) {
       return $key;
     }
   }
   return NULL;
 }
 
-function _voiptropo_prompt_validate($script,$prompt){
-if(is_string($prompt) && (substr($prompt, 0, 1) == '^')){
-     $prompt = $script->evalString($prompt);            
-      }
-          
-          if(is_string($prompt)){
-            $prompt_list[] = new VoipPrompt($prompt);
-          }
-          else if (is_object($prompt)){
-            $prompt_list[] = $prompt;
-          }
-          else{
-            $prompt_list=$prompt;
-          }
-
-return $prompt_list;
+function _voiptropo_prompt_validate($script, $prompt) {
+  if (is_string($prompt) && (substr($prompt, 0, 1) == '^')) {
+    $prompt = $script->evalString($prompt);            
+  }
+  
+  if (is_string($prompt)) {
+    $prompt_list[] = new VoipPrompt($prompt);
+  }
+  elseif (is_object($prompt)) {
+    $prompt_list[] = $prompt;
+  }
+  else {
+    $prompt_list=$prompt;
+  }
+  return $prompt_list;
 }
