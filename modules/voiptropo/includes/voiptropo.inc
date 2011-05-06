@@ -1058,22 +1058,6 @@ function _voiptropo_process_sms_response($call, $sms_status_tmp) {
   return $call;
 }
 
-class VoipTropoScript extends VoipScript {
-  
-  function __construct($name, $variables=array()) {
-    parent::__construct($name, $variables);
-  }
-  
-  function addGetVoiceInput($choices, $prompt='', $end_key='#' , $timeout=5) {
-    $params['prompt'] = $prompt;
-    $params['timeout'] = $timeout;
-    $params['end_key'] = $end_key;
-    $params['choices'] = $choices;
-    $command = new VoipCommand('VoipCmdGetVoiceInput', $params);
-    parent::addCommand($command);
-  }
-}
-
 function _get_voice_id($voice, $language) {
   $voices=VoipTropoServer::_get_available_voices();
   foreach ($voices as $key => $voice_array) {

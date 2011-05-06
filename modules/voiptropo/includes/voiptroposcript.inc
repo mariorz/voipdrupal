@@ -1,0 +1,67 @@
+<?php
+// $id$
+
+/**
+ * @file
+ * Implementation of the VoipTropoScript class
+ */
+
+
+class VoipTropoScript extends VoipScript {
+  
+  /**
+   * Constructs a new instance of the VoipTropoScript class
+   */
+  function __construct($name, $variables=array()) {
+    parent::__construct($name, $variables);
+  }
+  
+  /**
+   * Adds a "get voice input" command to the script.
+   *
+   * When executed, the 'get voice input' command prompts the user from input and waits
+   * for responses via speech or touch-tone keypad.
+   *
+   * @param $choices 
+   *   String with a Simple Grammar text that tells Tropo what to expect from the user.
+   *   For additional information, please check:
+   *        https://www.tropo.com/docs/scripting/simple_grammar.htm
+   *
+   * @param $mode 
+   *   String. Defines which input mode Tropo should listen for. Possible values are 
+   *   'keypad', 'speech' or 'any'.
+   *
+   * @param $prompt 
+   *   Mixed. Can be any of the following
+   *   - an executable string to be processed into a prompt string, a
+   *     VoipPrompt instance, or an array of VoipPrompt instances
+   *   - a prompt string combining text and audio URLs to be played to the user
+   *     prompting him/her to type something
+   *   - a VoipPrompt instance
+   *   - an array of VoipPrompt instances to be processed
+   *
+   * @param $timeout
+   *   Integer specifying the maximum number of seconds to wait in between
+   *   digits
+   *
+   * @param $end_key
+   *   Key used to end the data input. The allowed values are the numbers 0-9,
+   *   # , * and the empty string.
+   *
+   * @param $num_digits
+   *   Integer with the number of digits that are expected.
+   *
+   * @return
+   *   The 'get voice input' command sets the script variable 'input_digits' to the
+   *   input received.  In case nothing is typed, 'input_digits' gets set to ''
+   */
+  function addGetVoiceInput($choices, $prompt='', $end_key='#' , $timeout=5) {
+    $params['prompt'] = $prompt;
+    $params['timeout'] = $timeout;
+    $params['end_key'] = $end_key;
+    $params['choices'] = $choices;
+    $command = new VoipCommand('VoipCmdGetVoiceInput', $params);
+    parent::addCommand($command);
+  }
+}
+

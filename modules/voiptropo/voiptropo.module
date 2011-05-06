@@ -8,6 +8,7 @@
 
 module_load_include('inc', 'voiptropo', 'includes/voiptropo');
 module_load_include('inc', 'voiptropo', 'includes/voiptroposerver');
+module_load_include('inc', 'voiptropo', 'includes/voiptroposcript');
 //Include Tropo API
 module_load_include('php', 'voiptropo', 'tropo_webapi/tropo.class');
 
@@ -55,7 +56,7 @@ function voiptropo_admin_form($configuration) {
   $form['voiptropo_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default voice'),
-    '#description' => t('Voice to be used in automatic text-to-speech generation.'),
+    '#description' => t('Default voice to be used in automatic text-to-speech generation.'),
     '#options' => VoipTropoServer::getVoicesList(),
     '#default_value' => $configuration['voiptropo_voice_id']?$configuration['voiptropo_voice_id']:'dave',
   );
@@ -101,7 +102,7 @@ function voiptropo_menu() {
   
   $items['voip/tropo/grammar/numeric_star_hash'] = array(
     'title' => 'Grammar script',
-    'description' => 'Grammar script allowing digits with star and hash',
+    'description' => 'Grammar script allowing the keypad input of digits, star and hash',
     'access callback' => TRUE, 
     'page callback' => '_voiptropo_grammar_numeric_star_hash',
     'page arguments' => array(4),
