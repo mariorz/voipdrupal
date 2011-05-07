@@ -160,10 +160,21 @@ function voiptropo_voipscript_load_script($script_name, $vars = NULL) {
       $end_key = '';
       $script->addGetVoiceInput($choices, $mode, $prompt, $end_key, $timeout);
       $script->addSet('speech', '%input_digits');
-      $script->addSay('You said %speech');
+      
       // If timeout or invalid input
-      $script->addGotoIf('start', "^%input_digits == ''");
-      $script->addSay('Goodbye');
+      $script->addGotoIf('invalid', "^%input_digits == ''");
+	  //Else:
+	  $script->addGotoIf('speak', "^%input_digits != ''");
+      
+	  $script->addLabel('speak'); 
+	  $script->addSay('You said %speech');
+	  $script->addGoto('end');
+	  
+	  $script->addLabel('invalid');  
+	  $script->addSay('Invalid option choosed');
+	  
+	  $script->addLabel('end');  
+	  $script->addSay('Goodbye');
       $script->addHangup();    
       break;
 

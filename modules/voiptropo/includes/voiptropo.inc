@@ -535,6 +535,10 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
 		  );
           $tropo->ask($prompt, $tropo_params);		 
 		  $tropo->on(array("event" => "continue", "next" => $action));
+		  
+		  $response_url = $menu_path . '/process_get_input/' . $call_nid;
+          $incomplete_action = url($response_url, array('absolute' => TRUE));
+		  $tropo->on(array("event" => "incomplete", "next" => $incomplete_action));
           $rc = TRUE;
           $processing = FALSE;
           break;
