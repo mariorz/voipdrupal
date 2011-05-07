@@ -154,10 +154,11 @@ function voiptropo_voipscript_load_script($script_name, $vars = NULL) {
       $script = new VoipTropoScript('voiptropo_speech_recognition_demo');
       $script->addLabel('start');  
       $choices='sales, support, billing';
+	  $mode = 'speech';
       $prompt = t('Please choose the department. Options are sales, support and billing.');
       $timeout = 5;
       $end_key = '';
-      $script->addGetVoiceInput($choices, $prompt, $end_key, $timeout);
+      $script->addGetVoiceInput($choices, $mode, $prompt, $end_key, $timeout);
       $script->addSet('speech', '%input_digits');
       $script->addSay('You said %speech');
       // If timeout or invalid input

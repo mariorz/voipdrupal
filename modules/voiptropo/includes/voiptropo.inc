@@ -510,10 +510,21 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
           $action = url($response_url, array('absolute' => TRUE));
           
           $choices = $script->evalString($cmd->getParam('choices'));
+		  $mode = $script->evalString($cmd->getParam('mode'));
 		  $prompt = $script->evalString($cmd->getParam('prompt'));
 		  $timeout = $script->evalString($cmd->getParam('timeout', 5.0)); 
           $end_key = $script->evalString($cmd->getParam('end_key', '')); 
-          $mode='speech';
+          
+		  $allowed_modes = array('keypad', 'speech', 'any');
+		  if (in_array($mode, $allowed_modes)) {
+		    //Convert keypad to dtmf to match Tropo allowed mode values
+			if($mode == 'keypad'){
+			  $mode = 'dtmf';
+			}
+		  }
+		  else {
+		    $mode='speech';
+		  }
           
 		  $tropo_params = array(
 		    'attempts' => 3,
@@ -521,10 +532,8 @@ watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
 			'choices' => $choices,
 			'mode' => $mode,
 			'terminator' => $end_key,
-			//'terminator' => '',
 		  );
-          $tropo->ask($prompt, $tropo_params);
-         			 
+          $tropo->ask($prompt, $tropo_params);		 
 		  $tropo->on(array("event" => "continue", "next" => $action));
           $rc = TRUE;
           $processing = FALSE;
