@@ -2,5 +2,6 @@
 name = Voip 
 description = Enables communication between Drupal and VoIP servers.
 package = VoIP Drupal
+dependencies[] = voipcall
 core = 6.x
 
