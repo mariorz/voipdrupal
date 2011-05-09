@@ -57,8 +57,8 @@ class VoipTropoScript extends VoipScript {
    */
   function addGetVoiceInput($choices, $mode='speech', $prompt='', $end_key='#' , $timeout=5) {
     $params['choices'] = $choices;
-	$params['mode'] = $mode;
-	$params['prompt'] = $prompt;
+    $params['mode'] = $mode;
+    $params['prompt'] = $prompt;
     $params['timeout'] = $timeout;
     $params['end_key'] = $end_key;
     $command = new VoipCommand('VoipCmdGetVoiceInput', $params);

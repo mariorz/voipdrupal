@@ -154,7 +154,7 @@ function voiptropo_voipscript_load_script($script_name, $vars = NULL) {
       $script = new VoipTropoScript('voiptropo_speech_recognition_demo');
       $script->addLabel('start');  
       $choices='sales, support, billing';
-	  $mode = 'speech';
+      $mode = 'speech';
       $prompt = t('Please choose the department. Options are sales, support and billing.');
       $timeout = 5;
       $end_key = '';
@@ -163,18 +163,18 @@ function voiptropo_voipscript_load_script($script_name, $vars = NULL) {
       
       // If timeout or invalid input
       $script->addGotoIf('invalid', "^%input_digits == ''");
-	  //Else:
-	  $script->addGotoIf('speak', "^%input_digits != ''");
+      // Else:
+      $script->addGotoIf('speak', "^%input_digits != ''");
       
-	  $script->addLabel('speak'); 
-	  $script->addSay('You said %speech');
-	  $script->addGoto('end');
-	  
-	  $script->addLabel('invalid');  
-	  $script->addSay('Invalid option choosed');
-	  
-	  $script->addLabel('end');  
-	  $script->addSay('Goodbye');
+      $script->addLabel('speak'); 
+      $script->addSay('You said %speech');
+      $script->addGoto('end');
+      
+      $script->addLabel('invalid');  
+      $script->addSay('Invalid option choosed');
+      
+      $script->addLabel('end');  
+      $script->addSay('Goodbye');
       $script->addHangup();    
       break;
 
