@@ -86,8 +86,8 @@ class VoipTropoServer extends VoipServer {
     }
 
     // tropo configuration
-	$username = $server_config['voiptropo_account_username'];
-	$password = $server_config['voiptropo_account_password'];
+    $username = $server_config['voiptropo_account_username'];
+    $password = $server_config['voiptropo_account_password'];
     $token = $server_config['voiptropo_voice_token'];
 
     // Update call variables
@@ -98,7 +98,7 @@ class VoipTropoServer extends VoipServer {
     $voipcall->save();
 
     // Instantiate a new tropo Rest Client
-	$client = new SessionAPI();
+    $client = new SessionAPI();
     $caller_number = ($voipcall->getCallerNumber())
                        ? $voipcall->getCallerNumber()
                        : variable_get('voipcall_cid_number', NULL);
@@ -109,17 +109,17 @@ class VoipTropoServer extends VoipServer {
     $call_nid = $voipcall->getNodeId();
   
     $vars = array(
-	  'action' => 'create',
+      'action' => 'create',
       'username' => $username,
-	  'password' => $password,
-	  'caller_number' => $caller_number,
+      'password' => $password,
+      'caller_number' => $caller_number,
       'dest_number' => $dest_number,
-	  'tropo_action' => 'process_outbound_calls',
-	  'call_nid' => $call_nid,
+      'tropo_action' => 'process_outbound_calls',
+      'call_nid' => $call_nid,
     );
-	
+
     //TODO: TZ:What is this?
-    //	Handle answering machine options
+    // Handle answering machine options
     /*if($voipcall->getCheckMachine() == TRUE) {
     // TODO: do we need to implement tropo's 'hangup on machine' option here?
       // Note: adding any value in here -- even 'Continue' -- adds a 5 sec delay
@@ -127,18 +127,18 @@ class VoipTropoServer extends VoipServer {
       $vars['IfMachine'] = 'Continue'; 
     }
     */
-	try{
-	  $response = $client->createSession($token, $vars);
-	}
-	catch (Exception $e) {
+    try {
+      $response = $client->createSession($token, $vars);
+    }
+    catch (Exception $e) {
       $msg = "Processing failure. Please contact your system's administrator.";
       $voipcall->report_error('voiptropo', $msg);
-	  //$voipcall->setErrorMessage($error_msg);
+      //$voipcall->setErrorMessage($error_msg);
       $voipcall->setCallStatus(VoipCall::ERROR);
       $voipcall->save();
       return FALSE;
-	}
-    #Else: 
+    }
+    // Else: 
     $voipcall->save();
     watchdog('voiptropo', 'new call: ' . print_r($voipcall, TRUE));
     return TRUE;
@@ -161,8 +161,8 @@ class VoipTropoServer extends VoipServer {
     }
 
     // tropo configuration
-	$username = $server_config['voiptropo_account_username'];
-	$password = $server_config['voiptropo_account_password'];
+    $username = $server_config['voiptropo_account_username'];
+    $password = $server_config['voiptropo_account_password'];
     $token = $server_config['voiptropo_voice_token'];
 
     // Instantiate a new Tropo Event API
@@ -183,7 +183,7 @@ class VoipTropoServer extends VoipServer {
         $voipcall->save();
         $rc = TRUE;
       }
-	  catch (Exception $e) {
+      catch (Exception $e) {
         $msg = "tropo hangup command failed: @error";
         $params = array('@error' => $e->getMessage());
         $voipcall->report_error('voiptropo', $msg, $params);
@@ -201,62 +201,62 @@ class VoipTropoServer extends VoipServer {
  
     // tropo configuration
     $username = $server_config['voiptropo_account_username'];
-	$password = $server_config['voiptropo_account_password'];
+    $password = $server_config['voiptropo_account_password'];
 
     // Instantiate a new tropo Rest Client
-	$provisioning=new ProvisioningAPI($username, $password);
+    $provisioning=new ProvisioningAPI($username, $password);
 
     voip_error_reset();    
-	try{
+    try{
       // Request a list of applications as a way to test the server connectivity
       $response = $provisioning->viewApplications();
-	}
-	catch (Exception $e) {
-	  voip_error("Tropo command Ping failed: " . $e->getMessage());
-	  return FALSE;
-	}
+    }
+    catch (Exception $e) {
+      voip_error("Tropo command Ping failed: " . $e->getMessage());
+      return FALSE;
+    }
    
     return TRUE;
   }
 
-public static function _get_available_voices() {
-  $voices = array();
-  $voices['carmen'] = array('language' => 'es', 'voice' => 'woman',
-                        'description' => t('female voice in Castilian Spanish'));
-  $voices['jorge'] = array('language' => 'es', 'voice' => 'man',
-                        'description' => t('male voice in Castilian Spanish'));				
-  $voices['florence'] = array('language' => 'fr', 'voice' => 'woman',
-                        'description' => t('female voice in French'));
-  $voices['bernard'] = array('language' => 'fr', 'voice' => 'man',
-                        'description' => t('male voice in French'));								
-  $voices['allison'] = array('language' => 'us_en', 'voice' => 'woman',
-                        'description' => t('female voice in US English'));
-  $voices['dave'] = array('language' => 'us_en', 'voice' => 'man',
-                        'description' => t('male voice in US English'));
-  $voices['kate'] = array('language' => 'en', 'voice' => 'woman',
-                        'description' => t('female voice in British English'));
-  $voices['simon'] = array('language' => 'en', 'voice' => 'man',
-                        'description' => t('male voice in British English'));
-  $voices['katrin'] = array('language' => 'de', 'voice' => 'woman',
-                        'description' => t('female voice in German'));
-  $voices['stefan'] = array('language' => 'de', 'voice' => 'man',
-                        'description' => t('male voice in German'));
-  $voices['paola'] = array('language' => 'de', 'voice' => 'woman',
-                        'description' => t('female voice in Italian'));
-  $voices['luca'] = array('language' => 'de', 'voice' => 'man',
-                        'description' => t('male voice in Italian'));		
-  $voices['saskia'] = array('language' => 'nl', 'voice' => 'woman',
-                        'description' => t('female voice in Dutch'));
-  $voices['willem'] = array('language' => 'nl', 'voice' => 'man',
-                        'description' => t('male voice in Dutch'));
-  $voices['soledad'] = array('language' => 'mx', 'voice' => 'woman',
-                        'description' => t('female voice in Mexican Spanish'));
-  $voices['carlos'] = array('language' => 'mx', 'voice' => 'man',
-                        'description' => t('male voice in Mexican Spanish'));
-  $voices['zosia'] = array('language' => 'pl', 'voice' => 'woman',
-                        'description' => t('female voice in Polish'));
-  $voices['krzysztof'] = array('language' => 'pl', 'voice' => 'man',
-                        'description' => t('male voice in Polish'));							
-  return $voices;
-}
+  public static function _get_available_voices() {
+    $voices = array();
+    $voices['carmen'] = array('language' => 'es', 'voice' => 'woman',
+                          'description' => t('female voice in Castilian Spanish'));
+    $voices['jorge'] = array('language' => 'es', 'voice' => 'man',
+                          'description' => t('male voice in Castilian Spanish'));
+    $voices['florence'] = array('language' => 'fr', 'voice' => 'woman',
+                          'description' => t('female voice in French'));
+    $voices['bernard'] = array('language' => 'fr', 'voice' => 'man',
+                          'description' => t('male voice in French'));
+    $voices['allison'] = array('language' => 'us_en', 'voice' => 'woman',
+                          'description' => t('female voice in US English'));
+    $voices['dave'] = array('language' => 'us_en', 'voice' => 'man',
+                          'description' => t('male voice in US English'));
+    $voices['kate'] = array('language' => 'en', 'voice' => 'woman',
+                          'description' => t('female voice in British English'));
+    $voices['simon'] = array('language' => 'en', 'voice' => 'man',
+                          'description' => t('male voice in British English'));
+    $voices['katrin'] = array('language' => 'de', 'voice' => 'woman',
+                          'description' => t('female voice in German'));
+    $voices['stefan'] = array('language' => 'de', 'voice' => 'man',
+                          'description' => t('male voice in German'));
+    $voices['paola'] = array('language' => 'de', 'voice' => 'woman',
+                          'description' => t('female voice in Italian'));
+    $voices['luca'] = array('language' => 'de', 'voice' => 'man',
+                          'description' => t('male voice in Italian'));
+    $voices['saskia'] = array('language' => 'nl', 'voice' => 'woman',
+                          'description' => t('female voice in Dutch'));
+    $voices['willem'] = array('language' => 'nl', 'voice' => 'man',
+                          'description' => t('male voice in Dutch'));
+    $voices['soledad'] = array('language' => 'mx', 'voice' => 'woman',
+                          'description' => t('female voice in Mexican Spanish'));
+    $voices['carlos'] = array('language' => 'mx', 'voice' => 'man',
+                          'description' => t('male voice in Mexican Spanish'));
+    $voices['zosia'] = array('language' => 'pl', 'voice' => 'woman',
+                          'description' => t('female voice in Polish'));
+    $voices['krzysztof'] = array('language' => 'pl', 'voice' => 'man',
+                          'description' => t('male voice in Polish'));
+    return $voices;
+  }
 }
