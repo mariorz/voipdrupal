@@ -49,6 +49,19 @@ class VoipTropoServer extends VoipServer {
   }
 
   /**
+   * Returns the Tropo id associated with the given $voice and $language
+   */
+  static function getVoiceId($voice, $language) {
+    $voices = VoipTropoServer::_get_available_voices();
+    foreach ($voices as $key => $voice_array) {
+      if ($voice_array['language'] == $language && $voice_array['voice'] == $voice) {
+        return $key;
+      }
+    }
+    return NULL;
+  }
+
+  /**
    * Implementation of VoipServer() API method
    */
   function getDefaultLanguage() {
@@ -219,7 +232,7 @@ class VoipTropoServer extends VoipServer {
     return TRUE;
   }
 
-  public static function _get_available_voices() {
+  private static function _get_available_voices() {
     $voices = array();
     $voices['carmen'] = array('language' => 'es', 'voice' => 'woman',
                           'description' => t('female voice in Castilian Spanish'));

@@ -458,17 +458,22 @@ function _voiptropo_script_handler($call, &$tropo) {
               'terminator' => $end_key,
               );
 
+watchdog('voiptropo', '(GetInput) cmd: ' . print_r($cmd, true));
           $prompt = _voiptropo_prompt_validate($script, $cmd->getParam('prompt'));
+watchdog('voiptropo', '(GetInput) prompt: ' . print_r($prompt, true));
+          $default_language = $script->getLanguage();
+          $default_voice = $script->getVoice();
 
           /*bug with Tropo in VoipCmdGetInput. If say parameter is missing from tropo ask() command, an error will happen terminating 
             the current call. Therefore getting last item in array and moving it to ask() command.*/
           $last_say = array_pop($prompt);
-          $text = $script->evalString($last_say->getText());
+watchdog('voiptropo', '(GetInput) prompt: ' . print_r($prompt, true) . ', last_say: ' . print_r($last_say,true));
           $voice_tmp = $last_say->getVoice() ? $script->evalString($last_say->getVoice()) : '';
           $voice = $voice_tmp ? $voice_tmp : $default_voice;
           $language_tmp = $last_say->getLanguage() ? $script->evalString($last_say->getLanguage()) : '';
           $language = $language_tmp ? $language_tmp : $default_language;
-          $voice_id = _get_voice_id($voice, $language);
+          $voice_id = VoipTropoServer::getVoiceId($voice, $language);
+watchdog('voiptropo',"(GetInput) V: $voice, L: $language, Id: $voice_id");
           $voice = $voice_id ? $voice_id : $script->getVoice();
           $as = $last_say->getAs() ? $script->evalString($last_say->getAs()) : '';
 
@@ -476,6 +481,7 @@ function _voiptropo_script_handler($call, &$tropo) {
             $params['as'] = $as; 
           }
           $params['voice'] = $voice;
+          $text = $script->evalString($last_say->getText());
           $say_text = $text;
 
           foreach ($prompt as $p) {
@@ -484,7 +490,8 @@ function _voiptropo_script_handler($call, &$tropo) {
             $voice = $voice_tmp ? $voice_tmp : $default_voice;
             $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
             $language = $language_tmp ? $language_tmp : $default_language;
-            $voice_id = _get_voice_id($voice, $language);
+            $voice_id = VoipTropoServer::getVoiceId($voice, $language);
+watchdog('voiptropo',"(GetInput 2) V: $voice, L: $language, Id: $voice_id");
             $voice = $voice_id ? $voice_id : $script->getVoice();
             $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
             $say_params = array();
@@ -692,6 +699,8 @@ function _voiptropo_script_handler($call, &$tropo) {
               );
 
           $prompt = _voiptropo_prompt_validate($script, $cmd->getParam('prompt'));
+          $default_language = $script->getLanguage();
+          $default_voice = $script->getVoice();
 
           /*bug with Tropo in VoipCmdRecord. If say parameter is missing from tropo record() command, an error will happen terminating 
             the current call. Therefore getting last item in array and moving it to record() command.*/
@@ -701,7 +710,7 @@ function _voiptropo_script_handler($call, &$tropo) {
           $voice = $voice_tmp ? $voice_tmp : $default_voice;
           $language_tmp = $last_say->getLanguage() ? $script->evalString($last_say->getLanguage()) : '';
           $language = $language_tmp ? $language_tmp : $default_language;
-          $voice_id = _get_voice_id($voice, $language);
+          $voice_id = VoipTropoServer::getVoiceId($voice, $language);
           $voice = $voice_id ? $voice_id : $script->getVoice();
           $as = $last_say->getAs() ? $script->evalString($last_say->getAs()) : '';
 
@@ -717,7 +726,7 @@ function _voiptropo_script_handler($call, &$tropo) {
             $voice = $voice_tmp ? $voice_tmp : $default_voice;
             $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
             $language = $language_tmp ? $language_tmp : $default_language;
-            $voice_id = _get_voice_id($voice, $language);
+            $voice_id = VoipTropoServer::getVoiceId($voice, $language);
             $voice = $voice_id ? $voice_id : $script->getVoice();
             $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
             $say_params = array();
@@ -779,6 +788,8 @@ function _voiptropo_script_handler($call, &$tropo) {
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $loop = $script->evalString($cmd->getParam('loop'));
           $prompt = _voiptropo_prompt_validate($script, $cmd->getParam('prompt'));
+          $default_language = $script->getLanguage();
+          $default_voice = $script->getVoice();
 
           for ($i=0;$i<$loop;$i++) {              
             foreach ($prompt as $p) {
@@ -787,7 +798,8 @@ function _voiptropo_script_handler($call, &$tropo) {
               $voice = $voice_tmp ? $voice_tmp : $default_voice;
               $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
               $language = $language_tmp ? $language_tmp : $default_language;
-              $voice_id = _get_voice_id($voice, $language);
+              $voice_id = VoipTropoServer::getVoiceId($voice, $language);
+watchdog('voiptropo',"(Say) V: $voice, L: $language, Id: $voice_id");
               $voice = $voice_id ? $voice_id : $script->getVoice();
               $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
               $say_params = array();
@@ -1067,16 +1079,6 @@ function _voiptropo_process_sms_response($call, $sms_status_tmp) {
   }
   $call->setTextStatus($sms_status);
   return $call;
-}
-
-function _get_voice_id($voice, $language) {
-  $voices=VoipTropoServer::_get_available_voices();
-  foreach ($voices as $key => $voice_array) {
-    if ($voice_array['language'] == $language && $voice_array['voice'] == $voice) {
-      return $key;
-    }
-  }
-  return NULL;
 }
 
 function _voiptropo_prompt_validate($script, $prompt) {
