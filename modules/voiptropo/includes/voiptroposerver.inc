@@ -60,6 +60,19 @@ class VoipTropoServer extends VoipServer {
     }
     return NULL;
   }
+  
+  /**
+   * Returns the Tropo Voice Region id associated with the given $voice and $language
+   */
+  static function getVoiceRegionId($voice, $language) {
+    $voices = VoipTropoServer::_get_available_voices();
+    foreach ($voices as $key => $voice_array) {
+      if ($voice_array['language'] == $language && $voice_array['voice'] == $voice) {
+        return $voice_array['language'].'-'.$voice_array['region'];
+      }
+    }
+    return NULL;
+  }
 
   /**
    * Implementation of VoipServer() API method
@@ -234,41 +247,41 @@ class VoipTropoServer extends VoipServer {
 
   private static function _get_available_voices() {
     $voices = array();
-    $voices['carmen'] = array('language' => 'es', 'voice' => 'woman',
+    $voices['carmen'] = array('language' => 'es', 'region' => 'es', 'voice' => 'woman',
                           'description' => t('female voice in Castilian Spanish'));
-    $voices['jorge'] = array('language' => 'es', 'voice' => 'man',
+    $voices['jorge'] = array('language' => 'es', 'region' => 'es', 'voice' => 'man',
                           'description' => t('male voice in Castilian Spanish'));
-    $voices['florence'] = array('language' => 'fr', 'voice' => 'woman',
+    $voices['florence'] = array('language' => 'fr', 'region' => 'fr', 'voice' => 'woman',
                           'description' => t('female voice in French'));
-    $voices['bernard'] = array('language' => 'fr', 'voice' => 'man',
+    $voices['bernard'] = array('language' => 'fr', 'region' => 'fr', 'voice' => 'man',
                           'description' => t('male voice in French'));
-    $voices['allison'] = array('language' => 'us_en', 'voice' => 'woman',
+    $voices['allison'] = array('language' => 'en', 'region' => 'us', 'voice' => 'woman',
                           'description' => t('female voice in US English'));
-    $voices['dave'] = array('language' => 'us_en', 'voice' => 'man',
+    $voices['dave'] = array('language' => 'en', 'region' => 'us', 'voice' => 'man',
                           'description' => t('male voice in US English'));
-    $voices['kate'] = array('language' => 'en', 'voice' => 'woman',
+    $voices['kate'] = array('language' => 'en', 'region' => 'gb', 'voice' => 'woman',
                           'description' => t('female voice in British English'));
-    $voices['simon'] = array('language' => 'en', 'voice' => 'man',
+    $voices['simon'] = array('language' => 'en', 'region' => 'gb', 'voice' => 'man',
                           'description' => t('male voice in British English'));
-    $voices['katrin'] = array('language' => 'de', 'voice' => 'woman',
+    $voices['katrin'] = array('language' => 'de', 'region' => 'de', 'voice' => 'woman',
                           'description' => t('female voice in German'));
-    $voices['stefan'] = array('language' => 'de', 'voice' => 'man',
+    $voices['stefan'] = array('language' => 'de', 'region' => 'de', 'voice' => 'man',
                           'description' => t('male voice in German'));
-    $voices['paola'] = array('language' => 'de', 'voice' => 'woman',
+    $voices['paola'] = array('language' => 'it', 'region' => 'it', 'voice' => 'woman',
                           'description' => t('female voice in Italian'));
-    $voices['luca'] = array('language' => 'de', 'voice' => 'man',
+    $voices['luca'] = array('language' => 'it', 'region' => 'it', 'voice' => 'man',
                           'description' => t('male voice in Italian'));
-    $voices['saskia'] = array('language' => 'nl', 'voice' => 'woman',
+    $voices['saskia'] = array('language' => 'nl', 'region' => 'nl', 'voice' => 'woman',
                           'description' => t('female voice in Dutch'));
-    $voices['willem'] = array('language' => 'nl', 'voice' => 'man',
+    $voices['willem'] = array('language' => 'nl', 'region' => 'nl', 'voice' => 'man',
                           'description' => t('male voice in Dutch'));
-    $voices['soledad'] = array('language' => 'mx', 'voice' => 'woman',
+    $voices['soledad'] = array('language' => 'es', 'region' => 'mx', 'voice' => 'woman',
                           'description' => t('female voice in Mexican Spanish'));
-    $voices['carlos'] = array('language' => 'mx', 'voice' => 'man',
+    $voices['carlos'] = array('language' => 'es', 'region' => 'mx', 'voice' => 'man',
                           'description' => t('male voice in Mexican Spanish'));
-    $voices['zosia'] = array('language' => 'pl', 'voice' => 'woman',
+    $voices['zosia'] = array('language' => 'pl', 'region' => 'pl', 'voice' => 'woman',
                           'description' => t('female voice in Polish'));
-    $voices['krzysztof'] = array('language' => 'pl', 'voice' => 'man',
+    $voices['krzysztof'] = array('language' => 'pl', 'region' => 'pl', 'voice' => 'man',
                           'description' => t('male voice in Polish'));
     return $voices;
   }

@@ -55,10 +55,11 @@ class VoipTropoScript extends VoipScript {
    *   The 'get voice input' command sets the script variable 'input_digits' to the
    *   input received.  In case nothing is typed, 'input_digits' gets set to ''
    */
-  function addGetVoiceInput($choices, $mode='speech', $prompt='', $end_key='#' , $timeout=5) {
-    $params['choices'] = $choices;
-    $params['mode'] = $mode;
+  function addGetVoiceInput($prompt, $choices, $mode='speech', $recognize_as='', $end_key='#' , $timeout=5) {
     $params['prompt'] = $prompt;
+	$params['choices'] = $choices;
+    $params['mode'] = $mode;
+	$params['recognize_as'] = $recognize_as;
     $params['timeout'] = $timeout;
     $params['end_key'] = $end_key;
     $command = new VoipCommand('VoipCmdGetVoiceInput', $params);
