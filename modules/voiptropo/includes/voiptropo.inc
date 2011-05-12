@@ -992,173 +992,67 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
   $response_url = $menu_path . '/process_get_input/' . $call_nid;
   $action = url($response_url, array('absolute' => TRUE));
 
-          $timeout = $script->evalString($cmd->getParam('timeout', 5.0)); 
-          $end_key = $script->evalString($cmd->getParam('end_key', '')); 
-          $default_language = $script->getLanguage();
-          $default_voice = $script->getVoice();
+  $timeout = $script->evalString($cmd->getParam('timeout', 5.0)); 
+  $end_key = $script->evalString($cmd->getParam('end_key', '')); 
+  $default_language = $script->getLanguage();
+  $default_voice = $script->getVoice();
 		  
-		  if($type=='voice'){
-		    $choices = $script->evalString($cmd->getParam('choices'));
-            $mode = $script->evalString($cmd->getParam('mode'));
-			$recognize_as_tmp = $script->evalString($cmd->getParam('recognize_as'));
-			$default_region = VoipTropoServer::getVoiceRegionId($default_voice, $default_language);
-			$recognize_as = $recognize_as_tmp ? $recognize_as_tmp : $default_region;
-			$tropo->setLanguage($recognize_as);
-			
-			$allowed_modes = array('keypad', 'speech', 'any');
-			  if (in_array($mode, $allowed_modes)) {
-				//Convert keypad to dtmf to match Tropo allowed mode values
-				if($mode == 'keypad'){
-				  $mode = 'dtmf';
-				}
-			  }
-			  else {
-				$mode='speech';
-			  }
-		  }
-		  else{
-		    $mode='dtmf';
-			$num_digits = $script->evalString($cmd->getParam('num_digits'), 1);
-			if (empty($num_digits)) {
-              $num_digits = 1;
-            }
-			$grxml_path="voip/tropo/grammar/numeric_star_hash/". $num_digits;
-            $choices = url($grxml_path, array('absolute' => TRUE));
-		  }
+  if($type=='voice'){
+    $choices = $script->evalString($cmd->getParam('choices'));
+    $mode = $script->evalString($cmd->getParam('mode'));
 
-          /*$params = array(
-              'attempts' => 3,
-              'timeout' => (float)$timeout, 
-              'choices' => $choices,
-              'mode' => $mode,
-              'terminator' => $end_key,
-              );*/
-			$attempts = 3;
-		    $timeout = (float)$timeout;
+    $recognize_as_tmp = $script->evalString($cmd->getParam('recognize_as'));
+    $default_region = VoipTropoServer::getVoiceRegionId($default_voice, $default_language);
+    $recognize_as = $recognize_as_tmp ? $recognize_as_tmp : $default_region;
+    $tropo->setLanguage($recognize_as);
 			
-watchdog('voiptropo', '(GetInput2) cmd: ');
+    $allowed_modes = array('keypad', 'speech', 'any');
+    if(in_array($mode, $allowed_modes)) {
+      //Convert keypad to dtmf to match Tropo allowed mode values
+      if($mode == 'keypad'){
+	      $mode = 'dtmf';
+      }
+    }
+    else {
+	    $mode='speech';
+    }
+  }
+  else {
+    $mode='dtmf';
+    $num_digits = $script->evalString($cmd->getParam('num_digits'), 1);
+    if (empty($num_digits)) {
+      $num_digits = 1;
+    }
+    $grxml_path="voip/tropo/grammar/numeric_star_hash/". $num_digits;
+    $choices = url($grxml_path, array('absolute' => TRUE));
+  }
+  $attempts = 3;
+  $timeout = (float)$timeout;
+			
 watchdog('voiptropo', '(GetInput) cmd: ' . print_r($cmd, true));
-          $prompt = _voiptropo_prompt_validate($script, $cmd->getParam('prompt'));
+  $prompt = _voiptropo_prompt_validate($script, $cmd->getParam('prompt'));
 watchdog('voiptropo', '(GetInput) prompt: ' . print_r($prompt, true));
-          
 
-          /*bug with Tropo in VoipCmdGetInput. If say parameter is missing from tropo ask() command, an error will happen terminating 
-            the current call. Therefore getting last item in array and moving it to ask() command.*/
-          foreach ($prompt as $p) {
-            $text = $script->evalString($p->getText());
-            $voice_tmp = $p->getVoice() ? $script->evalString($p->getVoice()) : '';
-            $voice = $voice_tmp ? $voice_tmp : $default_voice;
-            $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
-            $language = $language_tmp ? $language_tmp : $default_language;
-            $voice_id = VoipTropoServer::getVoiceId($voice, $language);
-            $voice = $voice_id ? $voice_id : $script->getVoice();
-			watchdog('voiptropo',"(GetInput 2) V: $voice, L: $language, Id: $voice_id");
-            $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
-            //$say_params = array();
-            if (empty($as) && !in_array($as, array('digits', 'date'))) {
-              $as = null; 
-            }
-            //$say_params['voice'] = $voice;
-            //$tropo->say($text, $say_params);                         
-			$say[] = new Say($text, $as, null, $voice);
-          }
+	foreach ($prompt as $p) {
+    $text = $script->evalString($p->getText());
+    $voice_tmp = $p->getVoice() ? $script->evalString($p->getVoice()) : '';
+    $voice = $voice_tmp ? $voice_tmp : $default_voice;
+    $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
+    $language = $language_tmp ? $language_tmp : $default_language;
+    $voice_id = VoipTropoServer::getVoiceId($voice, $language);
+    $voice = $voice_id ? $voice_id : $script->getVoice();
+watchdog('voiptropo',"(GetInput 2) V: $voice, L: $language, Id: $voice_id");
+    $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
+    if (empty($as) && !in_array($as, array('digits', 'date'))) {
+            $as = NULL; 
+    }
+    $say[] = new Say($text, $as, null, $voice);
+  }
 
-          //$tropo->ask($say_text, $params);
-		  $choices = isset($choices) ? new Choices($choices, $mode, $end_key) : null;
-		  $voice = '';
-		  $ask = new Ask($attempts, $bargein, $choices, $minConfidence, $name, $required, $say, $timeout);
-		  $tropo->ask($ask);
-          $tropo->on(array("event" => "continue", "next" => $action)); 
+  $choices = isset($choices) ? new Choices($choices, $mode, $end_key) : null;
+  $voice = '';
+  $ask = new Ask($attempts, $bargein, $choices, $minConfidence, $name, $required, $say, $timeout);
+  $tropo->ask($ask);
+  $tropo->on(array("event" => "continue", "next" => $action)); 
 }
 
-/*function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
-watchdog('voiptropo', 'In get input');
-$call->setCallStatus(VoipCall::IN_PROGRESS);
-          $menu_path = 'voip/tropo/callhandler';
-          $call_nid = $call->getNodeId();
-          $response_url = $menu_path . '/process_get_input/' . $call_nid;
-          $action = url($response_url, array('absolute' => TRUE));
-
-          $timeout = $script->evalString($cmd->getParam('timeout', 5.0)); 
-          $end_key = $script->evalString($cmd->getParam('end_key', '')); 
-          
-		  
-		  if($type=='voice'){
-		    $choices = $script->evalString($cmd->getParam('choices'));
-            $mode = $script->evalString($cmd->getParam('mode'));
-			$allowed_modes = array('keypad', 'speech', 'any');
-			  if (in_array($mode, $allowed_modes)) {
-				//Convert keypad to dtmf to match Tropo allowed mode values
-				if($mode == 'keypad'){
-				  $mode = 'dtmf';
-				}
-			  }
-			  else {
-				$mode='speech';
-			  }
-		  }
-		  else{
-		    $mode='dtmf';
-			$num_digits = $script->evalString($cmd->getParam('num_digits'), 1);
-			if (empty($num_digits)) {
-              $num_digits = 1;
-            }
-			$grxml_path="voip/tropo/grammar/numeric_star_hash/". $num_digits;
-            $choices = url($grxml_path, array('absolute' => TRUE));
-		  }
-
-          $params = array(
-              'attempts' => 3,
-              'timeout' => (float)$timeout, 
-              'choices' => $choices,
-              'mode' => $mode,
-              'terminator' => $end_key,
-              );
-watchdog('voiptropo', '(GetInput2) cmd: ');
-watchdog('voiptropo', '(GetInput) cmd: ' . print_r($cmd, true));
-          $prompt = _voiptropo_prompt_validate($script, $cmd->getParam('prompt'));
-watchdog('voiptropo', '(GetInput) prompt: ' . print_r($prompt, true));
-          $default_language = $script->getLanguage();
-          $default_voice = $script->getVoice();
-
-          /*bug with Tropo in VoipCmdGetInput. If say parameter is missing from tropo ask() command, an error will happen terminating 
-            the current call. Therefore getting last item in array and moving it to ask() command.*//*
-          $last_say = array_pop($prompt);
-watchdog('voiptropo', '(GetInput) prompt: ' . print_r($prompt, true) . ', last_say: ' . print_r($last_say,true));
-          $voice_tmp = $last_say->getVoice() ? $script->evalString($last_say->getVoice()) : '';
-          $voice = $voice_tmp ? $voice_tmp : $default_voice;
-          $language_tmp = $last_say->getLanguage() ? $script->evalString($last_say->getLanguage()) : '';
-          $language = $language_tmp ? $language_tmp : $default_language;
-          $voice_id = VoipTropoServer::getVoiceId($voice, $language);
-watchdog('voiptropo',"(GetInput) V: $voice, L: $language, Id: $voice_id");
-          $voice = $voice_id ? $voice_id : $script->getVoice();
-          $as = $last_say->getAs() ? $script->evalString($last_say->getAs()) : '';
-
-          if (!empty($as) && in_array($as, array('digits', 'date'))) {
-            $params['as'] = $as; 
-          }
-          $params['voice'] = $voice;
-          $text = $script->evalString($last_say->getText());
-          $say_text = $text;
-
-          foreach ($prompt as $p) {
-            $text = $script->evalString($p->getText());
-            $voice_tmp = $p->getVoice() ? $script->evalString($p->getVoice()) : '';
-            $voice = $voice_tmp ? $voice_tmp : $default_voice;
-            $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
-            $language = $language_tmp ? $language_tmp : $default_language;
-            $voice_id = VoipTropoServer::getVoiceId($voice, $language);
-watchdog('voiptropo',"(GetInput 2) V: $voice, L: $language, Id: $voice_id");
-            $voice = $voice_id ? $voice_id : $script->getVoice();
-            $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
-            $say_params = array();
-            if (!empty($as) && in_array($as, array('digits', 'date'))) {
-              $say_params['as'] = $as; 
-            }
-            $say_params['voice'] = $voice;
-            $tropo->say($text, $say_params);                         
-          }
-
-          $tropo->ask($say_text, $params);
-          $tropo->on(array("event" => "continue", "next" => $action)); 
-}*/

@@ -115,28 +115,26 @@ function voiptropo_menu() {
 function _voiptropo_grammar_numeric_star_hash($num_digits=1) {
 $grxml = '<?xml version="1.0" encoding="UTF-8"?>
 <grammar xmlns="http://www.w3.org/2001/06/grammar" xml:lang="en-US" root="myRule">  
-<rule id="myRule" scope="public">
-<item repeat="'. $num_digits .'">
-<ruleref uri="#digits" />
-</item>
-
-</rule>
-
-<rule id="digits">
-  <one-of>
-  <item>*</item>
-  <item>#</item>
-  <item>0</item>
-    <item >1</item>
-    <item >2</item>
-    <item >3</item>
-    <item >4</item>
-    <item >5</item>
-    <item >6</item>
-    <item >7</item>
-    <item >8</item>
-    <item >9</item>
-  </one-of>
+  <rule id="myRule" scope="public">
+    <item repeat="'. $num_digits .'">
+      <ruleref uri="#digits" />
+    </item>
+  </rule>
+  <rule id="digits">
+    <one-of>
+      <item>*</item>
+      <item>#</item>
+      <item>0</item>
+      <item>1</item>
+      <item>2</item>
+      <item>3</item>
+      <item>4</item>
+      <item>5</item>
+      <item>6</item>
+      <item>7</item>
+      <item>8</item>
+      <item>9</item>
+    </one-of>
   </rule> 
 </grammar>';
 
