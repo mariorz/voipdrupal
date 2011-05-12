@@ -208,6 +208,12 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
         break;  
       case 'process_get_input':
         $script = $call->getScript();
+		$digits = str_replace(" ","",$result->getValue());
+        $script->setVar('input_digits', $digits);
+        $call->setScript($script);
+        break;
+	 case 'process_get_voice_input':
+        $script = $call->getScript();
         $script->setVar('input_digits', $result->getValue());
         $call->setScript($script);
         break;
@@ -989,8 +995,6 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
   $call->setCallStatus(VoipCall::IN_PROGRESS);
   $menu_path = 'voip/tropo/callhandler';
   $call_nid = $call->getNodeId();
-  $response_url = $menu_path . '/process_get_input/' . $call_nid;
-  $action = url($response_url, array('absolute' => TRUE));
 
   $timeout = $script->evalString($cmd->getParam('timeout', 5.0)); 
   $end_key = $script->evalString($cmd->getParam('end_key', '')); 
@@ -998,6 +1002,7 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
   $default_voice = $script->getVoice();
 		  
   if($type=='voice'){
+    $response_url = $menu_path . '/process_get_voice_input/' . $call_nid;
     $choices = $script->evalString($cmd->getParam('choices'));
     $mode = $script->evalString($cmd->getParam('mode'));
 
@@ -1018,6 +1023,7 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
     }
   }
   else {
+    $response_url = $menu_path . '/process_get_input/' . $call_nid;
     $mode='dtmf';
     $num_digits = $script->evalString($cmd->getParam('num_digits'), 1);
     if (empty($num_digits)) {
@@ -1026,6 +1032,7 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
     $grxml_path="voip/tropo/grammar/numeric_star_hash/". $num_digits;
     $choices = url($grxml_path, array('absolute' => TRUE));
   }
+  $action = url($response_url, array('absolute' => TRUE));
   $attempts = 3;
   $timeout = (float)$timeout;
 			
