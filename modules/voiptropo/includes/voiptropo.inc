@@ -696,9 +696,13 @@ watchdog('voiptropo',"(Say) V: $voice, L: $language, Id: $voice_id");
               $voice = $voice_id ? $voice_id : $script->getVoice();
               $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
               $say_params = array();
-              if (!empty($as) && in_array($as, array('digits', 'date'))) {
-                $say_params['as'] = $as; 
-              }
+              if($as == 'digits'){
+			    $text = "<speak>"._voiptropo_parse_numbers($text)."</speak>";
+			  }
+			  elseif($as == 'date'){
+				$say_params['as'] = $as; 
+			  }
+              
               $say_params['voice'] = $voice;
               $tropo->say($text, $say_params);
             }
@@ -1057,9 +1061,16 @@ watchdog('voiptropo',"(GetInput 2) V: $voice, L: $language, Id: $voice_id");
   }
 
   $choices = isset($choices) ? new Choices($choices, $mode, $end_key) : null;
-  $voice = '';
-  $ask = new Ask($attempts, $bargein, $choices, $minConfidence, $name, $required, $say, $timeout);
+ 
+  $ask = new Ask($attempts, $bargein, $choices, $minConfidence, $name, $required, $say, $timeout, $voice);
   $tropo->ask($ask);
   $tropo->on(array("event" => "continue", "next" => $action)); 
 }
 
+function _voiptropo_parse_numbers($str){
+  return preg_replace_callback('{(\d+)}', '_voiptropo_ssml_digits', $str);
+}
+
+function _voiptropo_ssml_digits($matches) {
+  return "<say-as interpret-as='vxml:digits'>".$matches[0]."</say-as>";
+}

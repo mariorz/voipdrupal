@@ -907,7 +907,6 @@ function _voiptwilio_parse_numbers($str){
 //preg_match_all("{(\d+)}", $str, $result, PREG_PATTERN_ORDER);
 //return $result;
 return preg_replace_callback('{(\d+)}', '_voiptwilio_numbers_add_space', $str);
-
 }
 
 function _voiptwilio_numbers_add_space($matches) {
