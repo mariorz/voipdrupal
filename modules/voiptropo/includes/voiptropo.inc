@@ -1037,7 +1037,7 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
     $choices = url($grxml_path, array('absolute' => TRUE));
   }
   $action = url($response_url, array('absolute' => TRUE));
-  $attempts = 3;
+  $attempts = 1;
   $timeout = (float)$timeout;
 			
 watchdog('voiptropo', '(GetInput) cmd: ' . print_r($cmd, true));
