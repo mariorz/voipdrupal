@@ -850,14 +850,10 @@ function _voiptwilio_generate_audio_response($script, $prompt, $loop=1) {
     $as_tmp = $p->getAs() ? $script->evalString($p->getAs()) : '';
     $as = $as_tmp ? $as_tmp : 'number';
 
-    if($as == 'digits'){
-      //Convert numbers into digits
-      $text = _voiptwilio_parse_numbers($text);
-    }
-  
     // split the text into audio URLs and text elements
     $elements =
       preg_split(VOIPTWILIO_URL_CHECK, $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+watchdog('test', "split text: $text, elements: " . print_r($elements, true));
   
     // process each element
     $url_flag = FALSE;
@@ -875,6 +871,10 @@ function _voiptwilio_generate_audio_response($script, $prompt, $loop=1) {
             $url_flag = FALSE;
           }
           if($element) {
+            if($as == 'digits'){
+              //Convert numbers into digits
+              $element = _voiptwilio_parse_numbers($element);
+            }
             $response .= "<Say voice='$voice' language='$language'>$element</Say>";
           }
         }
