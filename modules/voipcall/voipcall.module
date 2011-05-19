@@ -7,7 +7,7 @@
  * Implementation of core functionality associated with voip calls
  */
 
-foreach (array('voipcall.features.inc', 'voipscript.inc', 'voipcall.inc') as $file) {
+foreach (array('voipscript.inc', 'voipcall.inc') as $file) {
   require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . $file);
 }
 
@@ -27,7 +27,7 @@ function voipcall_menu() {
     'description' => 'Defines default parameters used in VoIP Drupal calls.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('voipcall_admin_form', NULL),
-    'access arguments' => array('administer voipcall setup')
+    'access arguments' => array('administer voipcall setup'),
   );
   
    $items['voip/sound/beep'] = array(

@@ -112,7 +112,6 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
 
     // load the variables already associated with the call, if any
     $call = VoipCall::load($call_nid);
-
     // handle first response to an outbound call
     if ($tropo_action == 'process_outbound_calls') {
       // store tropo call id for all outbound calls
@@ -1037,7 +1036,7 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
     $choices = url($grxml_path, array('absolute' => TRUE));
   }
   $action = url($response_url, array('absolute' => TRUE));
-  $attempts = 3;
+  $attempts = 1;
   $timeout = (float)$timeout;
 			
 watchdog('voiptropo', '(GetInput) cmd: ' . print_r($cmd, true));
