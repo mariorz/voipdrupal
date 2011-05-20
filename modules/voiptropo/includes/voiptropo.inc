@@ -308,12 +308,13 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
 
   // process the call script
   $rc = _voiptropo_script_handler($call, $tropo);
-  /*
+  
   //Add final event
-  $response_url = $menu_path . '/process_callstatus/' . $call_nid . '/continue' ;
-  $action = url($response_url, array('absolute' => TRUE));
-  $tropo->on(array("event" => "continue", "next" => $action));
-   */
+  if($tropo_action!='process_callstatus'){
+    $response_url = $menu_path . '/process_callstatus/' . $call_nid . '/continue' ;
+    $action = url($response_url, array('absolute' => TRUE));
+    $tropo->on(array("event" => "continue", "next" => $action));
+  }
 
   //TESTING:
   $msg = "Tropo output ". print_r($tropo, TRUE);
