@@ -569,7 +569,7 @@ function _voiptropo_script_handler($call, &$tropo) {
           $response_url = $menu_path . '/process_record/' . $call_nid;
           $success_action = url($response_url, array('absolute' => TRUE));
           $method = 'POST';
-          $timeout = $script->evalString($cmd->getParam('timeout', 5));
+          $timeout = $script->evalString($cmd->getParam('timeout', 5.0));
           $end_key = $script->evalString($cmd->getParam('end_key', '#'));
           $max_length = $script->evalString($cmd->getParam('max_length', 3600));
 
@@ -578,11 +578,11 @@ function _voiptropo_script_handler($call, &$tropo) {
           $response_url = $menu_path . '/process_empty_recording/' . $call_nid;
           $timeout_action = url($response_url, array('absolute' => TRUE));
 
-          $choices->terminator=$end_key;
-
+          //$choices->terminator=$end_key;
+          $choices=$end_key;
           $params = array(
               'maxTime' => $max_length,
-              'maxSilence' => $timeout,
+			  'maxSilence' => (float)$timeout,
               'beep' => $play_beep,
               'format' => $record_format,
               'method' => $method,

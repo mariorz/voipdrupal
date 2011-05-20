@@ -27,7 +27,6 @@ function voipcall_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
-	  // uid of user who recorded the recording
       'uid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
