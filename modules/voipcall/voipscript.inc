@@ -1040,8 +1040,6 @@ class VoipPrompt {
  */
 function voipscript_get_run_ivr_menu_script($options) {
 
-watchdog('test', 'in run_ivr_menu_script with: ' . print_r($options, true));
- 
   $script = new VoipScript('voipscript_run_ivr_menu');
 
   // initialize script variables
@@ -1184,6 +1182,5 @@ function _voipscript_replace_variable($var_name, $vars, $eval) {
 
 
 function _voipscript_get_element($index, $array){
-watchdog('test', "get_element: index: $index, array: " . print_r($array, true));
   return $array[$index];
 }
