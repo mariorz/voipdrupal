@@ -24,9 +24,9 @@ class VoipCall {
    */
 
   /**
-   * VoipCall node
+   * VoipCall data
    */
-   private $call_node;
+   private $call_data;
 
 
   /**
@@ -94,11 +94,11 @@ class VoipCall {
   /**
    * VoipCall constructor
    */
-  function __construct($call_node=NULL) {
-    if(is_array($call_node)){
-      $call_node = (object)$node;
+  function __construct($call_data=NULL) {
+    if(is_array($call_data)){
+      $call_data = (object)$call_data;
     }
-    $this->call_node = $call_node;
+    $this->call_data = $call_data;
   }
 
 
@@ -109,21 +109,20 @@ class VoipCall {
   /**
    * Load a call from the database
    *
-   * @param $call_nid
-   *   The nid of the call node
+   * @param $cid
+   *   The id of the call row
    *
    * @return
    *   The VoipCall instance, or NULL in case of an invalid nid
    */
-  public static function load($call_nid){
+  public static function load($cid){
     $call = NULL;
-    $call_node = node_load($call_nid);
-    if($call_node){
+    $call_data = db_fetch_object(db_query("SELECT * FROM {voipcall} WHERE cid=%d", $cid));
+    if($call_data){
       // unserialize the call script
-// TODO: move the unserialization to inside _nodeapi()
-      $script = unserialize($call_node->field_voipcall_script[0]['value']);
-      $call_node->field_voipcall_script[0]['value'] = $script;
-      $call = new VoipCall($call_node);
+      $script = unserialize($call_data->script);
+      $call_data->script = $script;
+      $call = new VoipCall($call_data);
     }
     return $call;
   }
@@ -135,10 +134,11 @@ class VoipCall {
    *
    * @return $nid or NULL depending on the result of the query
    */
+   //TODO: Rename to getCidFromCallId ?
   public static function getNidFromCallId($call_id){
-    // fetch the desired voipcall node
-    $call_nid = db_result(db_query("SELECT `nid` FROM `content_type_voipcall` WHERE `field_voipcall_call_id_value` = '%s'", $call_id));
-    return $call_nid;
+    // fetch the desired voipcall data
+    $cid = db_result(db_query("SELECT cid FROM {voipcall} WHERE call_id = '%s'", $call_id));
+    return $cid;
   }
 
 
@@ -148,18 +148,18 @@ class VoipCall {
    */
 
   /**
-   * Save the call node to the database
+   * Save the call data to the database
    *
    * @return
    *   The updated VoipCall instance, or NULL in case of an invalid nid
    */
   public function save(){
 
-    $call_node = $this->_voipcall_save($this->call_node);
+    $call_data = $this->_voipcall_save($this->call_data);
     // unserialize the call script
-    $script = unserialize($call_node->field_voipcall_script[0]['value']);
-    $call_node->field_voipcall_script[0]['value'] = $script;
-    $this->call_node = $call_node;
+    $script = unserialize($call_data->script);
+    $call_data->script = $script;
+    $this->call_data = $call_data;
     return $this;
   }
         
@@ -169,7 +169,7 @@ class VoipCall {
    */
   public function isHangup() {
     $rc = FALSE;
-    $status = $this->call_node->field_voipcall_status[0]['value'];
+    $status = $this->call_data->status;
     switch($status) {
       case VoipCall::BUSY:
       case VoipCall::CANCELED:
@@ -213,68 +213,69 @@ class VoipCall {
 
   public function getCallNode(){
     // NOTE: in order to protect the architecture of this class, please
-    // only use this method to access generic node info such as nid, uid, etc.
-    return $this->call_node;
+    // only use this method to access generic data info such as nid, uid, etc.
+    return $this->call_data;
   }
-
+ 
+ //TODO: Rename to getCid ??
   public function getNodeId(){
-    return $this->call_node->nid;
+    return $this->call_data->cid;
   }
     
   public function getUid(){
-    return $this->call_node->uid;
+    return $this->call_data->uid;
   }
     
   public function setUid($uid){
-    $this->call_node->uid = $uid;
+    $this->call_data->uid = $uid;
   }
     
   public function getCallId(){
-    return $this->call_node->field_voipcall_call_id[0]['value'];
+    return $this->call_data->call_id;
   }
     
   public function setCallId($cid){
-    $this->call_node->field_voipcall_call_id[0]['value'] = $cid;
+    $this->call_data->call_id = $cid;
   }
     
   public function getDestNumber(){
-    return $this->call_node->field_voipcall_dest_number[0]['value'];
+    return $this->call_data->dest_number;
   }
 
   public function setDestNumber($number){
-    $this->call_node->field_voipcall_dest_number[0]['value'] = $number;
+    $this->call_data->dest_number = $number;
   }
 
   public function getDestName(){
-    return $this->call_node->field_voipcall_dest_name[0]['value'];
+    return $this->call_data->dest_name;
   }
 
   public function setDestName($name){
-    $this->call_node->field_voipcall_dest_name[0]['value'] = $name;
+    $this->call_data->dest_name = $name;
   }
 
   public function getCallerNumber(){
-    return $this->call_node->field_voipcall_caller_number[0]['value'];
+    return $this->call_data->caller_number;
   }
 
   public function setCallerNumber($number){
-    $this->call_node->field_voipcall_caller_number[0]['value'] = $number;
+    $this->call_data->caller_number = $number;
   }
 
   public function getCallerName(){
-    return $this->call_node->field_voipcall_caller_name[0]['value'];
+    return $this->call_data->caller_name;
   }
 
   public function setCallerName($name){
-    $this->call_node->field_voipcall_caller_name[0]['value'] = $name;
+    $this->call_data->caller_name = $name;
   }
 
   public function getCallStatus(){
-    return $this->call_node->field_voipcall_status[0]['value'];
+    return $this->call_data->status;
   }
     
   public function setCallStatus($status){
-    $this->call_node->field_voipcall_status[0]['value'] = $status;
+    $this->call_data->status = $status;
   }
     
   public function getCallStatusDescription(){
@@ -327,97 +328,97 @@ class VoipCall {
   }
 
   public function getAnsweredBy(){
-    return $this->call_node->field_voipcall_answered_by[0]['value'];
+    return $this->call_data->answered_by;
   }
 
   public function setAnsweredBy($answered_by){
-    $this->call_node->field_voipcall_answered_by[0]['value'] = $answered_by;
+    $this->call_data->answered_by = $answered_by;
   }
 
   public function getTextStatus(){
-    return $this->call_node->field_voipcall_text_status[0]['value'];
+    return $this->call_data->text_status;
   }
 
   public function setTextStatus($status){
-    $this->call_node->field_voipcall_text_status[0]['value'] = $status;
+    $this->call_data->text_status = $status;
   }
     
   public function getSource(){
-    return $this->call_node->field_voipcall_source[0]['value'];
+    return $this->call_data->source;
   }
 
   public function setSource($source){
-    $this->call_node->field_voipcall_source[0]['value'] = $source;
+    $this->call_data->source = $source;
   }
 
   public function getDirection(){
-    return $this->call_node->field_voipcall_direction[0]['value'];
+    return $this->call_data->direction;
   }
 
   public function setDirection($direction){
-    $this->call_node->field_voipcall_direction[0]['value'] = $direction;
+    $this->call_data->direction = $direction;
   }
 
   public function getStartTime(){
-    return $this->call_node->field_voipcall_start_time[0]['value'];
+    return $this->call_data->start_time;
   }
 
   public function setStartTime($time=NULL){
     if(!$time) $time = time();
-    return $this->call_node->field_voipcall_start_time[0]['value'] = $time;
+    return $this->call_data->start_time = $time;
   }
 
   public function getEndTime(){
-    return $this->call_node->field_voipcall_end_time[0]['value'];
+    return $this->call_data->end_time;
   }
 
   public function setEndTime($time=NULL){
     if(!$time) $time = time();
-    return $this->call_node->field_voipcall_end_time[0]['value'] = $time;
+    return $this->call_data->end_time = $time;
   }
 
   public function getDuration(){
-    return $this->call_node->field_voipcall_duration[0]['value'];
+    return $this->call_data->duration;
   }
 
   public function setDuration($time){
-    return $this->call_node->field_voipcall_duration[0]['value'] = $time;
+    return $this->call_data->duration = $time;
   }
 
   public function getErrorMessage(){
-    return $this->call_node->field_voipcall_error_message[0]['value'];
+    return $this->call_data->error_message;
   }
 
   public function setErrorMessage($msg){
-    $this->call_node->field_voipcall_error_message[0]['value'] = $msg;
+    $this->call_data->error_message = $msg;
   }
 
 
   public function getScript(){
-    $script = $this->call_node->field_voipcall_script[0]['value'];
+    $script = $this->call_data->script;
     $updated_script = $this->_voipcall_update_script($script);
     return $updated_script;
   }
 
   public function setScript($script) {
-    $this->call_node->field_voipcall_script[0]['value'] = $script;
+    $this->call_data->script = $script;
   }
 
 
   public function getHangupScriptName(){
-    return $this->call_node->field_voipcall_hangup_script[0]['value'];
+    return $this->call_data->hangup_script;
   }
 
   public function setHangupScriptName($name){
-    $this->call_node->field_voipcall_hangup_script[0]['value'] = $name;
+    $this->call_data->hangup_script = $name;
   }
 
   public function getHangupReason(){
-    return $this->call_node->field_voipcall_hangup_reason[0]['value'];
+    return $this->call_data->hangup_reason;
   }
 
   public function setHangupReason($reason){
-    $this->call_node->field_voipcall_hangup_reason[0]['value'] = $reason;
+    $this->call_data->hangup_reason = $reason;
   }
 
   public function getHangupReasonDescription(){
@@ -467,11 +468,11 @@ class VoipCall {
   }
 
   public function getCheckMachine(){
-    return $this->call_node->field_voipcall_check_machine[0]['value'];
+    return $this->call_data->check_machine;
   }
 
   public function setCheckMachine($bool){
-    $this->call_node->field_voipcall_check_machine[0]['value'] = $bool;
+    $this->call_data->check_machine = $bool;
   }
 
 
@@ -480,13 +481,13 @@ class VoipCall {
    */
 
   /**
-   * Save VoipCall nodes. 
+   * Save VoipCall data. 
    * 
    * @param 
    *  $details, VoipCall instance with the fields to be saved
    * 
    * @return
-   *  $node, the newly saved call_node node.
+   *  $data, the newly saved call_data data.
    */
   private function _voipcall_save($details=NULL) {
   
@@ -494,55 +495,54 @@ class VoipCall {
       $details = (object)$details;
     }
   
-    // if this is a new call node being created
-    if(is_null($details->nid)){
+    // if this is a new call data being created
+    if(is_null($details->cid)){
   // TODO Why does this get called so many times when a call goes out? 
-  // TODO Why doesn't this save new nodes every time a call blast goes out, e.g. unchecking blast sent ?
+  // TODO Why doesn't this save new data every time a call blast goes out, e.g. unchecking blast sent ?
   
-      $node = new stdClass();
-  
-      // set the node type
-      $node->type = 'voipcall';
+      $data = new stdClass();
+      $update = NULL;
+      $data->created = time();
 
-      // set the node uid
+      // set the data uid
       global $user;
-      $node->uid = $user->uid;
+      $data->uid = $user->uid;
   
       // initialize the 'Call Id' field
-      if(!isset($details->field_voipcall_call_id[0]['value'])) {
-        $node->field_voipcall_call_id[0]['value'] = NULL;
+      if(!isset($details->call_id)) {
+        $data->call_id = NULL;
       }
   
       // initialize 'Call Status' field
-      if(!isset($details->field_voipcall_status[0]['value'])) {
-        $node->field_voipcall_status[0]['value'] = VoipCall::NOT_CALLED;
+      if(!isset($details->status)) {
+        $data->status = VoipCall::NOT_CALLED;
       }
   
       // initialize 'Answered By' field
-      if(!isset($details->field_voipcall_answered_by[0]['value'])) {
-        $node->field_voipcall_answered_by[0]['value'] = VoipCall::NOT_CHECKED;
+      if(!isset($details->answered_by)) {
+        $data->answered_by = VoipCall::NOT_CHECKED;
       }
   
       // initialize 'Text Status' field
-      if(!isset($details->field_voipcall_text_status[0]['value'])) {
-        $node->field_voipcall_text_status[0]['value'] = VoipCall::TEXT_NOT_SENT;
+      if(!isset($details->text_status)) {
+        $data->text_status = VoipCall::TEXT_NOT_SENT;
       }
 
       // initialize 'Call Source' field
-      if(!isset($details->field_voipcall_source[0]['value'])) {
-      $node->field_voipcall_source[0]['value'] = 'drupal';
+      if(!isset($details->source)) {
+      $data->source = 'drupal';
     }
   
       // initialize 'Call Direction' field
-      if(!isset($details->field_voipcall_direction[0]['value'])) {
-        $node->field_voipcall_direction[0]['value'] = VoipCall::OUTBOUND;
+      if(!isset($details->direction)) {
+        $data->direction = VoipCall::OUTBOUND;
       }
   
       // initialize voice call script with the default inbound/outbound one
-      if(!isset($details->field_voipcall_script[0]['value'])) {
-        $dir_tmp = $details->field_voipcall_direction[0]['value'];
+      if(!isset($details->script)) {
+        $dir_tmp = $details->direction;
         $direction = $dir_tmp ? $dir_tmp
-                              : $node->field_voipcall_direction[0]['value'];
+                              : $data->direction;
         if($direction == VoipCall::INBOUND){
           $script_name = voipcall_get_default_inbound_call_script_name();
         }
@@ -550,129 +550,130 @@ class VoipCall {
           $script_name = voipcall_get_default_outbound_call_script_name();
         }
         $default_script = VoipScript::loadScript($script_name);
-        $node->field_voipcall_script[0]['value'] = serialize($default_script);
+        $data->script = serialize($default_script);
       }
   
 /** TODO: Awaiting SMS integration
       // initialize text script with the default inbound one
-      if(!isset($details->field_voipcall_text_script[0]['value'])) {
+      if(!isset($details->text_script)) {
         $script_name = voipcall_get_default_inbound_text_script_name();
         $default_script = VoipScript::loadScript($script_name);
-        $node->field_voipcall_text_script[0]['value'] = serialize($default_script);
+        $data->text_script = serialize($default_script);
       }
 ************/
   
       // initialize 'Hangup Reason' field
-      if(!isset($details->field_voipcall_hangup_reason[0]['value'])) {
-        $node->field_voipcall_hangup_reason[0]['value'] = NULL;
+      if(!isset($details->hangup_reason)) {
+        $data->hangup_reason = NULL;
       }
   
       // initialize 'Check Machine' field
-      if(!isset($details->field_voipcall_check_machine[0]['value'])) {
-        $node->field_voipcall_check_machine[0]['value'] = FALSE;
+      if(!isset($details->check_machine)) {
+        $data->check_machine = FALSE;
       }
   
     }
     else {
-      // load the node
-  //TODO: Why does the following node_load requires resetting the node cache?
-      $node = node_load($details->nid, NULL, TRUE);
+      // load the data
+      $data = db_fetch_object(db_query("SELECT * FROM {voipcall} WHERE cid=%d", $details->cid));
+      $update = 'cid';
+      $data->changed = time();
     }
   
-    // update node fields
-    $new_dest_number = $details->field_voipcall_dest_number[0]['value'];
-    if(isset($new_dest_number)) $node->title = check_plain($new_dest_number);
-    if(isset($details->uid)) $node->uid = $details->uid;
+    // update data fields
+    $new_dest_number = $details->dest_number;
+    //if(isset($new_dest_number)) $data->title = check_plain($new_dest_number);
+    if(isset($details->uid)) $data->uid = $details->uid;
   
     // update voipcall-specific fields
   
-    $new_call_id = $details->field_voipcall_call_id[0]['value'];
+    $new_call_id = $details->call_id;
     if(isset($new_call_id))
-      $node->field_voipcall_call_id[0]['value'] = $new_call_id;
+      $data->call_id = $new_call_id;
 
-    $new_dest_number = $details->field_voipcall_dest_number[0]['value'];
+    $new_dest_number = $details->dest_number;
     if(isset($new_dest_number))
-      $node->field_voipcall_dest_number[0]['value'] = $new_dest_number;
+      $data->dest_number = $new_dest_number;
 
-    $new_dest_name = $details->field_voipcall_dest_name[0]['value'];
+    $new_dest_name = $details->dest_name;
     if(isset($new_dest_name))
-      $node->field_voipcall_dest_name[0]['value'] = $new_dest_name;
+      $data->dest_name = $new_dest_name;
 
-    $new_caller_number = $details->field_voipcall_caller_number[0]['value'];
+    $new_caller_number = $details->caller_number;
     if(isset($new_caller_number))
-      $node->field_voipcall_caller_number[0]['value'] = $new_caller_number;
+      $data->caller_number = $new_caller_number;
 
-    $new_caller_name = $details->field_voipcall_caller_name[0]['value'];
+    $new_caller_name = $details->caller_name;
     if(isset($new_caller_name))
-      $node->field_voipcall_caller_name[0]['value'] = $new_caller_name;
+      $data->caller_name = $new_caller_name;
   
-    $new_call_status = $details->field_voipcall_status[0]['value'];
+    $new_call_status = $details->status;
     if(isset($new_call_status))
-      $node->field_voipcall_status[0]['value'] = $new_call_status;
+      $data->status = $new_call_status;
   
-    $new_answered_by = $details->field_voipcall_answered_by[0]['value'];
+    $new_answered_by = $details->answered_by;
     if(isset($new_answered_by))
-      $node->field_voipcall_answered_by[0]['value'] = $new_answered_by;
+      $data->answered_by = $new_answered_by;
   
-    $new_text_status = $details->field_voipcall_text_status[0]['value'];
+    $new_text_status = $details->text_status;
     if(isset($new_text_status))
-      $node->field_voipcall_text_status[0]['value'] = $new_text_status;
+      $data->text_status = $new_text_status;
 
-    $new_source = $details->field_voipcall_source[0]['value'];
+    $new_source = $details->source;
     if(isset($new_source))
-      $node->field_voipcall_source[0]['value'] =  $new_source;
+      $data->source =  $new_source;
 
-    $new_direction = $details->field_voipcall_direction[0]['value'];
+    $new_direction = $details->direction;
     if(isset($new_direction))
-      $node->field_voipcall_direction[0]['value'] =  $new_direction;
+      $data->direction =  $new_direction;
   
-    $new_start_time = $details->field_voipcall_start_time[0]['value'];
+    $new_start_time = $details->start_time;
     if(isset($new_start_time))
-      $node->field_voipcall_start_time[0]['value'] = $new_start_time;
+      $data->start_time = $new_start_time;
 
-    $new_end_time = $details->field_voipcall_end_time[0]['value'];
+    $new_end_time = $details->end_time;
     if(isset($new_end_time))
-      $node->field_voipcall_end_time[0]['value'] = $new_end_time;
+      $data->end_time = $new_end_time;
 
-    $new_duration = $details->field_voipcall_duration[0]['value'];
+    $new_duration = $details->duration;
     if(isset($new_duration))
-      $node->field_voipcall_duration[0]['value'] = $new_duration;
+      $data->duration = $new_duration;
   
-    $new_error_message = $details->field_voipcall_error_message[0]['value'];
+    $new_error_message = $details->error_message;
     if(isset($new_error_message))
-      $node->field_voipcall_error_message[0]['value'] = $new_error_message;
+      $data->error_message = $new_error_message;
   
-    $new_script = $details->field_voipcall_script[0]['value'];
+    $new_script = $details->script;
     if(isset($new_script))
-      $node->field_voipcall_script[0]['value'] =  serialize($new_script);
+      $data->script =  serialize($new_script);
   
-    $text_script = $details->field_voipcall_text_script[0]['value'];
+    $text_script = $details->text_script;
     if(isset($new_script))
-      $node->field_voipcall_text_script[0]['value'] =  serialize($text_script);
+      $data->text_script =  serialize($text_script);
   
-    $new_hangup_script_name = $details->field_voipcall_hangup_script[0]['value'];
+    $new_hangup_script_name = $details->hangup_script;
     if(isset($new_hangup_script_name))
-      $node->field_voipcall_hangup_script[0]['value'] =  $new_hangup_script_name;
+      $data->hangup_script =  $new_hangup_script_name;
   
-    $new_hangup_reason = $details->field_voipcall_hangup_reason[0]['value'];
+    $new_hangup_reason = $details->hangup_reason;
     if(isset($new_hangup_reason))
-      $node->field_voipcall_hangup_reason[0]['value'] =  $new_hangup_reason;
+      $data->hangup_reason =  $new_hangup_reason;
   
-    $new_check = $details->field_voipcall_check_machine[0]['value'];
+    $new_check = $details->check_machine;
     if(isset($new_check))
-      $node->field_voipcall_check_machine[0]['value'] =  $new_check;
+      $data->check_machine =  $new_check;
   
-    // set other optional node fields
+    // set other optional data fields
     if(isset($details->other)){
       foreach($details->other as $field => $value){
-        $node->$field = $value;
+        $data->$field = $value;
       }
     }
   
-    // save the node
-    node_save($node);
-  
-    return $node;
+    // save the data
+    drupal_write_record('voipcall', $data, $update);
+    
+    return $data;
   }
   
   /**
@@ -680,7 +681,7 @@ class VoipCall {
    *
    * NOTE: The call variables are all read-only. Any changes to their values
    *       executed within the script will not be applied to the actual
-   *       call node. 
+   *       call data. 
    *
    * @param VoipScript $script to be updated
    *
@@ -688,56 +689,54 @@ class VoipCall {
    */
   private function _voipcall_update_script($script) {
   
-    $call_node = $this->call_node;
+    $call_data = $this->call_data;
 
     // add call variables to script variables
   
-    $script->setVar('uid', $call_node->uid);
+    $script->setVar('uid', $call_data->uid);
   
     $script->setVar('call_id',
-      $call_node->field_voipcall_call_id[0]['value']);
+      $call_data->call_id);
   
     $script->setVar('dest_number',
-      $call_node->field_voipcall_dest_number[0]['value']);
+      $call_data->dest_number);
     $script->setVar('dest_name',
-      $call_node->field_voipcall_dest_name[0]['value']);
+      $call_data->dest_name);
     $script->setVar('caller_number',
-      $call_node->field_voipcall_caller_number[0]['value']);
+      $call_data->caller_number);
     $script->setVar('caller_name',
-      $call_node->field_voipcall_caller_name[0]['value']);
+      $call_data->caller_name);
   
     $script->setVar('call_status',
-      $call_node->field_voipcall_status[0]['value']);
+      $call_data->status);
   
     $script->setVar('answered_by',
-      $call_node->field_voipcall_answered_by[0]['value']);
+      $call_data->answered_by);
   
     $script->setVar('text_status',
-      $call_node->field_voipcall_text_status[0]['value']);
+      $call_data->text_status);
   
     $script->setVar('source',
-      $call_node->field_voipcall_source[0]['value']);
+      $call_data->source);
     $script->setVar('direction',
-      $call_node->field_voipcall_direction[0]['value']);
+      $call_data->direction);
   
     $script->setVar('start_time',
-      $call_node->field_voipcall_start_time[0]['value']);
+      $call_data->start_time);
     $script->setVar('end_time',
-      $call_node->field_voipcall_end_time[0]['value']);
+      $call_data->end_time);
     $script->setVar('duration',
-      $call_node->field_voipcall_duration[0]['value']);
+      $call_data->duration);
   
     $script->setVar('error_message',
-      $call_node->field_voipcall_error_message[0]['value']);
+      $call_data->error_message);
 
     $script->setVar('hangup_reason',
-        $call_node->field_voipcall_hangup_reason[0]['value']);
+        $call_data->hangup_reason);
 
     $script->setVar('check_machine',
-        $call_node->field_voipcall_check_machine[0]['value']);
+        $call_data->check_machine);
 
     return $script;
   }
-
 }
-

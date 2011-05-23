@@ -112,7 +112,6 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
 
     // load the variables already associated with the call, if any
     $call = VoipCall::load($call_nid);
-
     // handle first response to an outbound call
     if ($tropo_action == 'process_outbound_calls') {
       // store tropo call id for all outbound calls
@@ -178,7 +177,6 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
         $call = $call->save();
         break;
       case 'process_inbound_calls':
-      case 'process_record':
         // nothing special to be done here. the above commands have already
         // been processed in the previous lines
         break;
@@ -224,7 +222,6 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
         $file = _voiptropo_file_save_upload($filename, $validators, $dest);
         $script = $call->getScript();
         $script->setVar('recording_url', file_create_url($file->filepath));
-        $script->setVar('recording_duration', 1); //TODO: How to find duration?
         $script->setVar('recording_digits', NULL);
         $script->setVar('recording_fid', $file->fid);
         $call->setScript($script);
@@ -232,6 +229,15 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
         $call = $call->save();
         return;
         break;
+	  case 'process_record':
+	    //Save record duration
+	    $rec_actions = $result->getActions();
+	    $script = $call->getScript();
+	    $script->setVar('recording_duration', $rec_actions->duration);
+	    $call->setScript($script);
+        // update the voipcall node with the new values
+        $call = $call->save();
+      break;	  
       case 'process_empty_recording':
         $script = $call->getScript();
         $script->setVar('recording_url', '');
@@ -309,12 +315,13 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
 
   // process the call script
   $rc = _voiptropo_script_handler($call, $tropo);
-  /*
+  
   //Add final event
-  $response_url = $menu_path . '/process_callstatus/' . $call_nid . '/continue' ;
-  $action = url($response_url, array('absolute' => TRUE));
-  $tropo->on(array("event" => "continue", "next" => $action));
-   */
+  if($tropo_action!='process_callstatus'){
+    $response_url = $menu_path . '/process_callstatus/' . $call_nid . '/continue' ;
+    $action = url($response_url, array('absolute' => TRUE));
+    $tropo->on(array("event" => "continue", "next" => $action));
+  }
 
   //TESTING:
   $msg = "Tropo output ". print_r($tropo, TRUE);
@@ -570,7 +577,7 @@ function _voiptropo_script_handler($call, &$tropo) {
           $response_url = $menu_path . '/process_record/' . $call_nid;
           $success_action = url($response_url, array('absolute' => TRUE));
           $method = 'POST';
-          $timeout = $script->evalString($cmd->getParam('timeout', 5));
+          $timeout = $script->evalString($cmd->getParam('timeout', 5.0));
           $end_key = $script->evalString($cmd->getParam('end_key', '#'));
           $max_length = $script->evalString($cmd->getParam('max_length', 3600));
 
@@ -579,11 +586,11 @@ function _voiptropo_script_handler($call, &$tropo) {
           $response_url = $menu_path . '/process_empty_recording/' . $call_nid;
           $timeout_action = url($response_url, array('absolute' => TRUE));
 
-          $choices->terminator=$end_key;
-
+          //$choices->terminator=$end_key;
+          $choices=$end_key;
           $params = array(
               'maxTime' => $max_length,
-              'maxSilence' => $timeout,
+			  'maxSilence' => (float)$timeout,
               'beep' => $play_beep,
               'format' => $record_format,
               'method' => $method,

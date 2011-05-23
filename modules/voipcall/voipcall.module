@@ -7,7 +7,7 @@
  * Implementation of core functionality associated with voip calls
  */
 
-foreach (array('voipcall.features.inc', 'voipscript.inc', 'voipcall.inc') as $file) {
+foreach (array('voipscript.inc', 'voipcall.inc') as $file) {
   require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . $file);
 }
 
@@ -27,7 +27,14 @@ function voipcall_menu() {
     'description' => 'Defines default parameters used in VoIP Drupal calls.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('voipcall_admin_form', NULL),
-    'access arguments' => array('administer voipcall setup')
+    'access arguments' => array('administer voipcall setup'),
+  );
+  
+  $items['admin/voip/call/log'] = array(
+    'title' => 'VoIP Call Log',
+    'description' => 'Lists all VoIP Drupal calls.',
+    'page callback' => 'voipcall_call_log',
+    'access arguments' => array('administer voipcall setup'),
   );
   
    $items['voip/sound/beep'] = array(
@@ -253,4 +260,24 @@ function theme_voipcall_play_beep(){
    $filename = drupal_get_path('module', 'voipcall').'/sound/beep.mp3';
    header('Content-Type: audio/mpeg');
    return readfile($filename);
+}
+
+function voipcall_call_log() {
+  $headers = array('uid', 'call_id', 'caller_name', 'caller_number', 'dest_name', 'dest_number', 'duration', 'end_time', 'error_message', 'hangup_script', 'process_response', 'script', 'source', 'start_time', 'status', 'answered_by', 'direction', 'hangup_reason', 'check_machine', 'text_script', 'text_status', 'created', 'changed');
+  $sql = "SELECT * FROM {voipcall}";
+  $limit = 50;
+  $result = pager_query($sql, $limit);
+  
+  if($result){
+    //your basic while loop to get the data
+    while($tmp = db_fetch_array($result)){
+	  unset($tmp['cid']);
+	  $owner = user_load($tmp['uid']);
+	  $tmp['uid'] = l($owner->name,'user/'.$owner->name);
+      $data[] = $tmp;
+    }
+  }
+  $output .= theme('table', $headers, $data);
+  $output .= theme('pager', NULL, $limit, 0);
+  return $output;
 }
