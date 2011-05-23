@@ -1040,21 +1040,23 @@ class VoipPrompt {
  */
 function voipscript_get_run_ivr_menu_script($options) {
 
+watchdog('test', 'in run_ivr_menu_script with: ' . print_r($options, true));
+ 
   $script = new VoipScript('voipscript_run_ivr_menu');
 
   // initialize script variables
 
-  $script->addSet('_menu_options', serialize($options['prompt']));
+  $script->addSet('_menu_options', json_encode($options['prompt']));
 
   $input_options = $options['input_options'];
-  $script->addSet('_input_options', serialize($input_options));
+  $script->addSet('_input_options', json_encode($input_options));
 
   $keys_allowed = implode(array_keys($input_options));
   $script->addSet('_keys_allowed', $keys_allowed);
 
   $script->addSet('_counter', $options['max_attempts']);
-  $script->addSet('_invalid_msg', serialize($options['invalid_msg']));
-  $script->addSet('_no_input_msg', serialize($options['no_input_msg']));
+  $script->addSet('_invalid_msg', json_encode($options['invalid_msg']));
+  $script->addSet('_no_input_msg', json_encode($options['no_input_msg']));
   $script->addSet('_timeout', $options['timeout']);
   
   // run the script
@@ -1062,13 +1064,15 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addLabel('play_menu_options');
   $script->addSet('_counter', '^%_counter - 1');
   $script->addGotoIf('go_back', '^%_counter < 0');
-  $script->addGetInput('^unserialize(%_menu_options)', 1, '', '%_timeout');
+$script->addLog('^json_decode(%_menu_options, TRUE)', 'about to call getInput');
+  $script->addGetInput('^json_decode(%_menu_options, TRUE)', 1, '', '%_timeout');
+$script->addLog('%input_digits', 'getInput result');
   $script->addGotoIf('no_input_received', "^%input_digits == ''");
 /**
   TODO: ideally, the correct line should be as follows
   $script->addGotoIf('valid_option',
                      "^strpos(' ' . '%_keys_allowed', '%input_digits')");
-   however, since the eval function is not processing '0' and '*' correctly,
+   however, since the eval function is not processing '0', '*', '#' correctly,
    I had to replace the line by the following. Hopefully, we'll be able to
    solve this little bug soon (2011.04.20)
    check http://stackoverflow.com/questions/3241070/php-recursive-variable-replacement
@@ -1081,24 +1085,26 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addGotoIf('valid_option',
                      "^(%input_digits === '*') ? strpos(' ' . %_keys_allowed, %input_digits) : FALSE");
   $script->addGotoIf('valid_option',
+                     "^(%input_digits === '#') ? strpos(' ' . %_keys_allowed, %input_digits) : FALSE");
+  $script->addGotoIf('valid_option',
                      "^strpos(' ' . %_keys_allowed, \"%input_digits\")");
   $script->addGoto('invalid_option');
 
   $script->addLabel('no_input_received');
   $script->addSet('ivr_option_selected', 
-              "^_voipscript_get_element('t', unserialize(%_input_options))");
-  $script->addSay('^unserialize(%_no_input_msg)');
+              "^_voipscript_get_element('t', json_decode(%_input_options, TRUE))");
+  $script->addSay('^json_decode(%_no_input_msg, TRUE)');
   $script->addGoto('play_menu_options');
   
   $script->addLabel('valid_option');
   $script->addSet('ivr_option_selected',
-      "^_voipscript_get_element(%input_digits, unserialize(%_input_options))");
+      "^_voipscript_get_element(%input_digits, json_decode(%_input_options, TRUE))");
   $script->addGoto('go_back');
   
   $script->addLabel('invalid_option');
   $script->addSet('ivr_option_selected',
-              "^_voipscript_get_element('i', unserialize(%_input_options))");
-  $script->addSay("^unserialize(%_invalid_msg)");
+              "^_voipscript_get_element('i', json_decode(%_input_options, TRUE))");
+  $script->addSay("^json_decode(%_invalid_msg, TRUE)");
   $script->addGoto('play_menu_options');
   
   $script->addLabel('go_back');
@@ -1178,5 +1184,6 @@ function _voipscript_replace_variable($var_name, $vars, $eval) {
 
 
 function _voipscript_get_element($index, $array){
+watchdog('test', "get_element: index: $index, array: " . print_r($array, true));
   return $array[$index];
 }

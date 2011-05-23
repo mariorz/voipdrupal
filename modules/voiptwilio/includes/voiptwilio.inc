@@ -823,11 +823,10 @@ define(VOIPTWILIO_URL_CHECK, '#(https?://\S+(?<![,.;?\:\!]))#');
  *   The prompt as a TwilioML sequence to be sent to Twilio
  */
 function _voiptwilio_generate_audio_response($script, $prompt, $loop=1) {
-
   if(is_string($prompt) && (substr($prompt, 0, 1) == '^')){
     $prompt = $script->evalString($prompt);
   }
-  
+
   if(is_string($prompt)){
     $prompt_list[] = new VoipPrompt($prompt);
   }
@@ -853,7 +852,6 @@ function _voiptwilio_generate_audio_response($script, $prompt, $loop=1) {
     // split the text into audio URLs and text elements
     $elements =
       preg_split(VOIPTWILIO_URL_CHECK, $text, -1, PREG_SPLIT_DELIM_CAPTURE);
-watchdog('test', "split text: $text, elements: " . print_r($elements, true));
   
     // process each element
     $url_flag = FALSE;
