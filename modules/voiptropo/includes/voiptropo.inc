@@ -177,7 +177,6 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
         $call = $call->save();
         break;
       case 'process_inbound_calls':
-      case 'process_record':
         // nothing special to be done here. the above commands have already
         // been processed in the previous lines
         break;
@@ -223,7 +222,6 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
         $file = _voiptropo_file_save_upload($filename, $validators, $dest);
         $script = $call->getScript();
         $script->setVar('recording_url', file_create_url($file->filepath));
-        $script->setVar('recording_duration', 1); //TODO: How to find duration?
         $script->setVar('recording_digits', NULL);
         $script->setVar('recording_fid', $file->fid);
         $call->setScript($script);
@@ -231,6 +229,15 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
         $call = $call->save();
         return;
         break;
+	  case 'process_record':
+	    //Save record duration
+	    $rec_actions = $result->getActions();
+	    $script = $call->getScript();
+	    $script->setVar('recording_duration', $rec_actions->duration);
+	    $call->setScript($script);
+        // update the voipcall node with the new values
+        $call = $call->save();
+      break;	  
       case 'process_empty_recording':
         $script = $call->getScript();
         $script->setVar('recording_url', '');
