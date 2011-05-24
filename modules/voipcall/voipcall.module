@@ -274,6 +274,7 @@ function voipcall_call_log() {
   $headers = array(
   array('data' => t('user'), 'field' => 'uid', 'sort' => 'asc'),
   array('data' => t('caller_name'), 'field' => 'caller_name', 'sort' => 'asc'),
+  array('data' => t('caller_number'), 'field' => 'caller_name', 'sort' => 'asc'),
   array('data' => t('dest_name'), 'field' => 'dest_name', 'sort' => 'asc'),
   array('data' => t('dest_number'), 'field' => 'dest_number', 'sort' => 'asc'),
   '');
