@@ -132,7 +132,7 @@ class VoipTropoServer extends VoipServer {
     $dest_number = $voipcall->getDestNumber();
    
     //$menu_path = 'voip/tropo/callhandler';
-    $call_nid = $voipcall->getNodeId();
+    $call_nid = $voipcall->getCid();
   
     $vars = array(
       'action' => 'create',
@@ -197,7 +197,7 @@ class VoipTropoServer extends VoipServer {
     $call_id = $voipcall->getCallId();
     if (!$call_id) {
       $msg = "Attempt to hangup a tropo call (nid = @nid) without a call id";
-      $params = array('@nid' => $voipcall->getNodeId());
+      $params = array('@nid' => $voipcall->getCid());
       $voipcall->report_error('voiptropo', $msg, $params);
       $rc = FALSE;
     }

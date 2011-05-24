@@ -116,7 +116,7 @@ class VoipTwilioServer extends VoipServer {
     $dest_number = $voipcall->getDestNumber();
 
     $menu_path = 'voip/twilio/callhandler';
-    $call_nid = $voipcall->getNodeId();
+    $call_nid = $voipcall->getCid();
     $response_url = $menu_path . '/process_outbound_calls/' . $call_nid;
     $call_handler_url = url($response_url, array('absolute' => TRUE));
     $response_url = $menu_path . '/process_hangup/' . $call_nid;
@@ -229,7 +229,7 @@ watchdog('voiptwilio', "in hangup() with call id: $id and status: $status");
     $call_id = $voipcall->getCallId();
     if(!$call_id){
       $msg = "Attempt to hangup a Twilio call (nid = @nid) without a call id";
-      $params = array('@nid' => $voipcall->getNodeId());
+      $params = array('@nid' => $voipcall->getCid());
       $voipcall->report_error('voiptwilio', $msg, $params);
       $rc = FALSE;
     }

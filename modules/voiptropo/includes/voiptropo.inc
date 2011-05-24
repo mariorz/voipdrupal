@@ -97,7 +97,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
     $call->save();
 
     // get the nid of the call node
-    $call_nid = $call->getNodeId();
+    $call_nid = $call->getCid();
   }
   else {
     // handle ongoing calls
@@ -106,7 +106,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
     if ($tropo_action == 'process_hangup') {
       if (!$call_nid) {
         $call_id=$session->getId(); 
-        $call_nid = VoipCall::getNidFromCallId($call_id);
+        $call_nid = VoipCall::getCidFromCallId($call_id);
       }
     }
 
@@ -233,6 +233,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
 	    //Save record duration
 	    $rec_actions = $result->getActions();
 	    $script = $call->getScript();
+		watchdog('voiptropodur','Duration: '.$rec_actions->duration);
 	    $script->setVar('recording_duration', $rec_actions->duration);
 	    $call->setScript($script);
         // update the voipcall node with the new values
@@ -406,7 +407,7 @@ function _voiptropo_script_handler($call, &$tropo) {
           case 'VoipCmdDial';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/tropo/callhandler';
-          $call_nid = $call->getNodeId();
+          $call_nid = $call->getCid();
           $number = $script->evalString($cmd->getParam('number'));
           $number = str_replace(" ", "", $number);
           $timeout = $script->evalString($cmd->getParam('timeout', 30));
@@ -510,7 +511,7 @@ function _voiptropo_script_handler($call, &$tropo) {
           case 'VoipCmdJoinConference';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/tropo/callhandler';
-          $call_nid = $call->getNodeId();
+          $call_nid = $call->getCid();
           $response_url = $menu_path . '/process_conference/' . $call_nid;
           $action = url($response_url, array('absolute' => TRUE));
 
@@ -562,7 +563,7 @@ function _voiptropo_script_handler($call, &$tropo) {
         case 'VoipCmdRecord':
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/tropo/callhandler';
-          $call_nid = $call->getNodeId();
+          $call_nid = $call->getCid();
           $format = $script->evalString($cmd->getParam('format'));
           if ($format == 'mp3') {
             $record_format = 'audio/mp3';
@@ -719,7 +720,7 @@ watchdog('voiptropo',"(Say) V: $voice, L: $language, Id: $voice_id");
         case 'VoipCmdSendText';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/tropo/callhandler';
-          $call_nid = $call->getNodeId();
+          $call_nid = $call->getCid();
 
           $callback_url = $menu_path . '/process_sms_callback/' . $call_nid;
           $callback_continue = url($callback_url . '/continue', array('absolute' => TRUE));
@@ -871,7 +872,7 @@ function voiptropo_update_call_status($call, $tropo_call_status, $request=NULL) 
   switch ($tropo_call_status) {
     default:
       $msg = 'Invalid CallStatus: @status for call nid: @nid';
-      $call_nid = $call->getNodeId();
+      $call_nid = $call->getCid();
       $params = array('@status' => $call_status, '@nid' => $call_nid);
       $call->report_error('voiptropo', $msg, $params);
       return NULL;
@@ -922,7 +923,7 @@ function _voiptropo_process_dial_response($call, $request, $dial_response_name) 
   $dial_status = $request->getState();
   switch ($dial_status) {
     default:
-      $call_nid = $call->getNodeId();
+      $call_nid = $call->getCid();
       $msg = 'Invalid DialCallStatus: @status for call nid: @nid';
       $params = array('@status' => $dial_status, '@nid' => $call_nid);
       $call->report_error('voiptropo', $msg, $params);
@@ -953,7 +954,7 @@ function _voiptropo_process_dial_response($call, $request, $dial_response_name) 
  * Process the response to a 'sms send' script command
  */
 function _voiptropo_process_sms_response($call, $sms_status_tmp) {
-  $call_nid = $call->getNodeId();
+  $call_nid = $call->getCid();
 
   switch ($sms_status_tmp) {
     default:
@@ -1005,7 +1006,7 @@ function _voiptropo_prompt_validate($script, $prompt) {
 function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
   $call->setCallStatus(VoipCall::IN_PROGRESS);
   $menu_path = 'voip/tropo/callhandler';
-  $call_nid = $call->getNodeId();
+  $call_nid = $call->getCid();
 
   $timeout = $script->evalString($cmd->getParam('timeout', 5.0)); 
   $end_key = $script->evalString($cmd->getParam('end_key', '')); 

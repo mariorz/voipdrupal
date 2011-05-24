@@ -73,7 +73,7 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
     $call->save();
 
     // get the nid of the call node
-    $call_nid = $call->getNodeId();
+    $call_nid = $call->getCid();
   }
   else {
     // handle ongoing calls
@@ -82,7 +82,7 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
     if($twilio_action == 'process_hangup') {
       if(!$call_nid) {
         $call_id = $_REQUEST['CallSid'];
-        $call_nid = VoipCall::getNidFromCallId($call_id);
+        $call_nid = VoipCall::getCidFromCallId($call_id);
       }
     }
 
@@ -305,7 +305,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
         case 'VoipCmdDial';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/twilio/callhandler';
-          $call_nid = $call->getNodeId();
+          $call_nid = $call->getCid();
           $response_url = $menu_path . '/process_dial/' . $call_nid ;
           $action = url($response_url, array('absolute' => TRUE));
           $method = 'POST';
@@ -333,7 +333,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
         case 'VoipCmdGetInput':
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/twilio/callhandler';
-          $call_nid = $call->getNodeId();
+          $call_nid = $call->getCid();
           $response_url = $menu_path . '/process_get_input/' . $call_nid;
           $action = url($response_url, array('absolute' => TRUE));
           $method = 'POST';
@@ -424,7 +424,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           //       supported by other VoIP servers.
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/twilio/callhandler';
-          $call_nid = $call->getNodeId();
+          $call_nid = $call->getCid();
           $response_url = $menu_path . '/process_conference/' . $call_nid;
           $action = url($response_url, array('absolute' => TRUE));
           $method = 'POST';
@@ -469,7 +469,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
         case 'VoipCmdRecord':
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/twilio/callhandler';
-          $call_nid = $call->getNodeId();
+          $call_nid = $call->getCid();
           $format = $script->evalString($cmd->getParam('format'));
           if($format == 'mp3') {
             $response_url = $menu_path . '/process_record_mp3/' . $call_nid;
@@ -560,7 +560,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
         case 'VoipCmdSendText';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/twilio/callhandler';
-          $call_nid = $call->getNodeId();
+          $call_nid = $call->getCid();
           $response_url = $menu_path . '/process_send_sms/' . $call_nid;
           $action = url($response_url, array('absolute' => TRUE));
           $callback_url = $menu_path . '/process_sms_callback/' . $call_nid;
@@ -674,7 +674,7 @@ function voiptwilio_update_call_status($call, $twilio_call_status) {
   switch($twilio_call_status) {
     default:
       $msg = 'Invalid CallStatus: @status for call nid: @nid';
-      $call_nid = $call->getNodeId();
+      $call_nid = $call->getCid();
       $params = array('@status' => $call_status, '@nid' => $call_nid);
       $call->report_error('voiptwilio', $msg, $params);
       return NULL;
@@ -729,7 +729,7 @@ function _voiptwilio_process_dial_response($call, $request){
   $dial_status = $request['DialCallStatus'];
   switch($dial_status) {
     default:
-      $call_nid = $call->getNodeId();
+      $call_nid = $call->getCid();
       $msg = 'Invalid DialCallStatus: @status for call nid: @nid';
       $params = array('@status' => $dial_status, '@nid' => $call_nid);
       $call->report_error('voiptwilio', $msg, $params);
@@ -767,7 +767,7 @@ function _voiptwilio_process_dial_response($call, $request){
  * Process the response to a 'send text' script command
  */
 function _voiptwilio_process_sms_response($call, $request){
-  $call_nid = $call->getNodeId();
+  $call_nid = $call->getCid();
   $sms_status_tmp = $request['SmsStatus'];
   switch($sms_status_tmp) {
     default:

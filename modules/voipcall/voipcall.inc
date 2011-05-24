@@ -113,7 +113,7 @@ class VoipCall {
    *   The id of the call row
    *
    * @return
-   *   The VoipCall instance, or NULL in case of an invalid nid
+   *   The VoipCall instance, or NULL in case of an invalid cid
    */
   public static function load($cid){
     $call = NULL;
@@ -128,14 +128,13 @@ class VoipCall {
   }
         
   /**
-   * Return the voipcall nid associated with the given call_id.
+   * Return the voipcall cid associated with the given call_id.
    * 
    * @param string $call_id, the unique identifier of a call
    *
-   * @return $nid or NULL depending on the result of the query
+   * @return $cid or NULL depending on the result of the query
    */
-   //TODO: Rename to getCidFromCallId ?
-  public static function getNidFromCallId($call_id){
+  public static function getCidFromCallId($call_id){
     // fetch the desired voipcall data
     $cid = db_result(db_query("SELECT cid FROM {voipcall} WHERE call_id = '%s'", $call_id));
     return $cid;
@@ -151,7 +150,7 @@ class VoipCall {
    * Save the call data to the database
    *
    * @return
-   *   The updated VoipCall instance, or NULL in case of an invalid nid
+   *   The updated VoipCall instance, or NULL in case of an invalid cid
    */
   public function save(){
 
@@ -211,14 +210,13 @@ class VoipCall {
    * Getters and setters
    */
 
-  public function getCallNode(){
+  public function getCallData(){
     // NOTE: in order to protect the architecture of this class, please
-    // only use this method to access generic data info such as nid, uid, etc.
+    // only use this method to access generic data info such as cid, uid, etc.
     return $this->call_data;
   }
  
- //TODO: Rename to getCid ??
-  public function getNodeId(){
+  public function getCid(){
     return $this->call_data->cid;
   }
     
