@@ -271,8 +271,13 @@ function theme_voipcall_play_beep(){
 }
 
 function voipcall_call_log() {
-  $headers = array('user', 'caller_name', 'caller_number', 'dest_name', 'dest_number', '');
-  $sql = "SELECT uid, caller_name,caller_number,dest_name,dest_number, cid FROM {voipcall}";
+  $headers = array(
+  array('data' => t('user'), 'field' => 'uid', 'sort' => 'asc'),
+  array('data' => t('caller_name'), 'field' => 'caller_name', 'sort' => 'asc'),
+  array('data' => t('dest_name'), 'field' => 'dest_name', 'sort' => 'asc'),
+  array('data' => t('dest_number'), 'field' => 'dest_number', 'sort' => 'asc'),
+  '');
+  $sql = "SELECT uid, caller_name,caller_number,dest_name,dest_number, cid FROM {voipcall}".tablesort_sql($headers);
   $limit = 50;
   $result = pager_query($sql, $limit);
   
