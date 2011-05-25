@@ -22,7 +22,7 @@ foreach (array('voipscript.inc', 'voipcall.inc') as $file) {
 function voipcall_menu() {
   $items = array();
 
-  $items['admin/voip/call'] = array(
+  $items['admin/voip/call/settings'] = array(
     'title' => 'Default call configuration',
     'description' => 'Defines default parameters used in VoIP Drupal calls.',
     'page callback' => 'drupal_get_form',
@@ -36,12 +36,13 @@ function voipcall_menu() {
     'page callback' => 'voipcall_call_log',
     'access arguments' => array('administer voipcall setup'),
   );
-   $items['voipcall/%'] = array(
+
+  $items['voipcall/%'] = array(
     'title callback' => 'voipcall_call_page_title',
-	'title arguments' => array(1),
+    'title arguments' => array(1),
     'description' => 'Lists individual VoIP Drupal calls.',
     'page callback' => 'voipcall_call_page',
-	'page arguments' => array(1),
+    'page arguments' => array(1),
     'access arguments' => array('administer voipcall setup'),
   );
   
@@ -272,24 +273,25 @@ function theme_voipcall_play_beep(){
 
 function voipcall_call_log() {
   $headers = array(
+  array('data' => t('cid'), 'field' => 'cid', 'sort' => 'asc'),
   array('data' => t('user'), 'field' => 'uid', 'sort' => 'asc'),
   array('data' => t('caller_name'), 'field' => 'caller_name', 'sort' => 'asc'),
   array('data' => t('caller_number'), 'field' => 'caller_name', 'sort' => 'asc'),
   array('data' => t('dest_name'), 'field' => 'dest_name', 'sort' => 'asc'),
   array('data' => t('dest_number'), 'field' => 'dest_number', 'sort' => 'asc'),
+  array('data' => t('other'), 'field' => 'other'),
   '');
-  $sql = "SELECT uid, caller_name,caller_number,dest_name,dest_number, cid FROM {voipcall}".tablesort_sql($headers);
+  $sql = "SELECT cid, uid, caller_name, caller_number,dest_name,dest_number FROM {voipcall}".tablesort_sql($headers);
   $limit = 50;
   $result = pager_query($sql, $limit);
   
   if($result){
     //your basic while loop to get the data
-    while($tmp = db_fetch_array($result)){
-	  $owner = user_load($tmp['uid']);
-	  $tmp['uid'] = l($owner->name,'user/'.$owner->name);
-	  $tmp['cid'] = l('See more','voipcall/'.$tmp['cid']);
+    while($tmp = db_fetch_array($result)) {
+      $owner = user_load($tmp['uid']);
+      $tmp['uid'] = l($owner->name,'user/'.$owner->name);
+      $tmp['other'] = l('See more','voipcall/'.$tmp['cid']);
       $data[] = $tmp;
-	  
     }
   }
   $output .= theme('table', $headers, $data);
