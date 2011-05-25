@@ -274,14 +274,15 @@ function theme_voipcall_play_beep(){
 function voipcall_call_log() {
   $headers = array(
   array('data' => t('cid'), 'field' => 'cid', 'sort' => 'asc'),
+  array('data' => t('start'), 'field' => 'start_time', 'sort' => 'asc'),
   array('data' => t('user'), 'field' => 'uid', 'sort' => 'asc'),
-  array('data' => t('caller_name'), 'field' => 'caller_name', 'sort' => 'asc'),
-  array('data' => t('caller_number'), 'field' => 'caller_name', 'sort' => 'asc'),
-  array('data' => t('dest_name'), 'field' => 'dest_name', 'sort' => 'asc'),
-  array('data' => t('dest_number'), 'field' => 'dest_number', 'sort' => 'asc'),
+  array('data' => t('caller name'), 'field' => 'caller_name', 'sort' => 'asc'),
+  array('data' => t('caller number'), 'field' => 'caller_name', 'sort' => 'asc'),
+  array('data' => t('dest name'), 'field' => 'dest_name', 'sort' => 'asc'),
+  array('data' => t('dest number'), 'field' => 'dest_number', 'sort' => 'asc'),
   array('data' => t('other'), 'field' => 'other'),
   '');
-  $sql = "SELECT cid, uid, caller_name, caller_number,dest_name,dest_number FROM {voipcall}".tablesort_sql($headers);
+  $sql = "SELECT cid, start_time, uid, caller_name, caller_number,dest_name,dest_number FROM {voipcall}".tablesort_sql($headers);
   $limit = 50;
   $result = pager_query($sql, $limit);
   
@@ -289,6 +290,7 @@ function voipcall_call_log() {
     //your basic while loop to get the data
     while($tmp = db_fetch_array($result)) {
       $owner = user_load($tmp['uid']);
+      $tmp['start_time'] = format_date($tmp['start_time'], 'small');
       $tmp['uid'] = l($owner->name,'user/'.$owner->name);
       $tmp['other'] = l('See more','voipcall/'.$tmp['cid']);
       $data[] = $tmp;
