@@ -163,17 +163,18 @@ class VoipCall {
   }
         
   /**
-   * Delete the call data to the database
+   * Delete the call data from the database
    *
    * @return
    *   TRUE or FALSE result of operation
    */
   public function delete(){
-	$cid = $this->call_data->cid;
+    $cid = $this->call_data->cid;
     $res = db_query("DELETE FROM {voipcall} WHERE cid=%d", $cid);
-	$this->call_data = NULL;
+    $this->call_data = NULL;
     return $res;
   }
+
   /**
    * Check if the call is in a hangup state
    */
