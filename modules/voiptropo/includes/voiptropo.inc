@@ -1075,10 +1075,28 @@ watchdog('voiptropo',"(GetInput 2) V: $voice, L: $language, Id: $voice_id");
   $tropo->on(array("event" => "continue", "next" => $action)); 
 }
 
-function _voiptropo_parse_numbers($str){
-  return preg_replace_callback('{(\d+)}', '_voiptropo_ssml_digits', $str);
+function _voiptropo_parse_numbers($str) {
+  $str_array = explode(" ",$str);
+  foreach ($str_array as $key => $word) {
+    if(!_voiptropo_is_url($word)){
+	  $str_array[$key] = preg_replace_callback('{(\d+)}', '_voiptropo_ssml_digits', $word);
+	}
+  }
+  
+  return implode(" ", $str_array);
+ // return preg_replace_callback('{(\d+)}', '_voiptropo_ssml_digits', $str);
 }
 
 function _voiptropo_ssml_digits($matches) {
   return "<say-as interpret-as='vxml:digits'>".$matches[0]."</say-as>";
+}
+
+/**
+ * Check if the given string is a url
+ */
+function _voiptropo_is_url($str) {
+  // Note: Although the checking performed is not as complete as
+  //       http://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url , it seems to serve our purposes!
+  $rc = preg_match('#(https?://\S+(?<![,.;?\:\!]))#', $str);
+  return $rc;
 }
