@@ -734,7 +734,7 @@ watchdog('voiptropo',"(Say) V: $voice, L: $language, Id: $voice_id");
 
           $params = array(
               'to' => $to,
-              'channel' => 'text',
+              'channel' => 'TEXT',
               'network' => $network,
               );
 
@@ -743,7 +743,7 @@ watchdog('voiptropo',"(Say) V: $voice, L: $language, Id: $voice_id");
             // Note: If no caller number provided, use the system's number as the default caller id
             $default_cid_number = variable_get('voipcall_cid_number', NULL);
             $caller_id = $script->evalString($cmd->getParam('caller_id', $default_cid_number)); 
-            $params['from'] = $caller_id;
+            //$params['from'] = $caller_id;
           }
 
           $tropo->message($text, $params);
@@ -1020,8 +1020,8 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
 
     $recognize_as_tmp = $script->evalString($cmd->getParam('recognize_as'));
     $default_region = VoipTropoServer::getVoiceRegionId($default_voice, $default_language);
-    $recognize_as = $recognize_as_tmp ? $recognize_as_tmp : $default_region;
-    $tropo->setLanguage($recognize_as);
+    $recognizer = $recognize_as_tmp ? $recognize_as_tmp : $default_region;
+    //$tropo->setLanguage($recognize_as);
 			
     $allowed_modes = array('keypad', 'speech', 'any');
     if(in_array($mode, $allowed_modes)) {
@@ -1070,7 +1070,7 @@ watchdog('voiptropo',"(GetInput 2) V: $voice, L: $language, Id: $voice_id");
 
   $choices = isset($choices) ? new Choices($choices, $mode, $end_key) : null;
  
-  $ask = new Ask($attempts, $bargein, $choices, $minConfidence, $name, $required, $say, $timeout, $voice);
+  $ask = new Ask($attempts, $bargein, $choices, $minConfidence, $name, $required, $say, $timeout, $voice, $allowSignals, $recognizer);
   $tropo->ask($ask);
   $tropo->on(array("event" => "continue", "next" => $action)); 
 }

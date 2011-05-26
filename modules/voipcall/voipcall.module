@@ -113,6 +113,15 @@ function voipcall_admin_form() {
   );
 ****/
 
+  if (module_exists('sms')) {
+    $form['voipcall_use_sms_framework'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Use SMS Framework'),
+      '#description' => t('By default sms messages are sent via the default voip server. Check this option to use SMS framework instead.'),
+      '#default_value' => variable_get('voipcall_use_sms_framework', 0),
+    );
+  }
+
   $form['submit'] = array(
     '#type' => 'submit', 
     '#value' => t('Save'),
@@ -160,7 +169,7 @@ function voipcall_admin_form_submit($form, &$form_state) {
   variable_set('voipcall_cid_number', $form_state['values']['voipcall_cid_number']);
   variable_set('voipcall_inbound_call_script_name', $form_state['values']['voipcall_inbound_call_script_name']);
   variable_set('voipcall_outbound_call_script_name', $form_state['values']['voipcall_outbound_call_script_name']);
-
+  variable_set('voipcall_use_sms_framework', $form_state['values']['voipcall_use_sms_framework']);
 /** TODO: Awaiting SMS integration
   variable_set('voipcall_inbound_text_script_name', $form_state['values']['voipcall_inbound_text_script_name']);
 ******************/

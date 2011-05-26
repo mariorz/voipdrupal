@@ -745,12 +745,20 @@ class VoipScript {
    *   - VoipCall::TEXT_SENDING
    *   - VoipCall::TEXT_SENT
    */ 
-  function addSendText($text, $to='', $network='sms', $caller_id=''){
-    $params['to'] = $to;
-    $params['text'] = $text;
-    $params['network'] = $network;
-    $params['caller_id'] = $caller_id;
-    $this->commands[] = new VoipCommand('VoipCmdSendText', $params);
+  function addSendText($text, $to='', $network='SMS', $caller_id=''){
+	if ($network == 'SMS' && module_exists('sms') && variable_get('voipcall_use_sms_framework', 0) == 1) {
+	  //Use SMS Framework to send SMS message if user enabled this option
+	  $res = sms_send($to, $text);
+	  watchdog('voipcall', 'Sending SMS using SMS Framework. Result = '.print_r($res, TRUE));
+	}
+    else {
+      $params['to'] = $to;
+      $params['text'] = $text;
+      $params['network'] = $network;
+      $params['caller_id'] = $caller_id;
+      $this->commands[] = new VoipCommand('VoipCmdSendText', $params);
+	}
+    
   }
 
   /**
