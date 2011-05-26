@@ -731,28 +731,30 @@ watchdog('voiptropo',"(Say) V: $voice, L: $language, Id: $voice_id");
           $to = $script->evalString($cmd->getParam('to'));
           $text = $script->evalString($cmd->getParam('text'));
           $network = $script->evalString($cmd->getParam('network'));
-
-          $params = array(
+          if ($network == 'SMS' && voipscript_use_sms_framework()) {
+		    //Use SMS Framework to send SMS message if user enabled this option
+			voipscript_send_sms_framework($to, $text);
+		  }
+		  else {
+		    $params = array(
               'to' => $to,
               'channel' => 'TEXT',
               'network' => $network,
               );
-
-          if (strtolower($network) == 'sms') {
-            //We need caller id only for sms
-            // Note: If no caller number provided, use the system's number as the default caller id
-            $default_cid_number = variable_get('voipcall_cid_number', NULL);
-            $caller_id = $script->evalString($cmd->getParam('caller_id', $default_cid_number)); 
-            //$params['from'] = $caller_id;
-          }
-
-          $tropo->message($text, $params);
-          //Register events:
-          $tropo->on(array("event" => "continue", "next" =>  $callback_continue));
-          $tropo->on(array("event" => "error", "next" =>  $callback_error));
-          $tropo->on(array("event" => "hangup", "next" =>  $callback_hangup));
-          $tropo->on(array("event" => "incomplete", "next" =>  $callback_incomplete));
-
+            if (strtolower($network) == 'sms') {
+              //We need caller id only for sms
+              // Note: If no caller number provided, use the system's number as the default caller id
+              $default_cid_number = variable_get('voipcall_cid_number', NULL);
+              $caller_id = $script->evalString($cmd->getParam('caller_id', $default_cid_number)); 
+              //$params['from'] = $caller_id;
+            }
+            $tropo->message($text, $params);
+            //Register events:
+            $tropo->on(array("event" => "continue", "next" =>  $callback_continue));
+            $tropo->on(array("event" => "error", "next" =>  $callback_error));
+            $tropo->on(array("event" => "hangup", "next" =>  $callback_hangup));
+            $tropo->on(array("event" => "incomplete", "next" =>  $callback_incomplete));
+		  }
           $rc = TRUE;
           $processing = FALSE;
           break;

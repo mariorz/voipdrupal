@@ -746,19 +746,11 @@ class VoipScript {
    *   - VoipCall::TEXT_SENT
    */ 
   function addSendText($text, $to='', $network='SMS', $caller_id=''){
-	if ($network == 'SMS' && module_exists('sms') && variable_get('voipcall_use_sms_framework', 0) == 1) {
-	  //Use SMS Framework to send SMS message if user enabled this option
-	  $res = sms_send($to, $text);
-	  watchdog('voipcall', 'Sending SMS using SMS Framework. Result = '.print_r($res, TRUE));
-	}
-    else {
-      $params['to'] = $to;
-      $params['text'] = $text;
-      $params['network'] = $network;
-      $params['caller_id'] = $caller_id;
-      $this->commands[] = new VoipCommand('VoipCmdSendText', $params);
-	}
-    
+    $params['to'] = $to;
+    $params['text'] = $text;
+    $params['network'] = $network;
+    $params['caller_id'] = $caller_id;
+    $this->commands[] = new VoipCommand('VoipCmdSendText', $params);
   }
 
   /**
@@ -1124,6 +1116,19 @@ $script->addLog('%input_digits', 'getInput result');
   $script->addReturn();
 
   return $script;
+}
+
+function voipscript_use_sms_framework() {
+  if (module_exists('sms') && variable_get('voipcall_use_sms_framework', 0) == 1) {
+   return TRUE;
+  }
+  return FALSE;
+}
+
+function voipscript_send_sms_framework($to, $text) {
+  //Use SMS Framework to send SMS message if user enabled this option
+  $res = sms_send($to, $text);
+  watchdog('voipcall', 'Sending SMS using SMS Framework. Result = '.print_r($res, TRUE));
 }
 
 /**

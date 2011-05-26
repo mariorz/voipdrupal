@@ -559,48 +559,57 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
 
         case 'VoipCmdSendText';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
-          $menu_path = 'voip/twilio/callhandler';
-          $call_nid = $call->getCid();
-          $response_url = $menu_path . '/process_send_sms/' . $call_nid;
-          $action = url($response_url, array('absolute' => TRUE));
-          $callback_url = $menu_path . '/process_sms_callback/' . $call_nid;
-          $callback = url($callback_url, array('absolute' => TRUE));
-          $method = 'POST';
-          $to = $script->evalString($cmd->getParam('to'));
+          
+		  $to = $script->evalString($cmd->getParam('to'));
           $text = $script->evalString($cmd->getParam('text'));
           $network = $script->evalString($cmd->getParam('network'));
-          // Note: If no caller number provided, Twilio will automatically try
-          //       to determine an appropriate value depending on whether the
-          //       call is inbound or outbound. However, since that number might
-          //       not be sms capable, it might incur in a processing error.
-          // Use the system's number as the default caller id
-          $default_cid_number = variable_get('voipcall_cid_number', NULL);
-          $caller_id = $script->evalString($cmd->getParam('caller_id',
+		  
+		  if ($network == 'SMS' && voipscript_use_sms_framework()) {
+		    //Use SMS Framework to send SMS message if user enabled this option
+			voipscript_send_sms_framework($to, $text);
+		  }
+		  else {
+		    $menu_path = 'voip/twilio/callhandler';
+            $call_nid = $call->getCid();
+            $response_url = $menu_path . '/process_send_sms/' . $call_nid;
+            $action = url($response_url, array('absolute' => TRUE));
+            $callback_url = $menu_path . '/process_sms_callback/' . $call_nid;
+            $callback = url($callback_url, array('absolute' => TRUE));
+            $method = 'POST';
+          
+            // Note: If no caller number provided, Twilio will automatically try
+            //       to determine an appropriate value depending on whether the
+            //       call is inbound or outbound. However, since that number might
+            //       not be sms capable, it might incur in a processing error.
+            // Use the system's number as the default caller id
+            $default_cid_number = variable_get('voipcall_cid_number', NULL);
+            $caller_id = $script->evalString($cmd->getParam('caller_id',
                                                          $default_cid_number)); 
-          switch(strtolower($network)){
-            default:
-              $params = array('@network' => $network,
-                              '@script_name' => $script->getName(),
-                              '@script' => print_r($script,true));
-              $msg = "Invalid 'network' parameter '@network' for SendText command in script '@script_name': @script";
-              $call->report_error('voiptwilio', $msg, $params);
-              $rc = FALSE;
-              $processing = FALSE;
+            switch(strtolower($network)){
+              default:
+                $params = array('@network' => $network,
+                                '@script_name' => $script->getName(),
+                                '@script' => print_r($script,true));
+                $msg = "Invalid 'network' parameter '@network' for SendText command in script '@script_name': @script";
+                $call->report_error('voiptwilio', $msg, $params);
+                $rc = FALSE;
+                $processing = FALSE;
               break;
 
-            case 'sms':
-              $response .= '<Sms action="' . $action
-                           . '" statusCallback="' . $callback
-                           . '" method="' . $method;
-              if($to){
-                $response .= '" to="' . $to;
-              }
-              if($caller_id){
-                $response .= '" from="' . $caller_id;
-              }
-              $response .= '" >';
-              $response .= $text;
-              $response .= '</Sms>';
+              case 'sms':
+                $response .= '<Sms action="' . $action
+                             . '" statusCallback="' . $callback
+                             . '" method="' . $method;
+                if($to){
+                  $response .= '" to="' . $to;
+                }
+                if($caller_id){
+                  $response .= '" from="' . $caller_id;
+                }
+                $response .= '" >';
+                $response .= $text;
+                $response .= '</Sms>';
+		    }
               $rc = TRUE;
               $processing = FALSE;
               break;
