@@ -561,6 +561,11 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           
 		  $to = $script->evalString($cmd->getParam('to'));
+          //If "to" is empty then send message to the caller
+          if (!$to) {
+            $to = $script->evalString($script->getVar('caller_number'));
+          }
+          
           $text = $script->evalString($cmd->getParam('text'));
           $network = $script->evalString($cmd->getParam('network'));
 		  

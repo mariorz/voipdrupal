@@ -170,7 +170,63 @@ class VoipTropoServer extends VoipServer {
     return TRUE;
   }
 
+ /**
+   * Implementation of the VoipServer send_text() API method
+   */
+  function send_text($voipcall, $server_config=NULL) {
+    voip_error_reset();
 
+    if (!$server_config) {
+      $server_config = $this->getConfig();
+    }
+
+    // tropo configuration
+    $username = $server_config['voiptropo_account_username'];
+    $password = $server_config['voiptropo_account_password'];
+    $token = $server_config['voiptropo_sms_token'];
+
+    // Update call variables
+    $voipcall->setSource('drupal');
+    $voipcall->setDirection(VoipCall::OUTBOUND);
+    
+    // save the call in order to get generate an nid
+    $voipcall->save();
+
+    // Instantiate a new tropo Rest Client
+    $client = new SessionAPI();
+    $caller_number = ($voipcall->getCallerNumber())
+                       ? $voipcall->getCallerNumber()
+                       : variable_get('voipcall_cid_number', NULL);
+    $voipcall->setCallerNumber($caller_number);                   
+    $dest_number = $voipcall->getDestNumber();
+    $call_nid = $voipcall->getCid();
+  
+    $vars = array(
+      'action' => 'create',
+      'username' => $username,
+      'password' => $password,
+      'caller_number' => $caller_number,
+      'dest_number' => $dest_number,
+      'tropo_action' => 'process_outbound_text',
+      'call_nid' => $call_nid,
+    );
+    
+    try {
+      $response = $client->createSession($token, $vars);
+    }
+    catch (Exception $e) {
+      $msg = "Processing failure. Please contact your system's administrator.";
+      $voipcall->report_error('voiptropo', $msg);
+      $voipcall->setCallStatus(VoipCall::ERROR);
+      $voipcall->save();
+      return FALSE;
+    }
+    // Else: 
+    $voipcall->save();
+    watchdog('voiptropo', 'new text: ' . print_r($voipcall, TRUE));
+    return TRUE;
+  }
+  
   /**
    * Implementation of the VoipServer hangup() API method
    */

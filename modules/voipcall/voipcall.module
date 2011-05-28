@@ -325,3 +325,22 @@ function voipcall_call_page($cid) {
 function voipcall_call_page_title($arg) {
   return "VoIP Call CID " . $arg;
 }
+
+/**
+ * Implementation of hook_sms_incoming().
+ */
+function voipcall_sms_incoming($op, $number, $message, $options) {
+  if ($op == 'process') {
+    //TODO: Execute default inbound text script?
+    /* $call = new VoipCall();
+  $call->setDestNumber($number);
+  $call->setDestName($user->name);
+  $call->setCallerName('');
+  $call->setScript($script);
+ 
+  $call->save();
+    
+    // Send text.
+    voip_text($call);*/
+  }
+}

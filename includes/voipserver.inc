@@ -98,6 +98,20 @@ abstract class VoipServer {
    * boolean, TRUE if success, FALSE in case of processing error
    */
   abstract function dial($voipcall, $server_config=NULL);
+  
+  /**
+   * Send a text message
+   * 
+   * @param 
+   * $voipcall, VoipCall instance with information about the text
+   * 
+   * @param 
+   * $server_config, configuration of the voip server to be used for the text message
+   * 
+   * @return
+   * boolean, TRUE if success, FALSE in case of processing error
+   */
+  abstract function send_text($voipcall, $server_config=NULL);
 
 
   /**

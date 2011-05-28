@@ -45,6 +45,40 @@ function voip_dial($voipcall) {
   return $response;
 }
 
+/**
+ * Send a text message
+ *
+ * @param object $voipcall with the information about the text to be made
+ *
+ * @return boolean with TRUE in case of success or FALSE otherwise
+ */
+function voip_text($voipcall) {
+  //TODO: Conver to text perm.
+  //  make sure the user is allowed to make outbound calls
+  $allowed = user_access('make outbound calls');
+  if(!$allowed) {
+    global $user;
+    $variables['%uid'] = $user->uid;
+    $msg = 'User %uid does not have permissions to make outbound calls.';
+    watchdog('voip', $msg, $variables, WATCHDOG_WARNING);
+    return FALSE;
+  }
+
+  $voip_server = voip_default_server();
+  $response = $voip_server->send_text($voipcall);
+
+  if (voip_error()) {
+    $error_message = 'Failure executing voip_text() with %options.';
+    $variables['%options'] = print_r($voipcall, TRUE);
+    if (voip_error_message()) {
+      $error_message .= ' The server said: '. voip_error_message();
+    }
+    watchdog('voip', $error_message, $variables, WATCHDOG_ERROR);
+  }
+
+  return $response;
+}
+
 
 /**
  * Hangup a phone call
