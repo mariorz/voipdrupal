@@ -122,6 +122,10 @@ class VoipCall {
       // unserialize the call script
       $script = unserialize($call_data->script);
       $call_data->script = $script;
+      
+      // unserialize the text script
+      $text_script = unserialize($call_data->text_script);
+      $call_data->text_script = $text_script;
       $call = new VoipCall($call_data);
     }
     return $call;
@@ -158,6 +162,11 @@ class VoipCall {
     // unserialize the call script
     $script = unserialize($call_data->script);
     $call_data->script = $script;
+    
+    // unserialize the text script
+    $text_script = unserialize($call_data->text_script);
+    $call_data->text_script = $text_script;
+    
     $this->call_data = $call_data;
     return $this;
   }
@@ -404,14 +413,25 @@ class VoipCall {
   }
 
 
-  public function getScript(){
-    $script = $this->call_data->script;
+  public function getScript($channel = 'voice') {
+    if($channel == 'voice') {
+      $script = $this->call_data->script;
+    }
+    else {
+      $script = $this->call_data->text_script;
+    }
+    
     $updated_script = $this->_voipcall_update_script($script);
     return $updated_script;
   }
 
-  public function setScript($script) {
-    $this->call_data->script = $script;
+  public function setScript($script, $channel = 'voice') {  
+    if($channel == 'voice') {
+      $this->call_data->script = $script;
+    }
+    else {
+      $this->call_data->text_script = $script;
+    }
   }
 
 
@@ -563,14 +583,13 @@ class VoipCall {
         $data->script = serialize($default_script);
       }
   
-/** TODO: Awaiting SMS integration
       // initialize text script with the default inbound one
       if(!isset($details->text_script)) {
         $script_name = voipcall_get_default_inbound_text_script_name();
         $default_script = VoipScript::loadScript($script_name);
         $data->text_script = serialize($default_script);
       }
-************/
+
   
       // initialize 'Hangup Reason' field
       if(!isset($details->hangup_reason)) {

@@ -125,7 +125,7 @@ function voipcall_admin_form() {
       '#title' => t('Use SMS Framework'),
       '#description' => t('By default sms messages are sent via the default voip server. Check this option to use SMS framework instead.'),
       '#default_value' => variable_get('voipcall_use_sms_framework', 0),
-	  '#disabled' => $disabled,
+      '#disabled' => $disabled,
     );
 
   $form['submit'] = array(
@@ -218,10 +218,7 @@ function voipcall_get_default_inbound_text_script_name() {
 function voipcall_voipscript_get_script_names() {
   $script_names[] = 'voipcall_default_inbound_call_script';
   $script_names[] = 'voipcall_default_outbound_call_script';
-
-/** TODO: Awaiting SMS integration
   $script_names[] = 'voipcall_default_inbound_text_script';
-**************************/
 
   return $script_names;
 }
@@ -247,13 +244,11 @@ function voipcall_voipscript_load_script($script_name, $options=NULL) {
       $script->addSay(t("Bye bye."));
       $script->addHangup();
       break;
-/** TODO: Awaiting SMS integration
     case 'voipcall_default_inbound_text_script':
       $script = new VoipScript('voipcall_default_inbound_text_script');
       $script->addSendText(t("This is a TEXT response from the VoIP Drupal platform!"));
       $script->addHangup();
       break; 
-**************************/
     case 'voipscript_run_ivr_menu':
       $script = voipscript_get_run_ivr_menu_script($options);
       break;
@@ -284,13 +279,13 @@ function theme_voipcall_play_beep(){
 
 function voipcall_call_log() {
   $headers = array(
-  array('data' => t('cid'), 'field' => 'cid', 'sort' => 'asc'),
-  array('data' => t('start'), 'field' => 'start_time', 'sort' => 'asc'),
-  array('data' => t('user'), 'field' => 'uid', 'sort' => 'asc'),
-  array('data' => t('caller name'), 'field' => 'caller_name', 'sort' => 'asc'),
-  array('data' => t('caller number'), 'field' => 'caller_name', 'sort' => 'asc'),
-  array('data' => t('dest name'), 'field' => 'dest_name', 'sort' => 'asc'),
-  array('data' => t('dest number'), 'field' => 'dest_number', 'sort' => 'asc'),
+  array('data' => t('cid'), 'field' => 'cid', 'sort' => 'desc'),
+  array('data' => t('start'), 'field' => 'start_time'),
+  array('data' => t('user'), 'field' => 'uid'),
+  array('data' => t('caller name'), 'field' => 'caller_name'),
+  array('data' => t('caller number'), 'field' => 'caller_name'),
+  array('data' => t('dest name'), 'field' => 'dest_name'),
+  array('data' => t('dest number'), 'field' => 'dest_number'),
   array('data' => t('other'), 'field' => 'other'),
   '');
   $sql = "SELECT cid, start_time, uid, caller_name, caller_number,dest_name,dest_number FROM {voipcall}".tablesort_sql($headers);
@@ -301,8 +296,14 @@ function voipcall_call_log() {
     //your basic while loop to get the data
     while($tmp = db_fetch_array($result)) {
       $owner = user_load($tmp['uid']);
+      if(!$tmp['uid']) {
+        $tmp['uid'] = t('Anonymous');
+      }
+      else {
+        $tmp['uid'] = l($owner->name,'user/'.$owner->name);
+      }
       $tmp['start_time'] = format_date($tmp['start_time'], 'small');
-      $tmp['uid'] = l($owner->name,'user/'.$owner->name);
+      
       $tmp['other'] = l('See more','voipcall/'.$tmp['cid']);
       $data[] = $tmp;
     }
