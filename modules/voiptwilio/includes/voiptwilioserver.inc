@@ -202,6 +202,10 @@ watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
     return $rc;
   }
 
+  /**
+   * Implementation of the VoipServer send_text() API method
+   */
+  function send_text($voipcall, $server_config=NULL) {}
 
   /**
    * Implementation of the VoipServer hangup() API method

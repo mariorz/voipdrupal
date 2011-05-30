@@ -414,11 +414,11 @@ class VoipCall {
 
 
   public function getScript($channel = 'voice') {
-    if($channel == 'voice') {
-      $script = $this->call_data->script;
+    if($channel == 'sms') {
+      $script = $this->call_data->text_script;
     }
     else {
-      $script = $this->call_data->text_script;
+      $script = $this->call_data->script;
     }
     
     $updated_script = $this->_voipcall_update_script($script);
@@ -426,14 +426,13 @@ class VoipCall {
   }
 
   public function setScript($script, $channel = 'voice') {  
-    if($channel == 'voice') {
-      $this->call_data->script = $script;
-    }
-    else {
+    if($channel == 'sms') { 
       $this->call_data->text_script = $script;
     }
+    else {
+      $this->call_data->script = $script;
+    }
   }
-
 
   public function getHangupScriptName(){
     return $this->call_data->hangup_script;

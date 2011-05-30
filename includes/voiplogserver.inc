@@ -53,6 +53,11 @@ class VoipLogServer extends VoipServer {
     watchdog('voip', 'VoipLogServer dial() called with: @params', array('@params' => print_r($params, TRUE)), WATCHDOG_INFO);
     return TRUE;
   }
+  function send_text($voipcall, $server_config=NULL) {
+    $params = array('voipcall' => $voipcall, 'options' => $options, 'server_config' => $server_config);
+    watchdog('voip', 'VoipLogServer send_text() called with: @params', array('@params' => print_r($params, TRUE)), WATCHDOG_INFO);
+    return TRUE;
+  }
 
   function hangup($voipcall, $server_config=NULL) {
     $params = array('voipcall' => $voipcall, 'server_config' => $server_config);

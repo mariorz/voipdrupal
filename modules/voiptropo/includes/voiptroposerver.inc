@@ -196,10 +196,12 @@ class VoipTropoServer extends VoipServer {
     $client = new SessionAPI();
     $caller_number = ($voipcall->getCallerNumber())
                        ? $voipcall->getCallerNumber()
-                       : variable_get('voipcall_cid_number', NULL);
-    $voipcall->setCallerNumber($caller_number);                   
-    $dest_number = $voipcall->getDestNumber();
-    $call_nid = $voipcall->getCid();
+                       : NULL;
+    $dest_number = $voipcall->getDestNumber();    
+    //Switch caller and destination numbers    
+    $voipcall->setCallerNumber($dest_number);                   
+    $voipcall->setDestNumber($caller_number);
+    $call_cid = $voipcall->getCid();
   
     $vars = array(
       'action' => 'create',
@@ -208,7 +210,7 @@ class VoipTropoServer extends VoipServer {
       'caller_number' => $caller_number,
       'dest_number' => $dest_number,
       'tropo_action' => 'process_outbound_text',
-      'call_nid' => $call_nid,
+      'call_nid' => $call_cid,
     );
     
     try {

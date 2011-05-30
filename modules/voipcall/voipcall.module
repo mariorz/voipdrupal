@@ -332,15 +332,15 @@ function voipcall_call_page_title($arg) {
 function voipcall_sms_incoming($op, $number, $message, $options) {
   if ($op == 'process') {
     //TODO: Execute default inbound text script?
-    /* $call = new VoipCall();
+     $call = new VoipCall();
   $call->setDestNumber($number);
   $call->setDestName($user->name);
-  $call->setCallerName('');
+  $call->setCallerName('drupal');
   $call->setScript($script);
  
   $call->save();
     
     // Send text.
-    voip_text($call);*/
+    voip_text($call);
   }
 }
