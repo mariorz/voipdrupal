@@ -103,13 +103,20 @@ function voipcall_admin_form() {
     '#default_value' => variable_get('voipcall_outbound_call_script_name', 'voipcall_default_outbound_call_script'),
   );
 
-
   $form['voipcall_inbound_text_script_name'] = array(
     '#type' => 'select',
     '#title' => t('Inbound text script name'),
     '#description' => t('Name of the dialplan script to be used whenever the system receives a text message.'),
     '#options' => VoipScript::getScriptNames(),
     '#default_value' => variable_get('voipcall_inbound_text_script_name', 'voipcall_default_inbound_text_script'),
+  );
+  
+  $form['voipcall_outbound_text_script_name'] = array(
+    '#type' => 'select',
+    '#title' => t('Outbound text script name'),
+    '#description' => t('Name of the dialplan script to be used whenever the system sends a text message.'),
+    '#options' => VoipScript::getScriptNames(),
+    '#default_value' => variable_get('voipcall_outbound_text_script_name', 'voipcall_default_outbound_text_script'),
   );
 
 
@@ -159,8 +166,12 @@ function voipcall_admin_form_validate($form, &$form_state) {
   if(!$script){
     form_set_error('', t('Invalid inbound text script name: @script_name.', array('@script_name' => $script_name)));
   }
-
-
+  
+  $script_name = $values['voipcall_outbound_text_script_name'];
+  $script = VoipScript::loadScript($script_name);
+  if(!$script){
+    form_set_error('', t('Invalid outbound text script name: @script_name.', array('@script_name' => $script_name)));
+  }
 }
 
 
@@ -176,7 +187,7 @@ function voipcall_admin_form_submit($form, &$form_state) {
   variable_set('voipcall_outbound_call_script_name', $form_state['values']['voipcall_outbound_call_script_name']);
   variable_set('voipcall_use_sms_framework', $form_state['values']['voipcall_use_sms_framework']);
   variable_set('voipcall_inbound_text_script_name', $form_state['values']['voipcall_inbound_text_script_name']);
-
+  variable_set('voipcall_outbound_text_script_name', $form_state['values']['voipcall_outbound_text_script_name']);
 
   drupal_set_message(t('The default call settings have been saved.'));
 
@@ -213,12 +224,21 @@ function voipcall_get_default_inbound_text_script_name() {
 }
 
 /**
+ * Return the name of the default script to be used with outgoing text messages
+ */
+function voipcall_get_default_outbound_text_script_name() {
+  $script_name = variable_get('voipcall_outbound_text_script_name', 'voipcall_default_outbound_text_script');
+  return $script_name;
+}
+
+/**
  * Implementation of hook_voipscript_get_script_names()
  */
 function voipcall_voipscript_get_script_names() {
   $script_names[] = 'voipcall_default_inbound_call_script';
   $script_names[] = 'voipcall_default_outbound_call_script';
   $script_names[] = 'voipcall_default_inbound_text_script';
+  $script_names[] = 'voipcall_default_outbound_text_script';
 
   return $script_names;
 }
@@ -248,7 +268,12 @@ function voipcall_voipscript_load_script($script_name, $options=NULL) {
       $script = new VoipScript('voipcall_default_inbound_text_script');
       $script->addSendText(t("This is a TEXT response from the VoIP Drupal platform!"));
       $script->addHangup();
-      break; 
+      break;
+    case 'voipcall_default_outbound_text_script':
+      $script = new VoipScript('voipcall_default_outbound_text_script');
+      $script->addSendText(t("This is a TEXT message from the VoIP Drupal platform!"));
+      $script->addHangup();
+      break;       
     case 'voipscript_run_ivr_menu':
       $script = voipscript_get_run_ivr_menu_script($options);
       break;
@@ -331,15 +356,16 @@ function voipcall_call_page_title($arg) {
  */
 function voipcall_sms_incoming($op, $number, $message, $options) {
   if ($op == 'process') {
-    //TODO: Execute default inbound text script?
-     $call = new VoipCall();
-  $call->setDestNumber($number);
-  $call->setDestName($user->name);
-  $call->setCallerName('drupal');
-  $call->setScript($script);
- 
-  $call->save();
-    
+    $msg = "in voipcall_sms_incoming() with number: $number and message: $message ";
+    $vars = array();
+    watchdog('voipcall', $msg, $vars, WATCHDOG_INFO);
+    $script_name = voipcall_get_default_outbound_text_script_name();
+    $script = VoipScript::loadScript($script_name);
+    $call = new VoipCall();
+    $call->setCallerNumber($number);
+    $call->setCallerName('drupal');
+    $call->setScript($script);
+    $call->save();
     // Send text.
     voip_text($call);
   }
