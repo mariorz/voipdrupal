@@ -72,7 +72,6 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
   }
   else {
     $channel = 'voice';
-    watchdog('voiptropo', 'Channel(sms)= '. $json->session->to->network, array(), WATCHDOG_ERROR);
   }
   /*
      if($tropo_action=='process_voice_analysis'){

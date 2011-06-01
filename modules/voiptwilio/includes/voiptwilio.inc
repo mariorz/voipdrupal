@@ -22,6 +22,7 @@ foreach (array('twilio.php') as $file) {
  *   It can assume any of the following values:
  *   - process_conference, to handle responses to conference call requests
  *   - process_inbound_calls, to handle incoming calls
+ *   - process_inbound_text, to handle incoming text
  *   - process_outbound_calls, to handle the response to outgoing call requests
  *   - process_dial, to handle the response to the "dial" script command
  *   - process_get_input, to handle responses to "get input" script commands
@@ -53,8 +54,13 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
      watchdog('voiptwilio', $msg, $params, WATCHDOG_WARNING);
      return FALSE;  // TODO: should we return an error response to the server?
   }
-
-  // handle incoming call requests
+  if ($twilio_action == 'process_inbound_text') {
+    $channel = 'sms';
+  }
+  else {
+    $channel = 'voice';
+  }
+  // handle incoming call and text requests
   if($twilio_action == 'process_inbound_calls') {
 
     $call = new VoipCall();
@@ -69,6 +75,25 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
     $call->setCallStatus(VoipCall::RINGING);
     $call->setStartTime(time());
 
+    // create a new node for the call
+    $call->save();
+
+    // get the nid of the call node
+    $call_nid = $call->getCid();
+  }
+  else if ($twilio_action == 'process_inbound_text') {
+    $call = new VoipCall();
+    $call_sid = $_REQUEST['SmsSid']; // unique identifier of the text, 34 char
+    $call->setCallId($call_sid);
+    $call->setSource('twilio');
+    $dir_tmp = VoipCall::INBOUND;
+    $call->setDirection($dir_tmp);
+    $call->setAnsweredBy(VoipCall::ANSWERED_DRUPAL);
+    $call->setCallStatus(VoipCall::IN_PROGRESS);
+    $call->setStartTime(time());
+    
+    $call->setCallerNumber($_REQUEST['From']);
+    $call->setDestNumber($_REQUEST['To']);
     // create a new node for the call
     $call->save();
 
@@ -110,9 +135,12 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
     $call->setCallerName($_REQUEST['CallerName']);
   if(!$call->getDestNumber())
     $call->setDestNumber($_REQUEST['Called']);
-
+  
   $twilio_call_status = $_REQUEST['CallStatus']; 
-
+  if (empty($twilio_call_status)) {
+    $twilio_call_status = $_REQUEST['SmsStatus']; 
+  }
+ 
   // set start time for the call
   if($twilio_call_status == 'in-progress'){
     $start_time = $call->getStartTime();
@@ -126,7 +154,7 @@ watchdog('voiptwilio', "twilio status: $twilio_call_status, call status: " . $ca
 
   // update call status
   // NOTE: sms callbacks do not have a call status associated with them
-  if ($twilio_action == 'process_sms_callback'){
+  if ($twilio_action == 'process_sms_callback' || $twilio_action == 'process_inbound_text' || $twilio_action == 'process_send_sms'){
     $call->SetCallStatus(VoipCall::IN_PROGRESS);
   }
   else{
@@ -144,9 +172,9 @@ watchdog('voiptwilio', "twilio status: $twilio_call_status, call status: " . $ca
     $call_location['called_state'] = $_REQUEST['ToState'];
     $call_location['called_zip'] = $_REQUEST['ToZip'];
     $call_location['called_country'] = $_REQUEST['ToCountry'];
-    $script = $call->getScript();
+    $script = $call->getScript($channel);
     $script->setVar('call_location', $call_location);
-    $call->setScript($script);
+    $call->setScript($script, $channel);
   }
 
   $is_hangup = $call->isHangup();
@@ -165,6 +193,7 @@ watchdog('voiptwilio', "twilio status: $twilio_call_status, updated call status:
       case 'process_inbound_calls':
       case 'process_outbound_calls':
       case 'process_hangup':
+      case 'process_inbound_text':
         // nothing special to be done here. the above commands have already
         // been processed in the previous lines
         break;
@@ -200,7 +229,7 @@ watchdog('voiptwilio', "twilio status: $twilio_call_status, updated call status:
 
       case 'process_send_sms':
       case 'process_sms_callback':
-        $call = _voiptwilio_process_sms_response($call, $_REQUEST);
+        $call = _voiptwilio_process_sms_response($call, $_REQUEST, $channel);
         break;
     }
   }
@@ -223,7 +252,7 @@ watchdog('voiptwilio', "twilio status: $twilio_call_status, updated call status:
   $call = $call->save();
 
   // process the call script
-  $rc = _voiptwilio_script_handler($call);
+  $rc = _voiptwilio_script_handler($call, $channel);
 
   return;  // NOTE: this function MUST NOT return any value.  If it does, the
            //       output to Twilio will get messed up with Drupal hmtl...
@@ -233,17 +262,18 @@ watchdog('voiptwilio', "twilio status: $twilio_call_status, updated call status:
  * Process voipcall scripts
  *
  * @param $call, VoipCall instance with the call information
+ * @param $channel, current VoIP channel (voice or sms)
  *
  * @return boolean.  TRUE on success or FALSE on failure.  Check voip_error() for processing failure.
  */
-function _voiptwilio_script_handler($call) {
+function _voiptwilio_script_handler($call, $channel) {
 $msg = 'Entering script_handler with voipcall: ' . print_r($call,true);
 watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
 
   $rc = TRUE;
 
   // get the script object associated with the call
-  $script = $call->getScript();
+  $script = $call->getScript($channel);
 
   // check if call is in a hangup state
   $hangup = $call->isHangup();
@@ -649,7 +679,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
   }
 
   // save script for next iteration
-  $call->setScript($script);
+  $call->setScript($script, $channel);
   $call->save();
 
   // send response back to Twilio
@@ -780,7 +810,7 @@ function _voiptwilio_process_dial_response($call, $request){
 /**
  * Process the response to a 'send text' script command
  */
-function _voiptwilio_process_sms_response($call, $request){
+function _voiptwilio_process_sms_response($call, $request , $channel){
   $call_nid = $call->getCid();
   $sms_status_tmp = $request['SmsStatus'];
   switch($sms_status_tmp) {
@@ -809,9 +839,9 @@ function _voiptwilio_process_sms_response($call, $request){
       $text_status = VoipCall::TEXT_SENT;
       break;
   }
-  $script = $call->getScript();
+  $script = $call->getScript($channel);
   $script->setVar('send_text_status', $text_status);
-  $call->setScript($script);
+  $call->setScript($script, $channel);
   return $call;
 }
 
