@@ -66,7 +66,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
     }
   }
 
-  if (strtolower($json->session->to->network) == 'sms') {
+  if (strtolower($json->session->to->network) == 'sms' || $tropo_action == 'process_outbound_text') {
     $channel = 'sms';
     watchdog('voiptropo', 'Channel(sms)= '. $json->session->to->network, array(), WATCHDOG_ERROR);
   }

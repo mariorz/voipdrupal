@@ -205,7 +205,111 @@ watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
   /**
    * Implementation of the VoipServer send_text() API method
    */
-  function send_text($voipcall, $server_config=NULL) {}
+  function send_text($voipcall, $server_config=NULL) {
+    $rc = FALSE;
+    voip_error_reset();
+
+    if(!$server_config) {
+      $server_config = $this->getConfig();
+    }
+
+    // Twilio configuration
+    $api_version = '2010-04-01';
+    $account_sid = $server_config['voiptwilio_account_sid'];
+    $auth_token = $server_config['voiptwilio_auth_token'];
+
+    // Update call variables
+    $voipcall->setSource('drupal');
+    $voipcall->setDirection(VoipCall::OUTBOUND);
+    
+    // save the call in order to get generate an nid
+    $voipcall->save();
+
+    // Instantiate a new Twilio Rest Client
+    $client = new TwilioRestClient($account_sid, $auth_token);
+
+    // Initiate a new outbound text by POST'ing to the SMS/Messages resource
+    $twilio_path = "/$api_version/Accounts/$account_sid/SMS/Messages";
+    $caller_number = ($voipcall->getCallerNumber())
+                       ? $voipcall->getCallerNumber()
+                       : variable_get('voipcall_cid_number', NULL);
+    $dest_number = $voipcall->getDestNumber();
+
+    $menu_path = 'voip/twilio/callhandler';
+    $call_nid = $voipcall->getCid();
+    
+    $response_url = $menu_path . '/process_sms_callback/' . $call_nid;
+    $status_callback_url = url($response_url, array('absolute' => TRUE));
+    //TODO: How to get body from default outbound script?
+    $body = 'twilio works';
+    $vars = array(
+      'From' => $caller_number,
+      'To' => $dest_number,
+      'Body' => $body,
+      'Method' => 'POST',
+      'StatusCallback' => $status_callback_url,
+    );
+
+    $response = $client->request($twilio_path, "POST", $vars);
+
+    // update call based on response
+    if($response->IsError){
+      // differentiate between processing errors and higher-level errors
+      $twilio_error_code = (string)$response->ResponseXml->RestException->Code;
+      switch($twilio_error_code){
+        // the following codes are listed in
+        //   http://www.twilio.com/docs/errors/reference/
+        case '13214': // Dial: Invalid callerId value
+        case '21210': // Caller phone number not verified
+        case '21212': // Invalid Caller Phone Number
+          $error_msg = t('Invalid caller id value');
+          $voipcall->setErrorMessage($error_msg);
+          $voipcall->setCallStatus(VoipCall::ERROR);
+          $voipcall->save();
+          break;
+        case '13223': // Dial: Invalid phone number format
+        case '13224': // Dial: Invalid phone number
+        case '21211': // Invalid Called Phone Number
+        case '21213': // Caller phone number is required
+        case '21401': // Invalid Phone Number
+          $error_msg = t('Invalid phone number');
+          $voipcall->setErrorMessage($error_msg);
+          $voipcall->setCallStatus(VoipCall::ERROR);
+          $voipcall->save();
+          break;
+        case '13225': // Dial: Forbidden phone number 
+        case '21215': // Account not authorized to call NNN
+          $error_msg = t('Forbidden phone number');
+          $voipcall->setErrorMessage($error_msg);
+          $voipcall->setCallStatus(VoipCall::ERROR);
+          $voipcall->save();
+          break;
+        default: // processing error
+          $twilio_error_msg = $response->ErrorMessage;
+          $msg = "Processing failure. Please contact your system's administrator. Twilio error @twilio_code: @twilio_msg";
+          $params = array('@twilio_code' => $twilio_error_code, 
+                          '@twilio_msg' => $twilio_error_msg);
+          $voipcall->report_error('voiptwilio', $msg, $params);
+          break;
+      }
+      $rc = FALSE;
+    }
+    else {
+      $rc = TRUE;
+
+      // get the new id and status associated with the call
+      $xml = $response->ResponseXml;
+      $call_id = (string)$xml->SMSMessage->Sid;
+      $twilio_call_status = (string)$xml->SMSMessage->Status;
+      $voipcall->setCallId($call_id);
+      $voipcall = voiptwilio_update_call_status($voipcall, $twilio_call_status);
+      $voipcall->save();
+
+      watchdog('voiptwilio', 'new text: ' . print_r($voipcall, true));
+    }
+
+    return $rc;
+  }
 
   /**
    * Implementation of the VoipServer hangup() API method

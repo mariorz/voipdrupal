@@ -568,10 +568,10 @@ class VoipCall {
       }
   
       // initialize voice call script with the default inbound/outbound one
-      if(!isset($details->script)) {
-        $dir_tmp = $details->direction;
-        $direction = $dir_tmp ? $dir_tmp
+      $dir_tmp = $details->direction;
+      $direction = $dir_tmp ? $dir_tmp
                               : $data->direction;
+      if(!isset($details->script)) {
         if($direction == VoipCall::INBOUND){
           $script_name = voipcall_get_default_inbound_call_script_name();
         }
@@ -584,11 +584,15 @@ class VoipCall {
   
       // initialize text script with the default inbound one
       if(!isset($details->text_script)) {
-        $script_name = voipcall_get_default_inbound_text_script_name();
+        if($direction == VoipCall::INBOUND){
+          $script_name = voipcall_get_default_inbound_text_script_name();
+        }
+        else {
+          $script_name = voipcall_get_default_outbound_text_script_name();
+        }
         $default_script = VoipScript::loadScript($script_name);
         $data->text_script = serialize($default_script);
       }
-
   
       // initialize 'Hangup Reason' field
       if(!isset($details->hangup_reason)) {

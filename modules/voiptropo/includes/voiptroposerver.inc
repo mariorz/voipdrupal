@@ -188,12 +188,6 @@ class VoipTropoServer extends VoipServer {
     // Update call variables
     $voipcall->setSource('drupal');
     $voipcall->setDirection(VoipCall::OUTBOUND);
-    
-    // save the call in order to get generate an nid
-    $voipcall->save();
-
-    // Instantiate a new tropo Rest Client
-    $client = new SessionAPI();
     $caller_number = ($voipcall->getCallerNumber())
                        ? $voipcall->getCallerNumber()
                        : NULL;
@@ -201,8 +195,14 @@ class VoipTropoServer extends VoipServer {
     //Switch caller and destination numbers    
     $voipcall->setCallerNumber($dest_number);                   
     $voipcall->setDestNumber($caller_number);
+    
+     // save the call in order to get generate an nid
+    $voipcall->save();
     $call_cid = $voipcall->getCid();
-  
+    
+     // Instantiate a new tropo Rest Client
+    $client = new SessionAPI();
+    
     $vars = array(
       'action' => 'create',
       'username' => $username,
