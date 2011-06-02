@@ -108,10 +108,9 @@ function voipcall_schema() {
         'type' => 'int', 
         'default' => 0,
       ),
-      'text_script' => array(
-        'type' => 'text', 
-        'size' => 'normal',
-        'default' => ''
+      'channel' => array(
+        'type' => 'varchar', 
+        'length' => 255, 
       ),
       'text_status' => array(
         'type' => 'varchar', 
@@ -130,4 +129,20 @@ function voipcall_schema() {
   );
 
   return $schema;
+}
+
+function voipcall_update_6100() {
+  $ret = array();
+  db_add_field($ret, 'voipcall', 'channel',
+    array(
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => TRUE,
+      'default' => '',
+    )
+  );
+  
+  db_drop_field($ret, 'voipcall', 'text_script');
+  
+  return $ret;
 }

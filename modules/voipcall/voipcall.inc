@@ -124,8 +124,8 @@ class VoipCall {
       $call_data->script = $script;
       
       // unserialize the text script
-      $text_script = unserialize($call_data->text_script);
-      $call_data->text_script = $text_script;
+      /*$text_script = unserialize($call_data->text_script);
+      $call_data->text_script = $text_script;*/
       $call = new VoipCall($call_data);
     }
     return $call;
@@ -164,8 +164,8 @@ class VoipCall {
     $call_data->script = $script;
     
     // unserialize the text script
-    $text_script = unserialize($call_data->text_script);
-    $call_data->text_script = $text_script;
+    /*$text_script = unserialize($call_data->text_script);
+    $call_data->text_script = $text_script;*/
     
     $this->call_data = $call_data;
     return $this;
@@ -413,25 +413,26 @@ class VoipCall {
   }
 
 
-  public function getScript($channel = 'voice') {
-    if($channel == 'sms') {
+  public function getScript() {
+    /*if($channel == 'sms') {
       $script = $this->call_data->text_script;
     }
     else {
       $script = $this->call_data->script;
-    }
-    
+    }*/
+    $script = $this->call_data->script;
     $updated_script = $this->_voipcall_update_script($script);
     return $updated_script;
   }
 
-  public function setScript($script, $channel = 'voice') {  
-    if($channel == 'sms') { 
+  public function setScript($script) {  
+    /*if($channel == 'sms') { 
       $this->call_data->text_script = $script;
     }
     else {
       $this->call_data->script = $script;
-    }
+    }*/
+    $this->call_data->script = $script;
   }
 
   public function getHangupScriptName(){
@@ -448,6 +449,14 @@ class VoipCall {
 
   public function setHangupReason($reason){
     $this->call_data->hangup_reason = $reason;
+  }
+  
+  public function getChannel() {
+    return $this->call_data->channel = $channel;
+  }
+  
+  public function setChannel($channel) {
+    $this->call_data->channel = $channel;
   }
 
   public function getHangupReasonDescription(){
@@ -565,33 +574,44 @@ class VoipCall {
       if(!isset($details->direction)) {
         $data->direction = VoipCall::OUTBOUND;
       }
+      
+      // initialize 'Channel' field
+      if(!isset($details->channel)) {
+        $data->channel = 'voice';
+      }
   
       // initialize voice call script with the default inbound/outbound one
       $dir_tmp = $details->direction;
       $direction = $dir_tmp ? $dir_tmp
                               : $data->direction;
       if(!isset($details->script)) {
-        if($direction == VoipCall::INBOUND){
-          $script_name = voipcall_get_default_inbound_call_script_name();
-        }
+        if($details->channel=='sms') {
+           if($direction == VoipCall::INBOUND){
+             $script_name = voipcall_get_default_inbound_text_script_name();
+           }
+           else {
+             $script_name = voipcall_get_default_outbound_text_script_name();
+           }
+        } 
         else {
-          $script_name = voipcall_get_default_outbound_call_script_name();
+           if($direction == VoipCall::INBOUND){
+             $script_name = voipcall_get_default_inbound_call_script_name();
+           }
+           else {
+             $script_name = voipcall_get_default_outbound_call_script_name();
+           }
         }
+       
         $default_script = VoipScript::loadScript($script_name);
         $data->script = serialize($default_script);
       }
   
       // initialize text script with the default inbound one
-      if(!isset($details->text_script)) {
-        if($direction == VoipCall::INBOUND){
-          $script_name = voipcall_get_default_inbound_text_script_name();
-        }
-        else {
-          $script_name = voipcall_get_default_outbound_text_script_name();
-        }
+     /*if(!isset($details->text_script)) {
+       
         $default_script = VoipScript::loadScript($script_name);
         $data->text_script = serialize($default_script);
-      }
+      }*/
   
       // initialize 'Hangup Reason' field
       if(!isset($details->hangup_reason)) {
@@ -673,15 +693,19 @@ class VoipCall {
     $new_error_message = $details->error_message;
     if(isset($new_error_message))
       $data->error_message = $new_error_message;
-  
+    
+    $channel = $details->channel;
+    if(isset($channel))
+      $data->channel = $channel;
+ 
     $new_script = $details->script;
     if(isset($new_script))
       $data->script =  serialize($new_script);
   
-    $text_script = $details->text_script;
+    /*$text_script = $details->text_script;
     if(isset($text_script))
       $data->text_script =  serialize($text_script);
-  
+  */
     $new_hangup_script_name = $details->hangup_script;
     if(isset($new_hangup_script_name))
       $data->hangup_script =  $new_hangup_script_name;

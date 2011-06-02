@@ -68,11 +68,12 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
 
   if (strtolower($json->session->to->network) == 'sms' || $tropo_action == 'process_outbound_text') {
     $channel = 'sms';
-    watchdog('voiptropo', 'Channel(sms)= '. $json->session->to->network, array(), WATCHDOG_ERROR);
   }
   else {
     $channel = 'voice';
   }
+  
+  
   /*
      if($tropo_action=='process_voice_analysis'){
      watchdog('voiptropo_analysis', 'RES:'.print_r($result, TRUE), $vars, WATCHDOG_INFO);
@@ -99,6 +100,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
     $call->setAnsweredBy(VoipCall::ANSWERED_DRUPAL);
     $call->setCallStatus(VoipCall::RINGING);
     $call->setStartTime(time());
+    $call->setChannel($channel);
     $call->save();
     // get the cid of the call data
     $call_nid = $call->getCid();
@@ -133,6 +135,8 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
     }
   }
   // update common call variables
+  if(!$call->getChannel())
+    $call->setChannel($channel);
   if (!$call->getCallerNumber()) {
     $caller_number = $session->getParameters('caller_number');
     if(!$caller_number) {
@@ -208,26 +212,26 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
         return;
         break;  
       case 'process_get_input':
-        $script = $call->getScript($channel);
+        $script = $call->getScript();
         $digits = str_replace(" ","",$result->getValue());
         $script->setVar('input_digits', $digits);
-        $call->setScript($script, $channel);
+        $call->setScript($script);
         break;
      case 'process_get_voice_input':
-        $script = $call->getScript($channel);
+        $script = $call->getScript();
         $script->setVar('input_digits', $result->getValue());
-        $call->setScript($script, $channel);
+        $call->setScript($script);
         break;
       case 'save_record':
         $validators = array();
         $filename=$_FILES['filename']['name'];
         $dest = file_directory_path();
         $file = _voiptropo_file_save_upload($filename, $validators, $dest);
-        $script = $call->getScript($channel);
+        $script = $call->getScript();
         $script->setVar('recording_url', file_create_url($file->filepath));
         $script->setVar('recording_digits', NULL);
         $script->setVar('recording_fid', $file->fid);
-        $call->setScript($script, $channel);
+        $call->setScript($script);
         // update the voipcall node with the new values
         $call = $call->save();
         return;
@@ -235,19 +239,19 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
       case 'process_record':
         //Save record duration
         $rec_actions = $result->getActions();
-        $script = $call->getScript($channel);
+        $script = $call->getScript();
         watchdog('voiptropodur','Duration: '.$rec_actions->duration);
         $script->setVar('recording_duration', $rec_actions->duration);
-        $call->setScript($script, $channel);
+        $call->setScript($script);
         // update the voipcall node with the new values
         $call = $call->save();
       break;	  
       case 'process_empty_recording':
-        $script = $call->getScript($channel);
+        $script = $call->getScript();
         $script->setVar('recording_url', '');
         $script->setVar('recording_duration', 0);
         $script->setVar('recording_digits', NULL);
-        $call->setScript($script, $channel);
+        $call->setScript($script);
         break;
 
       case 'process_send_sms':
@@ -318,7 +322,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
   }
 
   // process the call script
-  $rc = _voiptropo_script_handler($call, $tropo, $channel);
+  $rc = _voiptropo_script_handler($call, $tropo);
   
   //Add final event
   if ($tropo_action != 'process_callstatus') {
@@ -345,14 +349,14 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
  *
  * @return boolean.  TRUE on success or FALSE on failure.  Check voip_error() for processing failure.
  */
-function _voiptropo_script_handler($call, &$tropo , $channel) {
+function _voiptropo_script_handler($call, &$tropo) {
   $msg = 'Entering script_handler with voipcall: ' . print_r($call, TRUE);
   watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
 
   $rc = TRUE;
 
   // get the script object associated with the call
-  $script = $call->getScript($channel);
+  $script = $call->getScript();
   // check if call is in a hangup state
   $hangup = $call->isHangup();
   if ($hangup) {
@@ -798,7 +802,7 @@ watchdog('voiptropo',"(Say) V: $voice, L: $language, Id: $voice_id");
   }
 
   // save script for next iteration
-  $call->setScript($script, $channel);
+  $call->setScript($script);
   $call->save();
   return $rc;
 }
@@ -924,7 +928,7 @@ function voiptropo_update_call_status($call, $tropo_call_status, $request=NULL) 
  * Process the response to a "dial" script command
  */ 
 function _voiptropo_process_dial_response($call, $request, $dial_response_name) {
-  $script = $call->getScript($channel);
+  $script = $call->getScript();
   // update the 'dial_sid' script variable
   $script->setVar('dial_sid', $request->getSessionId());//TODO: What is this? I used session id
 
@@ -955,7 +959,7 @@ function _voiptropo_process_dial_response($call, $request, $dial_response_name) 
       break;
   }
 
-  $call->setScript($script, $channel);
+  $call->setScript($script);
   return $call;
 }
 
