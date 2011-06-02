@@ -28,6 +28,7 @@ function voipscriptsamples_voipscript_get_script_names() {
   $script_names[] = 'voipscript_send_sms';
   $script_names[] = 'voipscript_say_demo';
   $script_names[] = 'voipscript_small_office_ivr';
+  $script_names[] = 'voipscript_call_sms_sender';
   return $script_names;
 }
 
@@ -125,7 +126,10 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     $script->addSay(t('Thanks so much for calling our office. Bye bye.'));
     $script->addHangup();
   }
-
+  if($script_name == 'voipscript_call_sms_sender') {
+    $script = new VoipScript('voipscript_call_sms_sender');
+    $script->addSendText(t('We are calling you.'));
+  }
   return $script;
 }
 

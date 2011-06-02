@@ -357,13 +357,12 @@ function voipcall_call_page_title($arg) {
 function voipcall_sms_incoming($op, $number, $message, $options) {
   if ($op == 'process') {
     $msg = "in voipcall_sms_incoming() with number: $number and message: $message ";
-    $vars = array();
-    watchdog('voipcall', $msg, $vars, WATCHDOG_INFO);
+    watchdog('voipcall', $msg);
     $script_name = voipcall_get_default_outbound_text_script_name();
     $script = VoipScript::loadScript($script_name);
     $call = new VoipCall();
     $call->setDestNumber($number);
-    $call->setScript($script);
+    $call->setScript($script, 'sms');
     $call->save();
     // Send text.
     voip_text($call);

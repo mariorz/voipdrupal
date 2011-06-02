@@ -519,7 +519,6 @@ class VoipCall {
    *  $data, the newly saved call_data data.
    */
   private function _voipcall_save($details=NULL) {
-  
     if(is_array($details)){
       $details = (object)$details;
     }
@@ -680,7 +679,7 @@ class VoipCall {
       $data->script =  serialize($new_script);
   
     $text_script = $details->text_script;
-    if(isset($new_script))
+    if(isset($text_script))
       $data->text_script =  serialize($text_script);
   
     $new_hangup_script_name = $details->hangup_script;

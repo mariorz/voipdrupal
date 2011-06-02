@@ -42,7 +42,7 @@ $msg = "in voiptwilio_call_handler() with twilio_action: $twilio_action, call_ni
 $vars = array();
 watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
 //dsm($msg);
-
+watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
   // validate $_REQUEST['AccountSid'] to avoid hack attempts
   $server = VoipServer::getServer('twilio');
   $server_config = $server->getConfig();
