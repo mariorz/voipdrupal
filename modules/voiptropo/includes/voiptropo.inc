@@ -100,7 +100,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
     $call->setAnsweredBy(VoipCall::ANSWERED_DRUPAL);
     $call->setCallStatus(VoipCall::RINGING);
     $call->setStartTime(time());
-    $call->setChannel($channel);
+    $call->setRequestChannel($channel);
     $call->save();
     // get the cid of the call data
     $call_nid = $call->getCid();
@@ -135,8 +135,8 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
     }
   }
   // update common call variables
-  if(!$call->getChannel())
-    $call->setChannel($channel);
+  if(!$call->getRequestChannel())
+    $call->setRequestChannel($channel);
   if (!$call->getCallerNumber()) {
     $caller_number = $session->getParameters('caller_number');
     if(!$caller_number) {

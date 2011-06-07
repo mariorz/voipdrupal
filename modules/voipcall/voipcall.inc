@@ -414,24 +414,12 @@ class VoipCall {
 
 
   public function getScript() {
-    /*if($channel == 'sms') {
-      $script = $this->call_data->text_script;
-    }
-    else {
-      $script = $this->call_data->script;
-    }*/
     $script = $this->call_data->script;
     $updated_script = $this->_voipcall_update_script($script);
     return $updated_script;
   }
 
   public function setScript($script) {  
-    /*if($channel == 'sms') { 
-      $this->call_data->text_script = $script;
-    }
-    else {
-      $this->call_data->script = $script;
-    }*/
     $this->call_data->script = $script;
   }
 
@@ -451,12 +439,24 @@ class VoipCall {
     $this->call_data->hangup_reason = $reason;
   }
   
-  public function getChannel() {
-    return $this->call_data->channel = $channel;
+  public function getRequestChannel() {
+    return $this->call_data->request_channel;
   }
   
-  public function setChannel($channel) {
-    $this->call_data->channel = $channel;
+  public function setRequestChannel($channel) {
+    $this->call_data->request_channel = $channel;
+    if (empty($this->call_data->call_channel)) {
+      //Set initial channel
+      $this->call_data->call_channel = $channel;
+    }
+  }
+  
+  public function getCallChannel() {
+    return $this->call_data->call_channel;
+  }
+  
+  public function setCallChannel($channel) {
+    $this->call_data->call_channel = $channel;
   }
 
   public function getHangupReasonDescription(){
@@ -575,9 +575,12 @@ class VoipCall {
         $data->direction = VoipCall::OUTBOUND;
       }
       
-      // initialize 'Channel' field
-      if(!isset($details->channel)) {
-        $data->channel = 'voice';
+      // initialize 'Channel' fields
+      if(!isset($details->call_channel)) {
+        $data->call_channel = 'voice';
+      }
+      if(!isset($details->request_channel)) {
+        $data->request_channel = 'voice';
       }
   
       // initialize voice call script with the default inbound/outbound one
@@ -585,7 +588,7 @@ class VoipCall {
       $direction = $dir_tmp ? $dir_tmp
                               : $data->direction;
       if(!isset($details->script)) {
-        if($details->channel=='sms') {
+        if($details->request_channel=='sms') {
            if($direction == VoipCall::INBOUND){
              $script_name = voipcall_get_default_inbound_text_script_name();
            }
@@ -679,8 +682,9 @@ class VoipCall {
       $data->direction =  $new_direction;
   
     $new_start_time = $details->start_time;
-    if(isset($new_start_time))
-      $data->start_time = $new_start_time;
+    if(!isset($new_start_time))
+      $new_start_time = time();
+    $data->start_time = $new_start_time;
 
     $new_end_time = $details->end_time;
     if(isset($new_end_time))
@@ -694,9 +698,13 @@ class VoipCall {
     if(isset($new_error_message))
       $data->error_message = $new_error_message;
     
-    $channel = $details->channel;
-    if(isset($channel))
-      $data->channel = $channel;
+    $call_channel = $details->call_channel;
+    if(isset($call_channel))
+      $data->call_channel = $call_channel;
+      
+    $request_channel = $details->request_channel;
+    if(isset($request_channel))
+      $data->request_channel = $request_channel;
  
     $new_script = $details->script;
     if(isset($new_script))
