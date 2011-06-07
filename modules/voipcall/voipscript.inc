@@ -355,6 +355,35 @@ class VoipScript {
     $params['caller_id'] = $caller_id;
     $this->commands[] = new VoipCommand('VoipCmdDial', $params);
   }
+  
+  /**
+   * Adds a "call" command to the script.
+   *
+   * When executed, the 'call' command makes a call to another
+   * phone. If the called party picks up, then current script is executed on that channel. If the called party does not pick up,
+   * or if a busy signal is received, or the number doesn't exist, the call
+   * command will finish.
+   *
+   * @param $number
+   *   String with a valid number to be called
+   *
+   * @param $timeout
+   *   Integer with the number of seconds to wait for the called party to
+   *   answer the call
+   *
+   * @param $caller_id
+   *   String with the caller id to be used for the call. By default, this is
+   *   the caller id defined in the 'default call configuration' settings
+   *
+   * @return
+   *
+   */
+  function addCall($number='', $timeout=30, $caller_id=''){
+    $params['number'] = $number;
+    $params['timeout'] = $timeout;
+    $params['caller_id'] = $caller_id;
+    $this->commands[] = new VoipCommand('VoipCmdCall', $params);
+  }
 
   /*
    * Adds a 'get input' command to the script. 

@@ -411,12 +411,12 @@ function _voiptropo_script_handler($call, &$tropo) {
           $processing = FALSE;
           break;
 
-          case 'VoipCmdDial';
+        case 'VoipCmdDial';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/tropo/callhandler';
           $call_nid = $call->getCid();
           $number = $script->evalString($cmd->getParam('number'));
-          $number = str_replace(" ", "", $number);
+          $number = str_replace(" ", "", $number); //remove any spaces from number
           $timeout = $script->evalString($cmd->getParam('timeout', 30));
           //TODO: What command for timeLimit, hangupOnStar?
           /*$hangup_on_star =  $script->evalString($cmd->getParam('hangup_on_star', false));
@@ -428,7 +428,7 @@ function _voiptropo_script_handler($call, &$tropo) {
 
           $params = array(
               //'timeout' => $timeout,  //TODO: Timeout causes immediate hangup, disabled for now.
-              'from' => $caller_number,
+              'from' => $caller_id,
               );
           //$tropo->call($number, $params);
           $tropo->transfer($number, $params);
@@ -445,6 +445,42 @@ function _voiptropo_script_handler($call, &$tropo) {
           $rc = TRUE;
           $processing = FALSE;
           break;
+          
+        case 'VoipCmdCall';
+          $call->setCallStatus(VoipCall::IN_PROGRESS);
+          $menu_path = 'voip/tropo/callhandler';
+          $call_nid = $call->getCid();
+          $number = $script->evalString($cmd->getParam('number'));
+          $number = str_replace(" ", "", $number);  //remove any spaces from number
+          //If number" is empty then call the caller (users that send sms and receive a call)
+          if (!$number) {
+            $number = $script->evalString($script->getVar('caller_number'));
+          }
+          $timeout = $script->evalString($cmd->getParam('timeout', 30.0));
+          $caller_number = $script->evalString($script->getVar('caller_number'));
+          $caller_id = $script->evalString($cmd->getParam('caller_id', $caller_number)); 
+
+          //to start another call, you have to issue a hangup() first: http://devzone.zend.com/article/14213
+          $tropo->hangup();
+          $params = array(
+              'from' => $caller_id,
+              'timeout' => (float)$timeout,
+              'channel' => 'voice',
+          );
+          $tropo->call($number, $params);
+
+          //Add events
+          /*$response_url = $menu_path . '/process_dial/' . $call_nid . '/error';
+          $action = url($response_url, array('absolute' => TRUE));
+          $tropo->on(array("event" => "error", "next" => $action));
+
+          $response_url = $menu_path . '/process_dial/' . $call_nid . '/incomplete';
+          $action = url($response_url, array('absolute' => TRUE));
+          $tropo->on(array("event" => "incomplete", "next" => $action));
+*/
+          $rc = TRUE;
+          $processing = TRUE;
+          break;  
 
         case 'VoipCmdGetInput':
           _voiptropo_get_input('dtmf', $call, $cmd, $script, $tropo);
