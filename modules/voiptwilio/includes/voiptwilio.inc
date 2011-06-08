@@ -341,6 +341,10 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
             //In case VoipCmdDial is called within sms channel then instead of transfer we call the sender.
             //we are starting a call, hangup() the existing session
             $response .= '<Hangup/>';
+            
+            if (!$number) {
+              $number = $call->getCallerNumber();
+            }
             $call = new VoipCall();
             $call->setDestNumber($number);
             $call->setScript($script);

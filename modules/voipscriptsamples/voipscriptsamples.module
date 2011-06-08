@@ -129,7 +129,7 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
   if($script_name == 'voipscript_call_sms_sender') {
     $script = new VoipScript('voipscript_call_sms_sender');
     $script->addSendText(t('We are calling you.'));
-    $script->addDial('+13477090908');
+    $script->addDial();
     $script->addSay(t('Thanks so much for calling our office. Bye bye.'));
     $script->addHangup();
   }

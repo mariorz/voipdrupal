@@ -419,6 +419,10 @@ function _voiptropo_script_handler($call, &$tropo) {
             //In case VoipCmdDial is called within sms channel then instead of transfer we call the sender.
             //we are starting a call, hangup() the existing session
             $tropo->hangup();
+            
+            if (!$number) {
+              $number = $call->getCallerNumber();
+            }
             $call = new VoipCall();
             $call->setDestNumber($number);
             $call->setScript($script);
