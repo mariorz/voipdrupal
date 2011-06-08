@@ -74,7 +74,7 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     $call->setAnsweredBy(VoipCall::ANSWERED_DRUPAL);
     $call->setCallStatus(VoipCall::RINGING);
     $call->setStartTime(time());
-    $call->setRequestChannel($channel);
+    $call->setCurrentChannel($channel);
     // create a new node for the call
     $call->save();
 
@@ -94,7 +94,7 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     
     $call->setCallerNumber($_REQUEST['From']);
     $call->setDestNumber($_REQUEST['To']);
-    $call->setRequestChannel($channel);
+    $call->setCurrentChannel($channel);
     // create a new node for the call
     $call->save();
 
@@ -130,8 +130,8 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
   }
 
   // update common call variables
-  if(!$call->getRequestChannel())
-     $call->setRequestChannel($channel);
+  if(!$call->getCurrentChannel())
+     $call->setCurrentChannel($channel);
   if(!$call->getCallerNumber())
     $call->setCallerNumber($_REQUEST['Caller']);
   if(!$call->getCallerName())

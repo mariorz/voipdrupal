@@ -361,7 +361,7 @@ function voipcall_sms_incoming($op, $number, $message, $options) {
     $script_name = voipcall_get_default_outbound_text_script_name();
     $script = VoipScript::loadScript($script_name);
     $call = new VoipCall();
-    $call->setChannel('sms');
+    $call->setCurrentChannel('sms');
     $call->setDestNumber($number);
     $call->setScript($script);
     $call->save();

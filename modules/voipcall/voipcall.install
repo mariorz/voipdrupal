@@ -71,10 +71,10 @@ function voipcall_schema() {
         'type' => 'varchar', 
         'length' => 255, 
       ),
-      'process_response' => array(
+     /* 'process_response' => array(
         'type' => 'int', 
         'default' => 0,
-      ),
+      ),*/
       'script' => array(
         'type' => 'text', 
         'size' => 'normal',
@@ -108,11 +108,19 @@ function voipcall_schema() {
         'type' => 'int', 
         'default' => 0,
       ),
-      'request_channel' => array(
+      'current_channel' => array(
         'type' => 'varchar', 
         'length' => 255, 
       ),
       'call_channel' => array(
+        'type' => 'varchar', 
+        'length' => 255, 
+      ),
+      'current_network' => array(
+        'type' => 'varchar', 
+        'length' => 255, 
+      ),
+      'call_network' => array(
         'type' => 'varchar', 
         'length' => 255, 
       ),
@@ -164,7 +172,30 @@ function voipcall_update_6101() {
     )
   );
   
-  //Rename channel to request_channel
-  db_change_field($ret, 'voipcall', 'channel', 'request_channel', array('type' => 'varchar', 'length' => 255));
+  //Rename channel to current_channel
+  db_change_field($ret, 'voipcall', 'channel', 'current_channel', array('type' => 'varchar', 'length' => 255));
+  return $ret;
+}
+
+function voipcall_update_6102() {
+  $ret = array();
+   db_add_field($ret, 'voipcall', 'current_network',
+    array(
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => TRUE,
+      'default' => '',
+    )
+  );
+  db_add_field($ret, 'voipcall', 'call_network',
+    array(
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => TRUE,
+      'default' => '',
+    )
+  );
+  
+  db_drop_field($ret, 'voipcall', 'process_response');
   return $ret;
 }
