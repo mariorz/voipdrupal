@@ -336,28 +336,42 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
         
         case 'VoipCmdDial';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
-          $menu_path = 'voip/twilio/callhandler';
-          $call_nid = $call->getCid();
-          $response_url = $menu_path . '/process_dial/' . $call_nid ;
-          $action = url($response_url, array('absolute' => TRUE));
-          $method = 'POST';
           $number = $script->evalString($cmd->getParam('number'));
-          // TODO: implement the other features such as multi-dial, url(for private scripts) and sendDigits?
-          $timeout = $script->evalString($cmd->getParam('timeout', 30));
-          $hangup_on_star =  $script->evalString($cmd->getParam('hangup_on_star', false));
-          $hangup_on_star =  $hangup_on_star? 'true':'false';
-          $time_limit = $script->evalString($cmd->getParam('time_limit', '14400'));
-          $caller_number = $script->evalString($script->getVar('caller_number'));
-          $caller_id = $script->evalString($cmd->getParam('caller_id', $caller_number)); 
-          $response .= '<Dial action="' . $action
+          if ($call->getCurrentChannel() == 'sms') {
+            //In case VoipCmdDial is called within sms channel then instead of transfer we call the sender.
+            //we are starting a call, hangup() the existing session
+            $response .= '<Hangup/>';
+            $call = new VoipCall();
+            $call->setDestNumber($number);
+            $call->setScript($script);
+            $call->save();
+            voip_dial($call);
+          }
+          else {
+            $menu_path = 'voip/twilio/callhandler';
+            $call_nid = $call->getCid();
+            $response_url = $menu_path . '/process_dial/' . $call_nid ;
+            $action = url($response_url, array('absolute' => TRUE));
+            $method = 'POST';
+          
+            // TODO: implement the other features such as multi-dial, url(for private scripts) and sendDigits?
+            $timeout = $script->evalString($cmd->getParam('timeout', 30));
+            $hangup_on_star =  $script->evalString($cmd->getParam('hangup_on_star', false));
+            $hangup_on_star =  $hangup_on_star? 'true':'false';
+            $time_limit = $script->evalString($cmd->getParam('time_limit', '14400'));
+            $caller_number = $script->evalString($script->getVar('caller_number'));
+            $caller_id = $script->evalString($cmd->getParam('caller_id', $caller_number)); 
+            $response .= '<Dial action="' . $action
                             . '" method="' . $method
                             . '" timeout="' . $timeout
                             . '" hangupOnStar="' . $hangup_on_star
                             . '" timeLimit="' . $time_limit
                             . '" callerId="' . $caller_id
                             . '" >';
-          $response .= '<Number>' . $number . '</Number>';
-          $response .= '</Dial>';
+            $response .= '<Number>' . $number . '</Number>';
+            $response .= '</Dial>';
+          }
+          
           $rc = TRUE;
           $processing = FALSE;
           break;

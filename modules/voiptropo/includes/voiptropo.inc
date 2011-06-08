@@ -413,7 +413,8 @@ function _voiptropo_script_handler($call, &$tropo) {
 
         case 'VoipCmdDial';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
-          
+          $number = $script->evalString($cmd->getParam('number'));
+          $number = str_replace(" ", "", $number); //remove any spaces from number
           if ($call->getCurrentChannel() == 'sms') {
             //In case VoipCmdDial is called within sms channel then instead of transfer we call the sender.
             //we are starting a call, hangup() the existing session
@@ -427,8 +428,6 @@ function _voiptropo_script_handler($call, &$tropo) {
           else {
             $menu_path = 'voip/tropo/callhandler';
             $call_nid = $call->getCid();
-            $number = $script->evalString($cmd->getParam('number'));
-            $number = str_replace(" ", "", $number); //remove any spaces from number
             $timeout = $script->evalString($cmd->getParam('timeout', 30));
             //TODO: What command for timeLimit, hangupOnStar?
             /*$hangup_on_star =  $script->evalString($cmd->getParam('hangup_on_star', false));
