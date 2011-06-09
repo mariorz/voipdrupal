@@ -320,6 +320,17 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
     $tropo->on(array("event" => "continue", "next" => $action)); 
      */
   }
+  else if($tropo_action == 'process_outbound_text') {
+   $to = $call->getDestNumber();   
+   $text = $session->getParameters('text');
+   $params = array(
+     'to' => $to,
+     'channel' => 'TEXT',
+     'network' => 'SMS',
+    );
+
+    $tropo->message($text, $params);
+  }
 
   // process the call script
   $rc = _voiptropo_script_handler($call, $tropo);

@@ -173,7 +173,7 @@ class VoipTropoServer extends VoipServer {
  /**
    * Implementation of the VoipServer send_text() API method
    */
-  function send_text($voipcall, $server_config=NULL) {
+  function send_text($text, $voipcall, $server_config=NULL) {
     voip_error_reset();
 
     if (!$server_config) {
@@ -193,8 +193,8 @@ class VoipTropoServer extends VoipServer {
                        : NULL;
     $dest_number = $voipcall->getDestNumber();    
     //Switch caller and destination numbers    
-    $voipcall->setCallerNumber($dest_number);                   
-    $voipcall->setDestNumber($caller_number);
+   // $voipcall->setCallerNumber($dest_number);                   
+   // $voipcall->setDestNumber($caller_number);
     
      // save the call in order to get generate an nid
     $voipcall->save();
@@ -211,6 +211,7 @@ class VoipTropoServer extends VoipServer {
       'dest_number' => $dest_number,
       'tropo_action' => 'process_outbound_text',
       'call_nid' => $call_cid,
+      'text' => $text,
     );
     
     try {

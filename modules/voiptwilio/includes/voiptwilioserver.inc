@@ -205,7 +205,7 @@ watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
   /**
    * Implementation of the VoipServer send_text() API method
    */
-  function send_text($voipcall, $server_config=NULL) {
+  function send_text($text, $voipcall, $server_config=NULL) {
     $rc = FALSE;
     voip_error_reset();
 
@@ -240,12 +240,11 @@ watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
     
     $response_url = $menu_path . '/process_sms_callback/' . $call_nid;
     $status_callback_url = url($response_url, array('absolute' => TRUE));
-    //TODO: How to get body from default outbound script?
-    $body = 'twilio works';
+    
     $vars = array(
       'From' => $caller_number,
       'To' => $dest_number,
-      'Body' => $body,
+      'Body' => $text,
       'Method' => 'POST',
       'StatusCallback' => $status_callback_url,
     );

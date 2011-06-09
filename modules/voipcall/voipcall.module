@@ -358,14 +358,13 @@ function voipcall_sms_incoming($op, $number, $message, $options) {
   if ($op == 'process') {
     $msg = "in voipcall_sms_incoming() with number: $number and message: $message ";
     watchdog('voipcall', $msg);
-    $script_name = voipcall_get_default_outbound_text_script_name();
-    $script = VoipScript::loadScript($script_name);
     $call = new VoipCall();
     $call->setCurrentChannel('sms');
     $call->setDestNumber($number);
     $call->setScript($script);
     $call->save();
     // Send text.
-    voip_text($call);
+    $text = 'Hello from VoIP Drupal';
+    voip_text($text, $call);
   }
 }
