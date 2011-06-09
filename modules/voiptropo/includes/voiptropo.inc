@@ -68,9 +68,11 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
 
   if (strtolower($json->session->to->network) == 'sms' || $tropo_action == 'process_outbound_text') {
     $channel = 'sms';
+    $network = 'text';
   }
   else {
     $channel = 'voice';
+    $network = 'voip';
   }
   
   
@@ -101,6 +103,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
     $call->setCallStatus(VoipCall::RINGING);
     $call->setStartTime(time());
     $call->setCurrentChannel($channel);
+    $call->setCurrentNetwork($network);
     $call->save();
     // get the cid of the call data
     $call_nid = $call->getCid();
@@ -137,6 +140,8 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
   // update common call variables
   if(!$call->getCurrentChannel())
     $call->setCurrentChannel($channel);
+  if(!$call->getCurrentNetwork())
+    $call->setCurrentNetwork($network);
   if (!$call->getCallerNumber()) {
     $caller_number = $session->getParameters('caller_number');
     if(!$caller_number) {

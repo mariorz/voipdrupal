@@ -56,9 +56,11 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
   }
   if ($twilio_action == 'process_inbound_text') {
     $channel = 'sms';
+    $network = 'text';
   }
   else {
     $channel = 'voice';
+    $network = 'voip';
   }
   // handle incoming call and text requests
   if($twilio_action == 'process_inbound_calls') {
@@ -75,6 +77,7 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     $call->setCallStatus(VoipCall::RINGING);
     $call->setStartTime(time());
     $call->setCurrentChannel($channel);
+    $call->setCurrentNetwork($network);
     // create a new node for the call
     $call->save();
 
@@ -95,6 +98,7 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     $call->setCallerNumber($_REQUEST['From']);
     $call->setDestNumber($_REQUEST['To']);
     $call->setCurrentChannel($channel);
+    $call->setCurrentNetwork($network);
     // create a new node for the call
     $call->save();
 
@@ -132,6 +136,8 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
   // update common call variables
   if(!$call->getCurrentChannel())
      $call->setCurrentChannel($channel);
+  if(!$call->getCurrentNetwork())
+     $call->setCurrentNetwork($network);
   if(!$call->getCallerNumber())
     $call->setCallerNumber($_REQUEST['Caller']);
   if(!$call->getCallerName())

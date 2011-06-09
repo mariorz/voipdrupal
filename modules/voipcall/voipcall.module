@@ -360,11 +360,12 @@ function voipcall_sms_incoming($op, $number, $message, $options) {
     watchdog('voipcall', $msg);
     $call = new VoipCall();
     $call->setCurrentChannel('sms');
+    $call->setCurrentNetwork('text');
     $call->setDestNumber($number);
     $call->setScript($script);
     $call->save();
     // Send text.
-    $text = 'Hello from VoIP Drupal';
+    $text = 'Hello from VoIP Drupal.';
     voip_text($text, $call);
   }
 }
