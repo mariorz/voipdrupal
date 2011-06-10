@@ -1,0 +1,91 @@
+<?php
+
+class VoipSession {
+  
+    private $call_id;
+    private $origin_number;
+    private $destination_number;
+    private $expiration_time;
+ 
+   function __construct($call_id, $origin_number, $destination_number, $expiration_time = 300) {
+     $this->call_id = $call_id;
+     $this->origin_number = $origin_number;
+     $this->destination_number = $destination_number;
+     $this->expiration_time = $expiration_time;
+   }   
+   /**
+   * Returns Session object associated with the matching pair of numbers
+   *
+   * @param $origin_number
+   *   String representing origin number.
+   * @param $destination_number
+   *   String representing destination number.
+   *
+   * @return
+   *   Session object.
+   */
+    public static function getSessionByNumber($origin_number, $destination_number){
+      //TODO:
+      return $session;
+    }
+    
+   /**
+   * Returns Session object associated with the matching VoIP Call
+   *
+   * @param $call_id
+   *   Integer representing VoIP Call ID.
+   *
+   * @return
+   *    Session object.
+   */
+    public static function getSessionByCallId($call_id){
+      //TODO:
+      return $session;
+    }
+    
+   /**
+   * Delete all expired sessions
+   *
+   *
+   * @return
+   *   Array of call ids of deleted sessions.
+   */
+    public static function deleteExpiredSessions(){
+      //TODO: Delete all expired sessions
+     
+    }
+
+    public function getCallId(){
+      return $this->call_id;
+    }
+    
+    public function setCallId($call_id){
+      $this->call_id = $call_id;
+    }
+    
+    public function getOriginNumber(){
+      return $this->origin_number;
+    }
+    
+    public function setOriginNumber($origin_number){
+      $this->origin_number = $origin_number;
+    }
+    
+    public function getDestinationNumber(){
+      return $this->destination_number;
+    }
+    
+    public function setDestinationNumber($destination_number){
+      $this->destination_number = $destination_number;
+    }
+    
+    public function resetTimer($expiration_time=300){
+      $this->expiration_time = $expiration_time;
+    }
+    
+    public function resetTimer($number){
+      //TODO: delete all sessions associated with that number
+    }
+   
+ }
+

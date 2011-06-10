@@ -1,0 +1,4 @@
+core = "6.x"
+name = "VoIP Session"
+package = "VoIP Drupal"
+dependencies[] = voip
