@@ -71,10 +71,6 @@ function voipcall_schema() {
         'type' => 'varchar', 
         'length' => 255, 
       ),
-     /* 'process_response' => array(
-        'type' => 'int', 
-        'default' => 0,
-      ),*/
       'script' => array(
         'type' => 'text', 
         'size' => 'normal',
@@ -139,6 +135,42 @@ function voipcall_schema() {
     ), 
     'primary key' => array('cid'),
   );
+  
+  /**
+   * voipsession table
+   */
+  $schema['voipsession'] = array(
+    'fields' => array(
+       'sid' => array(
+        'description' => t('SID'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ), 
+      'call_id' => array(
+        'type' => 'text',  
+        'size' => 'small',     
+        'default' => ''
+      ),
+      'origin_number' => array(
+        'type' => 'varchar', 
+        'length' => 255, 
+      ),
+      'destination_number' => array(
+        'type' => 'varchar', 
+        'length' => 255, 
+      ),
+      'expiration_time' => array(
+        'type' => 'int', 
+        'default' => 300,
+      ),
+      'created' => array(
+        'type' => 'int', 
+        'default' => 0,
+      ),
+    ), 
+    'primary key' => array('sid'),
+  );
 
   return $schema;
 }
@@ -198,4 +230,42 @@ function voipcall_update_6102() {
   
   db_drop_field($ret, 'voipcall', 'process_response');
   return $ret;
+}
+
+function voipcall_update_6103() {
+  if (!db_table_exists('voipsession')) {
+    $schema['voipsession'] = array(
+    'fields' => array(
+       'sid' => array(
+        'description' => t('SID'),
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ), 
+      'call_id' => array(
+        'type' => 'text',  
+        'size' => 'small',     
+        'default' => ''
+      ),
+      'origin_number' => array(
+        'type' => 'varchar', 
+        'length' => 255, 
+      ),
+      'destination_number' => array(
+        'type' => 'varchar', 
+        'length' => 255, 
+      ),
+      'expiration_time' => array(
+        'type' => 'int', 
+        'default' => 300,
+      ),
+      'created' => array(
+        'type' => 'int', 
+        'default' => 0,
+      ),
+    ), 
+    'primary key' => array('sid'),
+  );
+    db_create_table($ret, 'voipsession', $schema['voipsession']);
+  }
 }
