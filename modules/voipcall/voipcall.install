@@ -177,7 +177,8 @@ function voipcall_schema() {
 
 function voipcall_update_6100() {
   $ret = array();
-  db_add_field($ret, 'voipcall', 'channel',
+  //Add current_channel field
+  db_add_field($ret, 'voipcall', 'current_channel',
     array(
       'type' => 'varchar',
       'length' => 255,
@@ -185,15 +186,6 @@ function voipcall_update_6100() {
       'default' => '',
     )
   );
-  
-  db_drop_field($ret, 'voipcall', 'text_script');
-  
-  return $ret;
-}
-
-function voipcall_update_6101() {
-  $ret = array();
-  
   //Add call_channel field
   db_add_field($ret, 'voipcall', 'call_channel',
     array(
@@ -204,14 +196,7 @@ function voipcall_update_6101() {
     )
   );
   
-  //Rename channel to current_channel
-  db_change_field($ret, 'voipcall', 'channel', 'current_channel', array('type' => 'varchar', 'length' => 255));
-  return $ret;
-}
-
-function voipcall_update_6102() {
-  $ret = array();
-   db_add_field($ret, 'voipcall', 'current_network',
+  db_add_field($ret, 'voipcall', 'current_network',
     array(
       'type' => 'varchar',
       'length' => 255,
@@ -228,11 +213,9 @@ function voipcall_update_6102() {
     )
   );
   
+  db_drop_field($ret, 'voipcall', 'text_script');
   db_drop_field($ret, 'voipcall', 'process_response');
-  return $ret;
-}
-
-function voipcall_update_6103() {
+  
   if (!db_table_exists('voipsession')) {
     $schema['voipsession'] = array(
     'fields' => array(
@@ -268,4 +251,6 @@ function voipcall_update_6103() {
   );
     db_create_table($ret, 'voipsession', $schema['voipsession']);
   }
+  
+  return $ret;
 }
