@@ -45,6 +45,7 @@ function voipscriptui_voipscript_load_script($script_name, $options=NULL) {
 /**
  * Implementation of hook_validate()
  */
+ 
 function voipscriptui_validate($node, &$form) {
 // TODO: why this function is not called?
   $script_code = $node->field_voipscriptui_code[0]['value'];
@@ -59,5 +60,20 @@ dsm($script_code, '$script_code');
   ob_end_clean();
 }
 
-
-
+/**
+ * Implementation of hook_nodeapi()
+ */
+function voipscriptui_nodeapi($node, $op, $a3, $a4 ) {
+  if ($node->type == 'voipscriptui'  && $op == 'validate') {
+    //check for duplicate script names before saving a new script
+    if ($node->nid) {
+      $where = "AND nid!=".$node->nid;
+    }
+    $exist = db_result(db_query("SELECT nid FROM {node} WHERE type='voipscriptui' AND title='%s' $where LIMIT 1", $node->title));
+    if ($exist) {
+      form_set_error('field_voipscriptui_code',
+        t('A script called @script_name already exists. To edit it, click <a target="_blank" href="'.base_path().'node/'.$exist.'/edit">here</a>',
+          array('@script_name' => $node->title)));
+    }
+  }
+}

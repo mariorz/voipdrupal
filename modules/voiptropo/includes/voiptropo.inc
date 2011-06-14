@@ -98,19 +98,19 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
       //Check if session exists for this pair of numbers
       $from = $json->session->from->id;
       $to = $json->session->to->id;
-      $session = VoipSession::getSessionByNumber($from, $to);
-      if ($session) {
-        $session = new VoipSession($session);
-        $call_id = $session->getCallId();
+      $voip_session = VoipSession::getSessionByNumber($from, $to);
+      if ($voip_session) {
+        $voip_session = new VoipSession($voip_session);
+        $call_id = $voip_session->getCallId();
         // load the variables already associated with the call, if any
         $call = VoipCall::load($call_id);
       }
       else {
         $call = new VoipCall();
-        $session = new VoipSession();
-        $session->setOriginNumber($from);
-        $session->setDestinationNumber($to);
-        $session->save();
+        $voip_session = new VoipSession();
+        $voip_session->setOriginNumber($from);
+        $voip_session->setDestinationNumber($to);
+        $voip_session->save();
       }
     }
     else{
@@ -130,6 +130,10 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
     $call->save();
     // get the cid of the call data
     $call_nid = $call->getCid();
+    if(!$voip_session->getCallId()){
+      $voip_session->setCallId($call_nid);
+      $voip_session->save();
+    }
   }
   else {
     // handle ongoing calls

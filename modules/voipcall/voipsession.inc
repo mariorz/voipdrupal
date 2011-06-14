@@ -158,5 +158,7 @@ class VoipSession {
       $data->expiring_at =  $this->session->expiring_at;
       // save the data
       drupal_write_record('voipsession', $data, $update);
+      
+      $this->session = $data;
     }
  }

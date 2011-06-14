@@ -122,6 +122,7 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     $call_nid = $call->getCid();
     if(!$session->getCallId()){
       $session->setCallId($call_nid);
+      $session->save();
     }
   }
   else {
