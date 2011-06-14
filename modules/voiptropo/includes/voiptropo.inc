@@ -93,7 +93,30 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
    */
   // handle incoming call requests
   if ($tropo_action == 'process_inbound_calls') {    
-    $call = new VoipCall();
+    
+    if($channel == 'sms'){
+      //Check if session exists for this pair of numbers
+      $from = $json->session->from->id;
+      $to = $json->session->to->id;
+      $session = VoipSession::getSessionByNumber($from, $to);
+      if ($session) {
+        $session = new VoipSession($session);
+        $call_id = $session->getCallId();
+        // load the variables already associated with the call, if any
+        $call = VoipCall::load($call_id);
+      }
+      else {
+        $call = new VoipCall();
+        $session = new VoipSession();
+        $session->setOriginNumber($from);
+        $session->setDestinationNumber($to);
+        $session->save();
+      }
+    }
+    else{
+      $call = new VoipCall();
+    }
+    
     $call_id=$session->getId(); 
     $call->setCallId($call_id);
     $call->setSource('tropo');

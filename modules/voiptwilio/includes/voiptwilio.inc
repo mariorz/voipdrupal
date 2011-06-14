@@ -98,12 +98,9 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     }
     else {
       $call = new VoipCall();
-      // create a new node for the call
-      $call->save();
       $session = new VoipSession();
       $session->setOriginNumber($from);
       $session->setDestinationNumber($to);
-      $session->setCallId($call->getCid());
       $session->save();
     }
     
@@ -121,9 +118,11 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     $call->setCurrentChannel($channel);
     $call->setCurrentNetwork($network);
     $call->save();
-
     // get the nid of the call node
     $call_nid = $call->getCid();
+    if(!$session->getCallId()){
+      $session->setCallId($call_nid);
+    }
   }
   else {
     // handle ongoing calls

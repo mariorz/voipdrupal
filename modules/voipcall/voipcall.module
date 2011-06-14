@@ -36,6 +36,13 @@ function voipcall_menu() {
     'page callback' => 'voipcall_call_log',
     'access arguments' => array('administer voipcall setup'),
   );
+  
+  $items['admin/voip/session/log'] = array(
+    'title' => 'VoIP Session Log',
+    'description' => 'Lists all VoIP Drupal calls.',
+    'page callback' => 'voipcall_session_log',
+    'access arguments' => array('administer voipcall setup'),
+  );
 
   $items['voipcall/%'] = array(
     'title callback' => 'voipcall_call_page_title',
@@ -351,6 +358,30 @@ function voipcall_call_page_title($arg) {
   return "VoIP Call CID " . $arg;
 }
 
+function voipcall_session_log() {
+  $headers = array(
+  array('data' => t('sid'), 'field' => 'sid', 'sort' => 'desc'),
+  array('data' => t('call_id'), 'field' => 'call_id'),
+  array('data' => t('origin_number'), 'field' => 'origin_number'),
+  array('data' => t('destination_number'), 'field' => 'destination_number'),
+  array('data' => t('expiration_time'), 'field' => 'expiration_time'),
+  array('data' => t('expiring_at'), 'field' => 'expiring_at'),
+  );
+  $sql = "SELECT * FROM {voipsession}".tablesort_sql($headers);
+  $limit = 50;
+  $result = pager_query($sql, $limit);
+  
+  if($result){
+    //your basic while loop to get the data
+    while($tmp = db_fetch_array($result)) {
+      $tmp['expiring_at'] = format_date($tmp['expiring_at'], 'small');
+      $data[] = $tmp;
+    }
+  }
+  $output .= theme('table', $headers, $data);
+  $output .= theme('pager', NULL, $limit, 0);
+  return $output;
+}
 /**
  * Implementation of hook_sms_incoming().
  */
