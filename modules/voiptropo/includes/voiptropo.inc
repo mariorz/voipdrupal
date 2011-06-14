@@ -65,7 +65,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
       }
     }
   }
-
+  //Determine channel and network
   if (strtolower($json->session->to->network) == 'sms' || $tropo_action == 'process_outbound_text') {
     $channel = 'sms';
     $network = 'text';
@@ -75,7 +75,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
     $network = 'voip';
   }
   
-  
+ 
   /*
      if($tropo_action=='process_voice_analysis'){
      watchdog('voiptropo_analysis', 'RES:'.print_r($result, TRUE), $vars, WATCHDOG_INFO);
@@ -137,6 +137,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
       }
     }
   }
+  
   // update common call variables
   if(!$call->getCurrentChannel())
     $call->setCurrentChannel($channel);

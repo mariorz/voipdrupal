@@ -71,6 +71,10 @@ function voipcall_schema() {
         'type' => 'varchar', 
         'length' => 255, 
       ),
+      'inbound_text_script_name' => array(
+        'type' => 'varchar', 
+        'length' => 255, 
+      ),
       'script' => array(
         'type' => 'text', 
         'size' => 'normal',
@@ -164,7 +168,7 @@ function voipcall_schema() {
         'type' => 'int', 
         'default' => 300,
       ),
-      'created' => array(
+      'expiring_at' => array(
         'type' => 'int', 
         'default' => 0,
       ),
@@ -213,6 +217,15 @@ function voipcall_update_6100() {
     )
   );
   
+  db_add_field($ret, 'voipcall', 'inbound_text_script_name',
+    array(
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => TRUE,
+      'default' => '',
+    )
+  );
+  
   db_drop_field($ret, 'voipcall', 'text_script');
   db_drop_field($ret, 'voipcall', 'process_response');
   
@@ -242,7 +255,7 @@ function voipcall_update_6100() {
         'type' => 'int', 
         'default' => 300,
       ),
-      'created' => array(
+      'expiring_at' => array(
         'type' => 'int', 
         'default' => 0,
       ),

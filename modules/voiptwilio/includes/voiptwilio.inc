@@ -85,7 +85,28 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     $call_nid = $call->getCid();
   }
   else if ($twilio_action == 'process_inbound_text') {
-    $call = new VoipCall();
+    $from = $_REQUEST['From'];
+    $to = $_REQUEST['To'];
+    
+    //Check if session exists for this pair of numbers
+    $session = VoipSession::getSessionByNumber($from, $to);
+    if ($session) {
+      $session = new VoipSession($session);
+      $call_id = $session->getCallId();
+      // load the variables already associated with the call, if any
+      $call = VoipCall::load($call_id);
+    }
+    else {
+      $call = new VoipCall();
+      // create a new node for the call
+      $call->save();
+      $session = new VoipSession();
+      $session->setOriginNumber($from);
+      $session->setDestinationNumber($to);
+      $session->setCallId($call->getCid());
+      $session->save();
+    }
+    
     $call_sid = $_REQUEST['SmsSid']; // unique identifier of the text, 34 char
     $call->setCallId($call_sid);
     $call->setSource('twilio');
@@ -95,11 +116,10 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     $call->setCallStatus(VoipCall::IN_PROGRESS);
     $call->setStartTime(time());
     
-    $call->setCallerNumber($_REQUEST['From']);
-    $call->setDestNumber($_REQUEST['To']);
+    $call->setCallerNumber($from);
+    $call->setDestNumber($to);
     $call->setCurrentChannel($channel);
     $call->setCurrentNetwork($network);
-    // create a new node for the call
     $call->save();
 
     // get the nid of the call node

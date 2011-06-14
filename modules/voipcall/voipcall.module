@@ -358,7 +358,7 @@ function voipcall_sms_incoming($op, $number, $message, $options) {
   if ($op == 'process') {
     $msg = "in voipcall_sms_incoming() with number: $number and message: $message ";
     watchdog('voipcall', $msg);
-    $call = new VoipCall();
+    /*$call = new VoipCall();
     $call->setCurrentChannel('sms');
     $call->setCurrentNetwork('text');
     $call->setDestNumber($number);
@@ -366,6 +366,13 @@ function voipcall_sms_incoming($op, $number, $message, $options) {
     $call->save();
     // Send text.
     $text = 'Hello from VoIP Drupal.';
-    voip_text($text, $call);
+    voip_text($text, $call);*/
   }
+}
+
+/**
+ * Implementation of hook_cron()
+ */
+function voipcall_cron() {
+  VoipSession::deleteExpiredSessions();
 }
