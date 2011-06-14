@@ -1,5 +1,5 @@
 ; $Id$
-name = Voip 
+name = VoIP Drupal Core 
 description = Enables communication between Drupal and VoIP servers.
 package = VoIP Drupal
 dependencies[] = voipcall
