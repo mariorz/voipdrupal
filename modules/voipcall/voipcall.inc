@@ -532,6 +532,16 @@ class VoipCall {
   public function setCheckMachine($bool){
     $this->call_data->check_machine = $bool;
   }
+  
+  public function setTextVariables($inbound_text_contents, $inbound_text_origin, $inbound_text_destination, $inbound_text_network){
+    $script = $this->call_data->script;
+    $script->setVar('inbound_text_contents', $inbound_text_contents);
+    $script->setVar('inbound_text_time_received', time());
+    $script->setVar('inbound_text_origin', $inbound_text_origin);
+    $script->setVar('inbound_text_destination', $inbound_text_destination);
+    $script->setVar('inbound_text_network', $inbound_text_network);
+    $this->call_data->script = $script;
+  }
 
 
   /* 
@@ -616,13 +626,8 @@ class VoipCall {
       $direction = $dir_tmp ? $dir_tmp
                               : $data->direction;
       if(!isset($details->script)) {
-        if($details->current_channel=='sms') {
-           if($direction == VoipCall::INBOUND){
-             $script_name = voipcall_get_default_inbound_text_script_name();
-           }
-           else {
-             $script_name = voipcall_get_default_outbound_text_script_name();
-           }
+        if($details->current_channel=='text') {
+          $script_name = voipcall_get_default_inbound_text_script_name();
         } 
         else {
            if($direction == VoipCall::INBOUND){

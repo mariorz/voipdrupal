@@ -55,8 +55,8 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
      return FALSE;  // TODO: should we return an error response to the server?
   }
   if ($twilio_action == 'process_inbound_text') {
-    $channel = 'sms';
-    $network = 'text';
+    $channel = 'text';
+    $network = 'sms';
   }
   else {
     $channel = 'voice';
@@ -95,6 +95,9 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
       $call_id = $session->getCallId();
       // load the variables already associated with the call, if any
       $call = VoipCall::load($call_id);
+      $script = $call->getScript();
+      $script->resetIndex();
+      $call->setScript($script);
     }
     else {
       $call = new VoipCall();
@@ -152,7 +155,11 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
       }
     }
   }
-
+  
+  if ($channel == 'text') {
+    //Set text-related variables in the call object 
+    $call->setTextVariables($_REQUEST['Body'], $_REQUEST['From'], $_REQUEST['To'], $network);
+  }
   // update common call variables
   if(!$call->getCurrentChannel())
      $call->setCurrentChannel($channel);
@@ -363,8 +370,8 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
         case 'VoipCmdDial';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $number = $script->evalString($cmd->getParam('number'));
-          if ($call->getCurrentChannel() == 'sms') {
-            //In case VoipCmdDial is called within sms channel then instead of transfer we call the sender.
+          if ($call->getCurrentChannel() == 'text') {
+            //In case VoipCmdDial is called within text channel then instead of transfer we call the sender.
             //we are starting a call, hangup() the existing session
             $response .= '<Hangup/>';
             
@@ -717,6 +724,11 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $var_name = $script->evalString($cmd->getParam('var_name'));
           $script->unsetVar($var_name);
           break;
+          
+        case 'VoipCmdWait';
+          $time_limit = $script->evalString($cmd->getParam('time_limit'));
+          //TODO:
+          break;  
 
       }
 

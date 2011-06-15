@@ -785,6 +785,18 @@ class VoipScript {
     $params['var_name'] = $var_name;
     $this->commands[] = new VoipCommand('VoipCmdUnset', $params);
   }
+  
+  /**
+   * Adds a 'wait' command to the script.
+   *
+   * @param $time_limit
+   *   Time the script should wait.
+   * 
+   */
+  function addWait($time_limit=60) {
+    $params['time_limit'] = $time_limit;
+    $this->commands[] = new VoipCommand('VoipCmdWait', $params);
+  }
 
 
   /*

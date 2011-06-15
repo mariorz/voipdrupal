@@ -66,7 +66,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
     }
   }
   //Determine channel and network
-  if (strtolower($json->session->to->network) == 'sms' || $tropo_action == 'process_outbound_text') {
+  /*if (strtolower($json->session->to->network) == 'sms' || $tropo_action == 'process_outbound_text') {
     $channel = 'sms';
     $network = 'text';
   }
@@ -74,7 +74,9 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
     $channel = 'voice';
     $network = 'voip';
   }
-  
+  */
+  $channel = strtolower($json->session->to->channel);
+  $network = strtolower($json->session->to->network);
  
   /*
      if($tropo_action=='process_voice_analysis'){
@@ -94,7 +96,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
   // handle incoming call requests
   if ($tropo_action == 'process_inbound_calls') {    
     
-    if($channel == 'sms'){
+    if($channel == 'text'){
       //Check if session exists for this pair of numbers
       $from = $json->session->from->id;
       $to = $json->session->to->id;
@@ -164,7 +166,12 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
       }
     }
   }
-  
+  if ($channel == 'text') {
+    //Set text-related variables in the call object 
+    $inbound_text_contents = $session->getInitialText();
+    $call->setTextVariables($inbound_text_contents, $from, $to, $network);
+  }
+
   // update common call variables
   if(!$call->getCurrentChannel())
     $call->setCurrentChannel($channel);
@@ -459,8 +466,8 @@ function _voiptropo_script_handler($call, &$tropo) {
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $number = $script->evalString($cmd->getParam('number'));
           $number = str_replace(" ", "", $number); //remove any spaces from number
-          if ($call->getCurrentChannel() == 'sms') {
-            //In case VoipCmdDial is called within sms channel then instead of transfer we call the sender.
+          if ($call->getCurrentChannel() == 'text') {
+            //In case VoipCmdDial is called within text channel then instead of transfer we call the sender.
             //we are starting a call, hangup() the existing session
             $tropo->hangup();
             
@@ -853,6 +860,11 @@ watchdog('voiptropo',"(Say) V: $voice, L: $language, Id: $voice_id");
           $var_name = $script->evalString($cmd->getParam('var_name'));
           $script->unsetVar($var_name);
           break;
+          
+        case 'VoipCmdWait';
+          $time_limit = $script->evalString($cmd->getParam('time_limit'));
+          //TODO:
+          break;  
 
       }
       // go to next command

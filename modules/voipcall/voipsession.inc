@@ -26,7 +26,11 @@ class VoipSession {
     public static function getSessionByNumber($origin_number, $destination_number){
       //TODO: Check for expiration timer?
       $session = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number='%s' AND destination_number='%s'", $origin_number, $destination_number));
-      //$session = new self($session_row);
+      if($session->expiring_at<time()){
+        //Delete this session, its expired
+        db_query("DELETE FROM {voipsession} WHERE sid=%d",$session->sid);
+        return false;
+      }
       return $session;
     }
     
@@ -66,7 +70,7 @@ class VoipSession {
     }
 
     public function getCallId(){
-      return $this->session->session->call_id;
+      return $this->session->call_id;
     }
     
     public function setCallId($call_id){

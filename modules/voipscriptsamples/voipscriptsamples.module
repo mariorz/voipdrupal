@@ -29,6 +29,7 @@ function voipscriptsamples_voipscript_get_script_names() {
   $script_names[] = 'voipscript_say_demo';
   $script_names[] = 'voipscript_small_office_ivr';
   $script_names[] = 'voipscript_call_sms_sender';
+  $script_names[] = 'voipscript_sms_session';
   return $script_names;
 }
 
@@ -132,6 +133,19 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     $script->addDial();
     $script->addSay(t('Thanks so much for calling our office. Bye bye.'));
     $script->addHangup();
+  }
+  if($script_name == 'voipscript_sms_session') {
+    $script = new VoipScript('voipscript_sms_session');
+    $script->addGotoIf('hi received', "^%inbound_text_contents == 'hi'");
+    $script->addGotoIf('end', "^%inbound_text_contents == ''");
+    
+    $script->addSendText("nice meeting you, %inbound_text_contents");
+    $script->addGoto('end');
+    
+    $script->addLabel('hi received');
+    $script->addSendText(t('hi, what is your name?'));
+   
+    $script->addLabel('end');
   }
   return $script;
 }
