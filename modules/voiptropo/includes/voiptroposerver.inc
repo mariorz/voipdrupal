@@ -285,7 +285,46 @@ class VoipTropoServer extends VoipServer {
     return $rc;
   }
 
+ /**
+   * Implementation of the VoipServer text_handler() API method
+   */
+  function text_handler($text_content, $origin ,$destination, $time, $network, $server_name) {
+    $menu_path = 'voip/twilio/callhandler';
+    $request_url = $menu_path . '/process_inbound_text/';
+    $url = url($request_url, array('absolute' => TRUE));
+    
+    $server_config = $this->getConfig();
+    $vars = array(
+      'AccountSid' =>  $server_config['voiptwilio_account_sid'],
+      'SmsSid' => $todo,
+      'From' => $origin,
+      'To' => $destination,
+      'Body' => $text_content,
+      'Direction' => 'inbound',
+    );
+    
+    //url-ify the data for the POST
+   foreach ($vars as $key => $value) { 
+     $fields_string .= $key.'='.urlencode($value).'&'; 
+   }
+   $fields_string = rtrim($fields_string,'&');
+   
+   //open connection
+   $ch = curl_init();
 
+   //set the url, number of POST vars, POST data
+   curl_setopt($ch,CURLOPT_URL,$url);
+   curl_setopt($ch,CURLOPT_POST,count($vars));
+   curl_setopt($ch,CURLOPT_POSTFIELDS,$fields_string);
+   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+
+   //execute post
+   $result = curl_exec($ch);
+
+   //close connection
+   curl_close($ch);
+  }
   /**
    * Implementation of the VoipServer ping() API method
    */

@@ -98,6 +98,8 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
       $script = $call->getScript();
       $script->resetIndex();
       $call->setScript($script);
+      $session->resetTimer();
+      $session->save();
     }
     else {
       $call = new VoipCall();

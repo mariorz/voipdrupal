@@ -100,6 +100,8 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
         $script = $call->getScript();
         $script->resetIndex();
         $call->setScript($script);
+        $voip_session->resetTimer();
+        $voip_session->save();
       }
       else {
         $call = new VoipCall();
