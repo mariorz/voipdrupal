@@ -66,15 +66,6 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
     }
   }
   //Determine channel and network
-  /*if (strtolower($json->session->to->network) == 'sms' || $tropo_action == 'process_outbound_text') {
-    $channel = 'sms';
-    $network = 'text';
-  }
-  else {
-    $channel = 'voice';
-    $network = 'voip';
-  }
-  */
   $channel = strtolower($json->session->to->channel);
   $network = strtolower($json->session->to->network);
  
@@ -106,6 +97,9 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
         $call_id = $voip_session->getCallId();
         // load the variables already associated with the call, if any
         $call = VoipCall::load($call_id);
+        $script = $call->getScript();
+        $script->resetIndex();
+        $call->setScript($script);
       }
       else {
         $call = new VoipCall();
@@ -376,7 +370,7 @@ function _voiptropo_call_handler($tropo_action='', $call_nid=NULL, $dial_respons
   $rc = _voiptropo_script_handler($call, $tropo);
   
   //Add final event
-  if ($tropo_action != 'process_callstatus') {
+  if ($tropo_action != 'process_callstatus' && $channel != 'text') {
     $response_url = $menu_path . '/process_callstatus/' . $call_nid . '/continue' ;
     $action = url($response_url, array('absolute' => TRUE));
     $tropo->on(array("event" => "continue", "next" => $action));
@@ -441,12 +435,15 @@ function _voiptropo_script_handler($call, &$tropo) {
     $cmd = $script->getNextCommand();
     if (!$cmd) {
       // no more commands to be processed
-      // send a final hangup request 
-      $tropo->hangup();
-      $msg = 'Script @name ended without a "hangup" command.';
-      $params = array('@name' => $script->getName());
-      watchdog('voiptropo', $msg, $params, WATCHDOG_WARNING);
-      $call->setHangupReason(VoipCall::HANGUP_SCRIPT_END);
+      if ($call->getCurrentChannel() != 'text') {
+        // for voice channel send a final hangup request 
+        $tropo->hangup();
+        $msg = 'Script @name ended without a "hangup" command.';
+        $params = array('@name' => $script->getName());
+        watchdog('voiptropo', $msg, $params, WATCHDOG_WARNING);
+        $call->setHangupReason(VoipCall::HANGUP_SCRIPT_END);
+      }
+      //for text channel don't do anything
       $processing = FALSE;
     }
     // process current command
@@ -807,7 +804,7 @@ watchdog('voiptropo',"(Say) V: $voice, L: $language, Id: $voice_id");
           }
           $text = $script->evalString($cmd->getParam('text'));
           $network = $script->evalString($cmd->getParam('network'));
-          if ($network == 'SMS' && voipscript_use_sms_framework()) {
+          if (voipscript_use_sms_framework() && (strtolower($network) == 'sms' || strtolower($call->getCurrentNetwork())=='sms')) {
             //Use SMS Framework to send SMS message if user enabled this option
             voipscript_send_sms_framework($to, $text);
           }
@@ -826,9 +823,9 @@ watchdog('voiptropo',"(Say) V: $voice, L: $language, Id: $voice_id");
             }
             $tropo->message($text, $params);
             //Register events:
-            $tropo->on(array("event" => "continue", "next" =>  $callback_continue));
+            //$tropo->on(array("event" => "continue", "next" =>  $callback_continue));
             $tropo->on(array("event" => "error", "next" =>  $callback_error));
-            $tropo->on(array("event" => "hangup", "next" =>  $callback_hangup));
+            //$tropo->on(array("event" => "hangup", "next" =>  $callback_hangup));
             $tropo->on(array("event" => "incomplete", "next" =>  $callback_incomplete));
           }
           $rc = TRUE;

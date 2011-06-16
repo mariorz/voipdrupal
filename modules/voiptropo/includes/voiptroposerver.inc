@@ -175,7 +175,14 @@ class VoipTropoServer extends VoipServer {
    */
   function send_text($text, $voipcall, $server_config=NULL) {
     voip_error_reset();
-
+    if (voipscript_use_sms_framework()) {
+      //Use SMS Framework to send SMS message if user enabled this option
+      $to = $voipcall->getDestNumber();
+      voipscript_send_sms_framework($to, $text);
+      watchdog('voiptropo', 'new text sent over SMS Framework.');
+      return TRUE;        
+    }
+    //Else use VoIP Drupal:
     if (!$server_config) {
       $server_config = $this->getConfig();
     }

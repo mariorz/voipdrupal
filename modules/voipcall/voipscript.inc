@@ -1139,8 +1139,9 @@ function voipscript_use_sms_framework() {
 
 function voipscript_send_sms_framework($to, $text) {
   //Use SMS Framework to send SMS message if user enabled this option
+  $to = str_replace('+','', $to);
   $res = sms_send($to, $text);
-  watchdog('voipcall', 'Sending SMS using SMS Framework. Result = '.print_r($res, TRUE));
+  watchdog('voipcall', "Sending SMS using SMS Framework. To=$to Text=$text Result=$res");
 }
 
 /**

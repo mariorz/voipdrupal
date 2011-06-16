@@ -130,6 +130,29 @@ abstract class VoipServer {
    * boolean, TRUE if success, FALSE in case of processing error
    */
   abstract function hangup($voipcall, $server_config=NULL);
+  
+  /**
+   * Common entry-point function for text handling.
+   * 
+   * @param 
+   * $text_content, with the text body
+   * 
+   * @param 
+   * $origin, text origin
+   *
+   * @param 
+   * $destination, text destination
+   *
+   * @param 
+   * $network, text network
+   *
+   * @param 
+   * $server_name, server name
+   * 
+   * @return
+   * boolean, TRUE if success, FALSE in case of processing error
+   */
+  abstract function text_handler($text_content, $origin ,$destination, $time, $network, $server_name);
 
 
   /**

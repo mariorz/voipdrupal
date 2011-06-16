@@ -338,13 +338,16 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
     $cmd = $script->getNextCommand();
 
     if(!$cmd) {
-      // no more commands to be processed
-      // send a final hangup request 
-      $response .= '<Hangup/>';
-      $msg = 'Script @name ended without a "hangup" command.';
-      $params = array('@name' => $script->getName());
-      watchdog('voiptwilio', $msg, $params, WATCHDOG_WARNING);
-      $call->setHangupReason(VoipCall::HANGUP_SCRIPT_END);
+      // no more commands to be processed    
+      if ($call->getCurrentChannel() != 'text') {
+        // for voice channel send a final hangup request 
+        $response .= '<Hangup/>';
+        $msg = 'Script @name ended without a "hangup" command.';
+        $params = array('@name' => $script->getName());
+        watchdog('voiptwilio', $msg, $params, WATCHDOG_WARNING);
+        $call->setHangupReason(VoipCall::HANGUP_SCRIPT_END);
+      }
+      //for text channel don't do anything
       $processing = FALSE;
     }
 
@@ -652,7 +655,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $text = $script->evalString($cmd->getParam('text'));
           $network = $script->evalString($cmd->getParam('network'));
 		  
-		  if ($network == 'SMS' && voipscript_use_sms_framework()) {
+		  if (voipscript_use_sms_framework()) {
 		    //Use SMS Framework to send SMS message if user enabled this option
 			voipscript_send_sms_framework($to, $text);
 		  }
