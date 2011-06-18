@@ -455,7 +455,7 @@ class VoipScript {
   }
 
   /**
-   * Adds a 'hangup' command to the script.
+   * Adds a 'hangup' command and resets script index.
    *
    * When executed, the 'hangup' command ends the call.
    */

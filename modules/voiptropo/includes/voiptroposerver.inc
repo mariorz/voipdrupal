@@ -120,7 +120,7 @@ class VoipTropoServer extends VoipServer {
     $voipcall->setSource('drupal');
     $voipcall->setDirection(VoipCall::OUTBOUND);
     
-    // save the call in order to get generate an nid
+    // save the call in order to get generate an cid
     $voipcall->save();
 
     // Instantiate a new tropo Rest Client
@@ -132,7 +132,7 @@ class VoipTropoServer extends VoipServer {
     $dest_number = $voipcall->getDestNumber();
    
     //$menu_path = 'voip/tropo/callhandler';
-    $call_nid = $voipcall->getCid();
+    $cid = $voipcall->getCid();
   
     $vars = array(
       'action' => 'create',
@@ -141,7 +141,7 @@ class VoipTropoServer extends VoipServer {
       'caller_number' => $caller_number,
       'dest_number' => $dest_number,
       'tropo_action' => 'process_outbound_calls',
-      'call_nid' => $call_nid,
+      'cid' => $cid,
     );
 
     //TODO: TZ:What is this?
@@ -203,7 +203,7 @@ class VoipTropoServer extends VoipServer {
    // $voipcall->setCallerNumber($dest_number);                   
    // $voipcall->setDestNumber($caller_number);
     
-     // save the call in order to get generate an nid
+    // save the call in order to get generate an cid
     $voipcall->save();
     $call_cid = $voipcall->getCid();
     
@@ -217,7 +217,7 @@ class VoipTropoServer extends VoipServer {
       'caller_number' => $caller_number,
       'dest_number' => $dest_number,
       'tropo_action' => 'process_outbound_text',
-      'call_nid' => $call_cid,
+      'cid' => $cid,
       'text' => $text,
     );
     
@@ -262,8 +262,8 @@ class VoipTropoServer extends VoipServer {
 
     $call_id = $voipcall->getCallId();
     if (!$call_id) {
-      $msg = "Attempt to hangup a tropo call (nid = @nid) without a call id";
-      $params = array('@nid' => $voipcall->getCid());
+      $msg = "Attempt to hangup a tropo call (cid = @cid) without a call id";
+      $params = array('@cid' => $voipcall->getCid());
       $voipcall->report_error('voiptropo', $msg, $params);
       $rc = FALSE;
     }
@@ -289,8 +289,8 @@ class VoipTropoServer extends VoipServer {
    * Implementation of the VoipServer text_handler() API method
    */
   function text_handler($text_content, $origin ,$destination, $time, $network, $server_name) {
-    $menu_path = 'voip/twilio/callhandler';
-    $request_url = $menu_path . '/process_inbound_text/';
+    $menu_path = 'voip/tropo/callhandler';
+    $request_url = $menu_path . '/process_inbound_calls/';
     $url = url($request_url, array('absolute' => TRUE));
     
     $server_config = $this->getConfig();

@@ -32,13 +32,13 @@ foreach (array('twilio.php') as $file) {
  *   - process_send_sms, to handle responses to 'send sms' script commands
  *   - process_sms_callback, to handle final responses to 'send sms'.
  *
- * @param string $call_nid with the nid of the node associated with the call
+ * @param string $cid with the cid of the call
  *
  * @return void
  */
-function _voiptwilio_call_handler($twilio_action, $call_nid=NULL) {
+function _voiptwilio_call_handler($twilio_action, $cid=NULL) {
 
-$msg = "in voiptwilio_call_handler() with twilio_action: $twilio_action, call_nid: $call_nid, and _REQUEST: " . print_r($_REQUEST, TRUE);
+$msg = "in voiptwilio_call_handler() with twilio_action: $twilio_action, cid: $cid, and _REQUEST: " . print_r($_REQUEST, TRUE);
 $vars = array();
 watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
 //dsm($msg);
@@ -78,11 +78,11 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     $call->setStartTime(time());
     $call->setCurrentChannel($channel);
     $call->setCurrentNetwork($network);
-    // create a new node for the call
+    // save the call
     $call->save();
 
-    // get the nid of the call node
-    $call_nid = $call->getCid();
+    // get the cid of the call
+    $cid = $call->getCid();
   }
   else if ($twilio_action == 'process_inbound_text') {
     $from = $_REQUEST['From'];
@@ -95,9 +95,6 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
       $call_id = $session->getCallId();
       // load the variables already associated with the call, if any
       $call = VoipCall::load($call_id);
-      $script = $call->getScript();
-      $script->resetIndex();
-      $call->setScript($script);
       $session->resetTimer();
       $session->save();
     }
@@ -123,26 +120,26 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     $call->setCurrentChannel($channel);
     $call->setCurrentNetwork($network);
     $call->save();
-    // get the nid of the call node
-    $call_nid = $call->getCid();
+    // get the cid of the call
+    $cid = $call->getCid();
     if(!$session->getCallId()){
-      $session->setCallId($call_nid);
+      $session->setCallId($cid);
       $session->save();
     }
   }
   else {
     // handle ongoing calls
 
-    // 'process_hangup' for incoming calls does not come with a $call_nid
+    // 'process_hangup' for incoming calls does not come with a $cid
     if($twilio_action == 'process_hangup') {
-      if(!$call_nid) {
+      if(!$cid) {
         $call_id = $_REQUEST['CallSid'];
-        $call_nid = VoipCall::getCidFromCallId($call_id);
+        $cid = VoipCall::getCidFromCallId($call_id);
       }
     }
 
     // load the variables already associated with the call, if any
-    $call = VoipCall::load($call_nid);
+    $call = VoipCall::load($cid);
 
     // handle first response to an outbound call
     if($twilio_action == 'process_outbound_calls') {
@@ -286,7 +283,7 @@ watchdog('voiptwilio', "twilio status: $twilio_call_status, updated call status:
     $call->setDuration($duration);
   }
 
-  // update the voipcall node with the new values
+  // update the voipcall with the new values
   $call = $call->save();
 
   // process the call script
@@ -391,8 +388,8 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           }
           else {
             $menu_path = 'voip/twilio/callhandler';
-            $call_nid = $call->getCid();
-            $response_url = $menu_path . '/process_dial/' . $call_nid ;
+            $cid = $call->getCid();
+            $response_url = $menu_path . '/process_dial/' . $cid ;
             $action = url($response_url, array('absolute' => TRUE));
             $method = 'POST';
           
@@ -421,8 +418,8 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
         case 'VoipCmdGetInput':
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/twilio/callhandler';
-          $call_nid = $call->getCid();
-          $response_url = $menu_path . '/process_get_input/' . $call_nid;
+          $cid = $call->getCid();
+          $response_url = $menu_path . '/process_get_input/' . $cid;
           $action = url($response_url, array('absolute' => TRUE));
           $method = 'POST';
           $timeout = $script->evalString($cmd->getParam('timeout', 5)); 
@@ -497,9 +494,15 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
         case 'VoipCmdHangup':
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $call->setHangupReason(VoipCall::HANGUP_SCRIPT_COMMAND);
-          // send the hangup request and stop processing script commands
-          // Note: this will trigger a response from Twilio with $twilio_action = process_hangup and CallStatus = completed
-          $response .= '<Hangup/>';
+          //Reset script
+          $script = $call->getScript();
+          $script->resetIndex();
+          $call->setScript($script);
+          if ($call->getCurrentChannel() != 'text') {
+            // send the hangup request and stop processing script commands
+            // Note: this will trigger a response from Twilio with $twilio_action = process_hangup and CallStatus = completed
+            $response .= '<Hangup/>';
+          }
           $processing = FALSE;
           break;
 
@@ -512,8 +515,8 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           //       supported by other VoIP servers.
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/twilio/callhandler';
-          $call_nid = $call->getCid();
-          $response_url = $menu_path . '/process_conference/' . $call_nid;
+          $cid = $call->getCid();
+          $response_url = $menu_path . '/process_conference/' . $cid;
           $action = url($response_url, array('absolute' => TRUE));
           $method = 'POST';
           $room = $script->evalString($cmd->getParam('room'));
@@ -557,14 +560,14 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
         case 'VoipCmdRecord':
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $menu_path = 'voip/twilio/callhandler';
-          $call_nid = $call->getCid();
+          $cid = $call->getCid();
           $format = $script->evalString($cmd->getParam('format'));
           if($format == 'mp3') {
-            $response_url = $menu_path . '/process_record_mp3/' . $call_nid;
+            $response_url = $menu_path . '/process_record_mp3/' . $cid;
           }
           else {
             // return wav file
-            $response_url = $menu_path . '/process_record/' . $call_nid;
+            $response_url = $menu_path . '/process_record/' . $cid;
           }
           $action = url($response_url, array('absolute' => TRUE));
           $method = 'POST';
@@ -586,7 +589,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
                             . '" playBeep="' . $play_beep
                             . '" />';
           // in case of empty recording...
-          $response_url = $menu_path . '/process_empty_recording/' . $call_nid;
+          $response_url = $menu_path . '/process_empty_recording/' . $cid;
           $action = url($response_url, array('absolute' => TRUE));
           $response .= '<Redirect method="GET">'
                          . $action
@@ -663,10 +666,10 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
 		  }
 		  else {
 		    $menu_path = 'voip/twilio/callhandler';
-            $call_nid = $call->getCid();
-            $response_url = $menu_path . '/process_send_sms/' . $call_nid;
+            $cid = $call->getCid();
+            $response_url = $menu_path . '/process_send_sms/' . $cid;
             $action = url($response_url, array('absolute' => TRUE));
-            $callback_url = $menu_path . '/process_sms_callback/' . $call_nid;
+            $callback_url = $menu_path . '/process_sms_callback/' . $cid;
             $callback = url($callback_url, array('absolute' => TRUE));
             $method = 'POST';
           
@@ -678,6 +681,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
             $default_cid_number = variable_get('voipcall_cid_number', NULL);
             $caller_id = $script->evalString($cmd->getParam('caller_id',
                                                          $default_cid_number)); 
+            $rc = TRUE;                                             
             switch(strtolower($network)){
               default:
                 $params = array('@network' => $network,
@@ -702,9 +706,8 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
                 $response .= '" >';
                 $response .= $text;
                 $response .= '</Sms>';
-		    }
-              $rc = TRUE;
-              $processing = FALSE;
+		    } 
+              $processing = TRUE;
               break;
           }
           break;
@@ -780,9 +783,9 @@ function _voiptwilio_send_response($response) {
 function voiptwilio_update_call_status($call, $twilio_call_status) {
   switch($twilio_call_status) {
     default:
-      $msg = 'Invalid CallStatus: @status for call nid: @nid';
-      $call_nid = $call->getCid();
-      $params = array('@status' => $call_status, '@nid' => $call_nid);
+      $msg = 'Invalid CallStatus: @status for call cid: @cid';
+      $cid = $call->getCid();
+      $params = array('@status' => $call_status, '@cid' => $cid);
       $call->report_error('voiptwilio', $msg, $params);
       return NULL;
       break;
@@ -836,9 +839,9 @@ function _voiptwilio_process_dial_response($call, $request){
   $dial_status = $request['DialCallStatus'];
   switch($dial_status) {
     default:
-      $call_nid = $call->getCid();
-      $msg = 'Invalid DialCallStatus: @status for call nid: @nid';
-      $params = array('@status' => $dial_status, '@nid' => $call_nid);
+      $cid = $call->getCid();
+      $msg = 'Invalid DialCallStatus: @status for call cid: @cid';
+      $params = array('@status' => $dial_status, '@cid' => $cid);
       $call->report_error('voiptwilio', $msg, $params);
       return NULL;
       break;
@@ -874,24 +877,24 @@ function _voiptwilio_process_dial_response($call, $request){
  * Process the response to a 'send text' script command
  */
 function _voiptwilio_process_sms_response($call, $request){
-  $call_nid = $call->getCid();
+  $cid = $call->getCid();
   $sms_status_tmp = $request['SmsStatus'];
   switch($sms_status_tmp) {
     default:
-      $msg = 'Invalid SmsStatus: @status for call nid: @nid';
-      $params = array('@status' => $sms_status_tmp, '@nid' => $call_nid);
+      $msg = 'Invalid SmsStatus: @status for call cid: @cid';
+      $params = array('@status' => $sms_status_tmp, '@cid' => $cid);
       $call->report_error('voiptwilio', $msg, $params);
       return NULL;
       break;
     case 'failed':
-      $msg = 'SMS sendind failed for call nid: @nid. Make sure your Twilio number is sms-enabled.';
-      $params = array('@nid' => $call_nid);
+      $msg = 'SMS sending failed for call cid: @cid. Make sure your Twilio number is sms-enabled.';
+      $params = array('@cid' => $cid);
       watchdog('voiptwilio', $msg, $params, WATCHDOG_WARNING);
       $text_status = VoipCall::TEXT_FAILED;
       break;
     case 'invalid':
-      $msg = 'Invalid SMS parameter for call nid: @nid';
-      $params = array('@nid' => $call_nid);
+      $msg = 'Invalid SMS parameter for call cid: @cid';
+      $params = array('@cid' => $cid);
       watchdog('voiptwilio', $msg, $params, WATCHDOG_WARNING);
       $text_status = VoipCall::TEXT_INVALID;
       break;

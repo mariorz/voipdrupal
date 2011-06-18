@@ -121,7 +121,7 @@ function voip_hangup($voipcall) {
  *
  * @return 
  */
-function voip_text_handler($text_content, $origin ,$destination, $time, $network, $server_name) {
+function voip_text_handler($text_content, $origin ,$destination, $time, $network='sms', $server_name='') {
  
   $voip_server = voip_default_server();
   $response = $voip_server->text_handler($text_content, $origin ,$destination, $time, $network, $server_name);

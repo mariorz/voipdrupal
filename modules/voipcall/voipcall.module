@@ -140,7 +140,14 @@ function voipcall_admin_form() {
       '#description' => t('By default sms messages are sent via the default voip server. Check this option to use SMS framework instead.'),
       '#default_value' => variable_get('voipcall_use_sms_framework', 0),
       '#disabled' => $disabled,
-    );
+  );
+  
+  $form['voipcall_default_session_time'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default Session Duration'),
+    '#description' => t('Default session duration time'),
+    '#default_value' => variable_get('voipcall_default_session_time', 300),
+  );
 
   $form['submit'] = array(
     '#type' => 'submit', 
@@ -174,11 +181,9 @@ function voipcall_admin_form_validate($form, &$form_state) {
     form_set_error('', t('Invalid inbound text script name: @script_name.', array('@script_name' => $script_name)));
   }
   
-  /*$script_name = $values['voipcall_outbound_text_script_name'];
-  $script = VoipScript::loadScript($script_name);
-  if(!$script){
-    form_set_error('', t('Invalid outbound text script name: @script_name.', array('@script_name' => $script_name)));
-  }*/
+  if ($values['voipcall_default_session_time']<0) {
+    form_set_error('voipcall_default_session_time', t('Session duration time must be positive integer.'));
+  }
 }
 
 
@@ -194,7 +199,7 @@ function voipcall_admin_form_submit($form, &$form_state) {
   variable_set('voipcall_outbound_call_script_name', $form_state['values']['voipcall_outbound_call_script_name']);
   variable_set('voipcall_use_sms_framework', $form_state['values']['voipcall_use_sms_framework']);
   variable_set('voipcall_inbound_text_script_name', $form_state['values']['voipcall_inbound_text_script_name']);
-  //variable_set('voipcall_outbound_text_script_name', $form_state['values']['voipcall_outbound_text_script_name']);
+  variable_set('voipcall_default_session_time', $form_state['values']['voipcall_default_session_time']);
 
   drupal_set_message(t('The default call settings have been saved.'));
 
@@ -391,6 +396,7 @@ function voipcall_sms_incoming($op, $number, $message, $options) {
   if ($op == 'process') {
     $msg = "in voipcall_sms_incoming() with number: $number and message: $message ";
     watchdog('voipcall', $msg);
+    voip_text_handler($message, $number ,'', time());
     /*$call = new VoipCall();
     $call->setCurrentChannel('sms');
     $call->setCurrentNetwork('text');

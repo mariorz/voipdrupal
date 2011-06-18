@@ -102,7 +102,7 @@ class VoipTwilioServer extends VoipServer {
     $voipcall->setSource('drupal');
     $voipcall->setDirection(VoipCall::OUTBOUND);
     
-    // save the call in order to get generate an nid
+    // save the call in order to get generate an cid
     $voipcall->save();
 
     // Instantiate a new Twilio Rest Client
@@ -116,10 +116,10 @@ class VoipTwilioServer extends VoipServer {
     $dest_number = $voipcall->getDestNumber();
 
     $menu_path = 'voip/twilio/callhandler';
-    $call_nid = $voipcall->getCid();
-    $response_url = $menu_path . '/process_outbound_calls/' . $call_nid;
+    $cid = $voipcall->getCid();
+    $response_url = $menu_path . '/process_outbound_calls/' . $cid;
     $call_handler_url = url($response_url, array('absolute' => TRUE));
-    $response_url = $menu_path . '/process_hangup/' . $call_nid;
+    $response_url = $menu_path . '/process_hangup/' . $cid;
     $status_callback_url = url($response_url, array('absolute' => TRUE));
 
     $vars = array(
@@ -229,7 +229,7 @@ watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
     $voipcall->setSource('drupal');
     $voipcall->setDirection(VoipCall::OUTBOUND);
     
-    // save the call in order to get generate an nid
+    // save the call in order to get generate an cid
     $voipcall->save();
 
     // Instantiate a new Twilio Rest Client
@@ -243,9 +243,9 @@ watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
     $dest_number = $voipcall->getDestNumber();
 
     $menu_path = 'voip/twilio/callhandler';
-    $call_nid = $voipcall->getCid();
+    $cid = $voipcall->getCid();
     
-    $response_url = $menu_path . '/process_sms_callback/' . $call_nid;
+    $response_url = $menu_path . '/process_sms_callback/' . $cid;
     $status_callback_url = url($response_url, array('absolute' => TRUE));
     
     $vars = array(
@@ -342,8 +342,8 @@ watchdog('voiptwilio', "in hangup() with call id: $id and status: $status");
 
     $call_id = $voipcall->getCallId();
     if(!$call_id){
-      $msg = "Attempt to hangup a Twilio call (nid = @nid) without a call id";
-      $params = array('@nid' => $voipcall->getCid());
+      $msg = "Attempt to hangup a Twilio call (cid = @cid) without a call id";
+      $params = array('@cid' => $voipcall->getCid());
       $voipcall->report_error('voiptwilio', $msg, $params);
       $rc = FALSE;
     }

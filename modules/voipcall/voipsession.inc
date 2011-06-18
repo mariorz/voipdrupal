@@ -2,13 +2,8 @@
 
 class VoipSession {
   
-    private $session;
+   private $session;
 
-   /**
-   * Constants
-   */
-   const DEFAULT_EXPIRATION = 300;
-   
    function __construct($session=NULL) {
      $this->session = $session;
    }   
@@ -24,8 +19,26 @@ class VoipSession {
    *   Session object.
    */
     public static function getSessionByNumber($origin_number, $destination_number){
-      //TODO: Check for expiration timer?
+      $session = VoipSession::getSessionByInboundNumber($origin_number, $destination_number);
+      if(!$session){
+        $session = VoipSession::getSessionByOutboundNumber($origin_number, $destination_number);
+      }
+      
+      return $session;
+    }
+    
+    public static function getSessionByInboundNumber($origin_number, $destination_number){
       $session = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number='%s' AND destination_number='%s'", $origin_number, $destination_number));
+      if($session->expiring_at<time()){
+        //Delete this session, its expired
+        db_query("DELETE FROM {voipsession} WHERE sid=%d",$session->sid);
+        return false;
+      }
+      return $session;
+    }
+    
+     public static function getSessionByOutboundNumber($origin_number, $destination_number){
+      $session = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number='%s' AND destination_number='%s'", $destination_number, $origin_number));
       if($session->expiring_at<time()){
         //Delete this session, its expired
         db_query("DELETE FROM {voipsession} WHERE sid=%d",$session->sid);
@@ -93,11 +106,17 @@ class VoipSession {
       $this->session->destination_number = $destination_number;
     }
     
-     public function setExpirationTime($expiration_time=VoipSession::DEFAULT_EXPIRATION){
+     public function setExpirationTime($expiration_time=NULL){
+      if (!$expiration_time) {
+        $expiration_time = variable_get('voipcall_default_session_time', 300);
+      }
       $this->session->expiration_time = $expiration_time;
     }
     
-    public function resetTimer($expiration_time=VoipSession::DEFAULT_EXPIRATION){
+    public function resetTimer($expiration_time=NULL){
+      if (!$expiration_time) {
+        $expiration_time = variable_get('voipcall_default_session_time', 300);
+      }
       $this->session->expiration_time = $expiration_time;
       $this->session->expiring_at = time()+$expiration_time;
     }
@@ -127,8 +146,8 @@ class VoipSession {
         }
         // initialize the 'Expiration time' field
         if(!isset($this->session->expiration_time)) {
-          $data->expiration_time = VoipSession::DEFAULT_EXPIRATION;
-          $expiration_time = VoipSession::DEFAULT_EXPIRATION;
+          $data->expiration_time = variable_get('voipcall_default_session_time', 300);
+          $expiration_time = variable_get('voipcall_default_session_time', 300);
         }
         else {
           $expiration_time = $this->session->expiration_time;
