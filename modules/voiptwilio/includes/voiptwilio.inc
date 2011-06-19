@@ -57,11 +57,50 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
   if ($twilio_action == 'process_inbound_text') {
     $channel = 'text';
     $network = 'sms';
+    $from = $_REQUEST['From'];
+    $to = $_REQUEST['To'];
   }
   else {
     $channel = 'voice';
     $network = 'voip';
+    $from = $_REQUEST['Caller'];
+    $to = $_REQUEST['Called'];
   }
+
+  if (!$cid) {
+    $voip_session = VoipSession::getSessionByNumber($from, $to);
+    if ($voip_session) {
+      $voip_session = new VoipSession($voip_session);
+      $call_id = $voip_session->getCallId();
+      // load the variables already associated with the call, if any
+      $call = VoipCall::load($call_id);
+      $voip_session->resetTimer();
+      $voip_session->save();
+    }
+    else {
+      $call = new VoipCall();
+      $voip_session = new VoipSession();
+      $voip_session->setOriginNumber($from);
+      $voip_session->setDestinationNumber($to);
+      $voip_session->save();
+      }
+  }
+  else {
+    $voip_session = VoipSession::getSessionByCallId($cid);
+    if ($voip_session) {
+      $voip_session = new VoipSession($voip_session);
+      $voip_session->resetTimer();
+      $voip_session->save();
+    }
+    else {
+      $voip_session = new VoipSession();
+      $voip_session->setOriginNumber($from);
+      $voip_session->setDestinationNumber($to);
+      $voip_session->save();
+    }
+  }
+  
+  
   // handle incoming call and text requests
   if($twilio_action == 'process_inbound_calls') {
 
@@ -85,7 +124,7 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     $cid = $call->getCid();
   }
   else if ($twilio_action == 'process_inbound_text') {
-    $from = $_REQUEST['From'];
+    /*$from = $_REQUEST['From'];
     $to = $_REQUEST['To'];
     
     //Check if session exists for this pair of numbers
@@ -104,7 +143,7 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
       $session->setOriginNumber($from);
       $session->setDestinationNumber($to);
       $session->save();
-    }
+    }*/
     
     $call_sid = $_REQUEST['SmsSid']; // unique identifier of the text, 34 char
     $call->setCallId($call_sid);
@@ -120,16 +159,9 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     $call->setCurrentChannel($channel);
     $call->setCurrentNetwork($network);
     $call->save();
-    // get the cid of the call
-    $cid = $call->getCid();
-    if(!$session->getCallId()){
-      $session->setCallId($cid);
-      $session->save();
-    }
   }
   else {
     // handle ongoing calls
-
     // 'process_hangup' for incoming calls does not come with a $cid
     if($twilio_action == 'process_hangup') {
       if(!$cid) {
@@ -159,6 +191,14 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     //Set text-related variables in the call object 
     $call->setTextVariables($_REQUEST['Body'], $_REQUEST['From'], $_REQUEST['To'], $network);
   }
+  
+  // get the cid of the call
+  $cid = $call->getCid();
+  if(!$voip_session->getCallId()){
+    $voip_session->setCallId($cid);
+    $voip_session->save();
+  }
+  
   // update common call variables
   if(!$call->getCurrentChannel())
      $call->setCurrentChannel($channel);
@@ -651,7 +691,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
         case 'VoipCmdSendText';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           
-		  $to = $script->evalString($cmd->getParam('to'));
+          $to = $script->evalString($cmd->getParam('to'));
           //If "to" is empty then send message to the caller
           if (!$to) {
             $to = $script->evalString($script->getVar('caller_number'));
@@ -659,13 +699,13 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           
           $text = $script->evalString($cmd->getParam('text'));
           $network = $script->evalString($cmd->getParam('network'));
-		  
-		  if (voipscript_use_sms_framework()) {
-		    //Use SMS Framework to send SMS message if user enabled this option
-			voipscript_send_sms_framework($to, $text);
-		  }
-		  else {
-		    $menu_path = 'voip/twilio/callhandler';
+          
+          if (voipscript_use_sms_framework()) {
+            //Use SMS Framework to send SMS message if user enabled this option
+            voipscript_send_sms_framework($to, $text);
+          }
+          else {
+            $menu_path = 'voip/twilio/callhandler';
             $cid = $call->getCid();
             $response_url = $menu_path . '/process_send_sms/' . $cid;
             $action = url($response_url, array('absolute' => TRUE));
@@ -706,7 +746,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
                 $response .= '" >';
                 $response .= $text;
                 $response .= '</Sms>';
-		    } 
+            } 
               $processing = TRUE;
               break;
           }
