@@ -807,7 +807,7 @@ class VoipScript {
   /**
    * Execute the specified script and then return to the current script
    */
-  function runGosub($script_name, $options) {
+  function runGosub($script_name, $options=NULL) {
     $script_state = array('name' => $this->name,
                           'commands' => $this->commands,
                           'index' => $this->index);

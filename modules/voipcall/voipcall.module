@@ -251,8 +251,7 @@ function voipcall_voipscript_get_script_names() {
   $script_names[] = 'voipcall_default_inbound_call_script';
   $script_names[] = 'voipcall_default_outbound_call_script';
   $script_names[] = 'voipcall_default_inbound_text_script';
-  $script_names[] = 'voipcall_default_outbound_text_script';
-
+  
   return $script_names;
 }
 
@@ -280,13 +279,7 @@ function voipcall_voipscript_load_script($script_name, $options=NULL) {
     case 'voipcall_default_inbound_text_script':
       $script = new VoipScript('voipcall_default_inbound_text_script');
       $script->addSendText(t("This is a TEXT response from the VoIP Drupal platform!"));
-      $script->addHangup();
       break;
-    case 'voipcall_default_outbound_text_script':
-      $script = new VoipScript('voipcall_default_outbound_text_script');
-      $script->addSendText(t("This is a TEXT message from the VoIP Drupal platform!"));
-      $script->addHangup();
-      break;       
     case 'voipscript_run_ivr_menu':
       $script = voipscript_get_run_ivr_menu_script($options);
       break;

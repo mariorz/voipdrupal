@@ -463,6 +463,23 @@ function _voiptropo_script_handler($call, &$tropo) {
       }
     }
   }
+  
+  //check if inbound_text_script_name
+  $inbound_text_script_name = $call->getInboundTextScriptName();
+  $inbound_text_script_name_executed = $script->getVar('inbound_text_script_name_executed');
+    if($inbound_text_script_name && !$inbound_text_script_name_executed) {
+       $script->setVar('inbound_text_script_name_executed', TRUE);
+       $call->setScript($script);
+       $call->save();
+      // load inbound_text_script commands
+      $rc = $script->runGosub($inbound_text_script_name);
+      if($script->isError()){
+        $msg = $script->getErrorMessage();
+        $params = array();
+        $call->report_error('voiptwilio', $msg, $params);
+        return FALSE;
+      }
+    }
   // process script commands
   $processing = TRUE;
   $response = '';

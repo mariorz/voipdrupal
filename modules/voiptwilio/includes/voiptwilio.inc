@@ -368,6 +368,25 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
       }
     }
   }
+  
+  //check if inbound_text_script_name
+  $inbound_text_script_name = $call->getInboundTextScriptName();
+  $inbound_text_script_name_executed = $script->getVar('inbound_text_script_name_executed');
+  watchdog('voiptwilio', "inbound_text_script_name_executed=$inbound_text_script_name_executed");
+  watchdog('voiptwilio', "CMD=".print_r($script,TRUE));
+    if($inbound_text_script_name && !$inbound_text_script_name_executed) {
+       $script->setVar('inbound_text_script_name_executed', TRUE);
+       $call->setScript($script);
+       $call->save();
+      // load inbound_text_script commands
+      $rc = $script->runGosub($inbound_text_script_name);
+      if($script->isError()){
+        $msg = $script->getErrorMessage();
+        $params = array();
+        $call->report_error('voiptwilio', $msg, $params);
+        return FALSE;
+      }
+    }
 
   // process script commands
   $processing = TRUE;
@@ -375,7 +394,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
   while($processing) {
    
     $cmd = $script->getNextCommand();
-
+ watchdog('voiptwilio', "CMD=".print_r($cmd,TRUE));
     if(!$cmd) {
       // no more commands to be processed    
       if ($call->getCurrentChannel() != 'text') {
