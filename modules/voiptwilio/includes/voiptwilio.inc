@@ -55,7 +55,13 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
      return FALSE;  // TODO: should we return an error response to the server?
   }
   if ($twilio_action == 'process_inbound_text') {
-    $channel = 'text';
+    if (isset($_REQUEST['Channel'])) {
+      $channel = $_REQUEST['Channel'];
+    }
+    else {
+      $channel = 'text';
+    }
+    
     $network = 'sms';
     $from = $_REQUEST['From'];
     $to = $_REQUEST['To'];
@@ -372,21 +378,16 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
   //check if inbound_text_script_name
   $inbound_text_script_name = $call->getInboundTextScriptName();
   $inbound_text_script_name_executed = $script->getVar('inbound_text_script_name_executed');
-  watchdog('voiptwilio', "inbound_text_script_name_executed=$inbound_text_script_name_executed");
-  watchdog('voiptwilio', "CMD=".print_r($script,TRUE));
-    if($inbound_text_script_name && !$inbound_text_script_name_executed) {
-       $script->setVar('inbound_text_script_name_executed', TRUE);
-       $call->setScript($script);
-       $call->save();
-      // load inbound_text_script commands
-      $rc = $script->runGosub($inbound_text_script_name);
-      if($script->isError()){
-        $msg = $script->getErrorMessage();
-        $params = array();
-        $call->report_error('voiptwilio', $msg, $params);
-        return FALSE;
-      }
+  if($inbound_text_script_name && !$inbound_text_script_name_executed) {
+    $script->setVar('inbound_text_script_name_executed', TRUE);
+    // load inbound_text_script commands
+    $rc = $script->runGosub($inbound_text_script_name);
+    if($script->isError()){
+      $msg = $script->getErrorMessage();
+      $call->report_error('voiptwilio', $msg);
+      return FALSE;
     }
+  }
 
   // process script commands
   $processing = TRUE;
@@ -394,7 +395,6 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
   while($processing) {
    
     $cmd = $script->getNextCommand();
- watchdog('voiptwilio', "CMD=".print_r($cmd,TRUE));
     if(!$cmd) {
       // no more commands to be processed    
       if ($call->getCurrentChannel() != 'text') {
@@ -723,6 +723,13 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
             //Use SMS Framework to send SMS message if user enabled this option
             voipscript_send_sms_framework($to, $text);
           }
+          else if(strtolower($call->getCurrentChannel()) == 'offline_text'){
+            //Use voip_text()
+            $reply = TRUE;
+            $call->setCurrentChannel('text');
+            voip_text($text, $call, $reply);
+            $processing = TRUE;
+          }
           else {
             $menu_path = 'voip/twilio/callhandler';
             $cid = $call->getCid();
@@ -792,11 +799,11 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $script->unsetVar($var_name);
           break;
           
-        case 'VoipCmdWait';
+        /*case 'VoipCmdWait';
           $time_limit = $script->evalString($cmd->getParam('time_limit'));
           //TODO:
           break;  
-
+        */
       }
 
       // go to next command

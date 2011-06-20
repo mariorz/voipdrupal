@@ -205,18 +205,32 @@ watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
   /**
    * Implementation of the VoipServer send_text() API method
    */
-  function send_text($text, $voipcall, $server_config=NULL) {
+  function send_text($text, $voipcall, $reply, $server_config=NULL) {
     $rc = FALSE;
     voip_error_reset();
+    
+    //Determine from/to numbers
+    if ($reply) {
+      $to = $voipcall->getCallerNumber();
+      $from = ($voipcall->getDestNumber())
+                       ? $voipcall->getDestNumber()
+                       : variable_get('voipcall_cid_number', NULL);
+    }
+    else {
+      $to = $voipcall->getDestNumber();
+      $from = ($voipcall->getCallerNumber())
+                       ? $voipcall->getCallerNumber()
+                       : variable_get('voipcall_cid_number', NULL);
+    }
+    
     if (voipscript_use_sms_framework()) {
       //Use SMS Framework to send SMS message if user enabled this option
-      $to = $voipcall->getDestNumber();
       voipscript_send_sms_framework($to, $text);
       watchdog('voiptwilio', 'new text sent over SMS Framework.');
       return TRUE;        
     }
     //Else use VoIP Drupal:
-    if(!$server_config) {
+    if (!$server_config) {
       $server_config = $this->getConfig();
     }
 
@@ -229,7 +243,7 @@ watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
     $voipcall->setSource('drupal');
     $voipcall->setDirection(VoipCall::OUTBOUND);
     
-    // save the call in order to get generate an cid
+    // save the call
     $voipcall->save();
 
     // Instantiate a new Twilio Rest Client
@@ -237,20 +251,14 @@ watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
 
     // Initiate a new outbound text by POST'ing to the SMS/Messages resource
     $twilio_path = "/$api_version/Accounts/$account_sid/SMS/Messages";
-    $caller_number = ($voipcall->getCallerNumber())
-                       ? $voipcall->getCallerNumber()
-                       : variable_get('voipcall_cid_number', NULL);
-    $dest_number = $voipcall->getDestNumber();
-
     $menu_path = 'voip/twilio/callhandler';
     $cid = $voipcall->getCid();
-    
     $response_url = $menu_path . '/process_sms_callback/' . $cid;
     $status_callback_url = url($response_url, array('absolute' => TRUE));
     
     $vars = array(
-      'From' => $caller_number,
-      'To' => $dest_number,
+      'From' => $from,
+      'To' => $to,
       'Body' => $text,
       'Method' => 'POST',
       'StatusCallback' => $status_callback_url,
@@ -388,6 +396,7 @@ watchdog('voiptwilio', "in hangup() with call id: $id and status: $status");
       'To' => $destination,
       'Body' => $text_content,
       'Direction' => 'inbound',
+      'Channel' = > 'offline_text'
     );
     
     //url-ify the data for the POST

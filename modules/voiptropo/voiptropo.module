@@ -198,3 +198,17 @@ function voiptropo_voipscript_get_script_names() {
   $script_names[] = 'voiptropo_IM_demo';
   return $script_names;
 }
+function json_serialize($any) {
+return json_encode(json_wrap($any));
+}
+function json_wrap($any, $skipAssoc = false) {
+  if (!$skipAssoc && is_array($any) && is_string(key($any))) {
+    return (object)array("_PHP_ASSOC" => json_wrap($any,true));
+  }
+  if (is_array($any) || is_object($any)) {
+  foreach ($any as &$v) {
+  $v = json_wrap($v);
+  }
+  }
+  return $any;
+}

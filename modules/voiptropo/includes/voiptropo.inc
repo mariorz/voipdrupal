@@ -37,6 +37,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
     //save_record doesn't have json
     try {
       $json = json_decode(@file_get_contents('php://input')); 
+      //watchdog('voiptropo', 'json: '.print_r($json,true));
       $session = new Session();
 
       if (empty($tropo_action)) {
@@ -467,19 +468,16 @@ function _voiptropo_script_handler($call, &$tropo) {
   //check if inbound_text_script_name
   $inbound_text_script_name = $call->getInboundTextScriptName();
   $inbound_text_script_name_executed = $script->getVar('inbound_text_script_name_executed');
-    if($inbound_text_script_name && !$inbound_text_script_name_executed) {
-       $script->setVar('inbound_text_script_name_executed', TRUE);
-       $call->setScript($script);
-       $call->save();
-      // load inbound_text_script commands
-      $rc = $script->runGosub($inbound_text_script_name);
-      if($script->isError()){
-        $msg = $script->getErrorMessage();
-        $params = array();
-        $call->report_error('voiptwilio', $msg, $params);
-        return FALSE;
-      }
+  if($inbound_text_script_name && !$inbound_text_script_name_executed) {
+    $script->setVar('inbound_text_script_name_executed', TRUE);
+    // load inbound_text_script commands
+    $rc = $script->runGosub($inbound_text_script_name);
+    if($script->isError()){
+      $msg = $script->getErrorMessage();
+      $call->report_error('voiptwilio', $msg);
+      return FALSE;
     }
+  }
   // process script commands
   $processing = TRUE;
   $response = '';
@@ -873,6 +871,13 @@ watchdog('voiptropo',"(Say) V: $voice, L: $language, Id: $voice_id");
             //Use SMS Framework to send SMS message if user enabled this option
             voipscript_send_sms_framework($to, $text);
           }
+          else if(strtolower($call->getCurrentChannel()) == 'offline_text'){
+            //Use voip_text()
+            $reply = TRUE;
+            $call->setCurrentChannel('text');
+            voip_text($text, $call, $reply);
+            $processing = TRUE;
+          }
           else {
             $params = array(
               'to' => $to,
@@ -923,11 +928,11 @@ watchdog('voiptropo',"(Say) V: $voice, L: $language, Id: $voice_id");
           $script->unsetVar($var_name);
           break;
           
-        case 'VoipCmdWait';
+        /*case 'VoipCmdWait';
           $time_limit = $script->evalString($cmd->getParam('time_limit'));
           //TODO:
           break;  
-
+        */
       }
       // go to next command
     }

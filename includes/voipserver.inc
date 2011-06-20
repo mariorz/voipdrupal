@@ -114,7 +114,7 @@ abstract class VoipServer {
    * @return
    * boolean, TRUE if success, FALSE in case of processing error
    */
-  abstract function send_text($text, $voipcall, $server_config=NULL);
+  abstract function send_text($text, $voipcall, $reply, $server_config=NULL);
 
 
   /**

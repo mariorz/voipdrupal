@@ -391,8 +391,8 @@ function voipcall_sms_incoming($op, $number, $message, $options) {
     watchdog('voipcall', $msg);
     voip_text_handler($message, $number ,'', time());
     /*$call = new VoipCall();
-    $call->setCurrentChannel('sms');
-    $call->setCurrentNetwork('text');
+    $call->setCurrentChannel('text');
+    $call->setCurrentNetwork('sms');
     $call->setDestNumber($number);
     $call->setScript($script);
     $call->save();

@@ -48,11 +48,13 @@ function voip_dial($voipcall) {
 /**
  * Send a text message
  *
+ * @param string $text with the body of the text
  * @param object $voipcall with the information about the text to be made
+ * @param boolean $reply optional parameter indicating if this is a reply message
  *
  * @return boolean with TRUE in case of success or FALSE otherwise
  */
-function voip_text($text, $voipcall) {
+function voip_text($text, $voipcall, $reply = FALSE) {
   //TODO: Conver to text perm.
   //  make sure the user is allowed to make outbound calls
   $allowed = user_access('make outbound calls');
@@ -65,7 +67,7 @@ function voip_text($text, $voipcall) {
   }
 
   $voip_server = voip_default_server();
-  $response = $voip_server->send_text($text, $voipcall);
+  $response = $voip_server->send_text($text, $voipcall, $reply);
 
   if (voip_error()) {
     $error_message = 'Failure executing voip_text() with %options.';

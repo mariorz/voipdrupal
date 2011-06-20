@@ -173,11 +173,21 @@ class VoipTropoServer extends VoipServer {
  /**
    * Implementation of the VoipServer send_text() API method
    */
-  function send_text($text, $voipcall, $server_config=NULL) {
+  function send_text($text, $voipcall, $reply, $server_config=NULL) {
     voip_error_reset();
+    
+    //Determine from/to numbers
+    if ($reply) {
+      $to = $voipcall->getCallerNumber();
+      $from = $voipcall->getDestNumber();
+    }
+    else {
+      $to = $voipcall->getDestNumber();
+      $from = $voipcall->getCallerNumber();
+    }
+    
     if (voipscript_use_sms_framework()) {
       //Use SMS Framework to send SMS message if user enabled this option
-      $to = $voipcall->getDestNumber();
       voipscript_send_sms_framework($to, $text);
       watchdog('voiptropo', 'new text sent over SMS Framework.');
       return TRUE;        
@@ -195,17 +205,10 @@ class VoipTropoServer extends VoipServer {
     // Update call variables
     $voipcall->setSource('drupal');
     $voipcall->setDirection(VoipCall::OUTBOUND);
-    $caller_number = ($voipcall->getCallerNumber())
-                       ? $voipcall->getCallerNumber()
-                       : NULL;
-    $dest_number = $voipcall->getDestNumber();    
-    //Switch caller and destination numbers    
-   // $voipcall->setCallerNumber($dest_number);                   
-   // $voipcall->setDestNumber($caller_number);
-    
-    // save the call in order to get generate an cid
+
+    // save the call
     $voipcall->save();
-    $call_cid = $voipcall->getCid();
+    $cid = $voipcall->getCid();
     
      // Instantiate a new tropo Rest Client
     $client = new SessionAPI();
@@ -214,8 +217,8 @@ class VoipTropoServer extends VoipServer {
       'action' => 'create',
       'username' => $username,
       'password' => $password,
-      'caller_number' => $caller_number,
-      'dest_number' => $dest_number,
+      'caller_number' => $from,
+      'dest_number' => $to,
       'tropo_action' => 'process_outbound_text',
       'cid' => $cid,
       'text' => $text,
@@ -294,30 +297,27 @@ class VoipTropoServer extends VoipServer {
     $url = url($request_url, array('absolute' => TRUE));
     
     $server_config = $this->getConfig();
-    $vars = array(
-      'AccountSid' =>  $server_config['voiptwilio_account_sid'],
-      'SmsSid' => $todo,
-      'From' => $origin,
-      'To' => $destination,
-      'Body' => $text_content,
-      'Direction' => 'inbound',
-    );
+    $length = 20;
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyz';
+    $random_string = '';    
+    for ($p = 0; $p < $length; $p++) {
+        $random_string .= $characters[mt_rand(0, strlen($characters))];
+    }
+    $vars->session->id =  $random_string; 
+    $vars->session->initialText =  $text_content;
+    $vars->session->to->id = $origin;
+    $vars->session->to->channel = 'offline_text';
+    $vars->session->to->network = 'sms';
+    $vars->session->from->id = $destination;
     
-    //url-ify the data for the POST
-   foreach ($vars as $key => $value) { 
-     $fields_string .= $key.'='.urlencode($value).'&'; 
-   }
-   $fields_string = rtrim($fields_string,'&');
-   
    //open connection
    $ch = curl_init();
 
-   //set the url, number of POST vars, POST data
+   //set the url, number of POST vars, POST data 
    curl_setopt($ch,CURLOPT_URL,$url);
-   curl_setopt($ch,CURLOPT_POST,count($vars));
-   curl_setopt($ch,CURLOPT_POSTFIELDS,$fields_string);
-   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
+   curl_setopt($ch, CURLOPT_HTTPHEADERS, array('Content-Type: application/json'));
+   curl_setopt($ch, CURLOPT_POSTFIELDS, array('json' => json_serialize($vars)));
+   //curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
    //execute post
    $result = curl_exec($ch);

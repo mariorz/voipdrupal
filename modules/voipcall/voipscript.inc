@@ -792,12 +792,12 @@ class VoipScript {
    * @param $time_limit
    *   Time the script should wait.
    * 
-   */
+   *//*
   function addWait($time_limit=60) {
     $params['time_limit'] = $time_limit;
     $this->commands[] = new VoipCommand('VoipCmdWait', $params);
   }
-
+*/
 
   /*
    * Execution of basic script commands that are not dependent on the voip
@@ -936,6 +936,13 @@ class VoipScript {
       $this->error_message = "Invalid return command for script '" . $this->name . "': " . print_r($this, true);
     }
     return $rc;
+  }
+  
+  /**
+   * Return the number of scripts in stack.
+   */
+  function getStackLevel() {
+    return count($this->stack);
   }
 
 

@@ -3,7 +3,7 @@
  * @file Provides sample scripts that demonstrate the capabilities of the VoIP Drupal platform
  */ 
 
-foreach (array('voipscriptsamples_weather.inc') as $file) {
+foreach (array('voipscriptsamples_weather.inc', 'voipscriptsamples_sms_group.inc') as $file) {
   require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . $file);
 }
 
@@ -30,6 +30,7 @@ function voipscriptsamples_voipscript_get_script_names() {
   $script_names[] = 'voipscript_small_office_ivr';
   $script_names[] = 'voipscript_call_sms_sender';
   $script_names[] = 'voipscript_sms_session';
+  $script_names[] = 'voipscript_sms_group';
   return $script_names;
 }
 
@@ -147,6 +148,9 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
    
     $script->addLabel('end');
     $script->addHangup();
+  }
+  if($script_name == 'voipscript_sms_group') {
+    $script = _voipscriptsamples_sms_group();
   }
   return $script;
 }
