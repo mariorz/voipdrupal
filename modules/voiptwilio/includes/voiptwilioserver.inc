@@ -396,7 +396,7 @@ watchdog('voiptwilio', "in hangup() with call id: $id and status: $status");
       'To' => $destination,
       'Body' => $text_content,
       'Direction' => 'inbound',
-      'Channel' = > 'offline_text'
+      'Channel' => 'offline_text'
     );
     
     //url-ify the data for the POST

@@ -553,15 +553,23 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
         case 'VoipCmdHangup':
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $call->setHangupReason(VoipCall::HANGUP_SCRIPT_COMMAND);
-          //Reset script
-          $script = $call->getScript();
-          $script->resetIndex();
-          $call->setScript($script);
-          if ($call->getCurrentChannel() != 'text') {
-            // send the hangup request and stop processing script commands
-            // Note: this will trigger a response from Twilio with $twilio_action = process_hangup and CallStatus = completed
-            $response .= '<Hangup/>';
+          
+          $stack_level = $script->getStackLevel();
+          if ($stack_level>0) {
+            $script->addReturn();
           }
+          else {
+            //Reset script
+            $script = $call->getScript();
+            $script->resetIndex();
+            $call->setScript($script);
+            if ($call->getCurrentChannel() != 'text') {
+              // send the hangup request and stop processing script commands
+              // Note: this will trigger a response from Twilio with $twilio_action = process_hangup and CallStatus = completed
+              $response .= '<Hangup/>';
+            }
+          }
+           
           $processing = FALSE;
           break;
 

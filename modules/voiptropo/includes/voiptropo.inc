@@ -44,8 +44,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
       else {
         $session = new Session();
       }
-      watchdog('voiptropo', 'json: '.print_r($json,true));
-
+     
       if (empty($tropo_action)) {
         $tropo_action = $session->getParameters('tropo_action');
         if (empty($tropo_action)) {
@@ -105,6 +104,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
       }
   }
   else {
+    //Check for session by number?
     $voip_session = VoipSession::getSessionByCallId($cid);
     if ($voip_session) {
       $voip_session = new VoipSession($voip_session);
@@ -635,14 +635,20 @@ function _voiptropo_script_handler($call, &$tropo) {
         case 'VoipCmdHangup':
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $call->setHangupReason(VoipCall::HANGUP_SCRIPT_COMMAND);
-          //Reset script
-          //$script = $call->getScript();
-          $script->resetIndex();
-          //$call->setScript($script);
-          if ($call->getCurrentChannel() != 'text') {
-            // send the hangup request and stop processing script commands
-            $tropo->hangup();
+          watchdog('voiptropo','Stack='.$script->getStackLevel());
+          $stack_level = $script->getStackLevel();
+          if ($stack_level>0) {
+            $script->addReturn();
           }
+          else {
+            //Reset script
+            $script->resetIndex();
+            if ($call->getCurrentChannel() != 'text') {
+              // send the hangup request and stop processing script commands
+              $tropo->hangup();
+            }
+          }
+          
           $processing = FALSE;
           break;
 
@@ -1077,7 +1083,7 @@ function _voiptropo_process_dial_response($call, $request, $dial_response_name) 
 
   // update the 'dial_status' script variable
   $dial_status = $request->getState();
-  switch ($dial_status) {
+  switch (strtolower($dial_status)) {
     default:
       $cid = $call->getCid();
       $msg = 'Invalid DialCallStatus: @status for call cid: @cid';
@@ -1086,6 +1092,7 @@ function _voiptropo_process_dial_response($call, $request, $dial_response_name) 
       return NULL;
       break;
     case 'completed':
+    case 'answered':
       $script->setVar('dial_status', VoipScript::DIAL_COMPLETED);
       break;
     case 'busy':
@@ -1094,7 +1101,7 @@ function _voiptropo_process_dial_response($call, $request, $dial_response_name) 
     case 'no-answer':
       $script->setVar('dial_status', VoipScript::DIAL_NO_ANSWER);
       break;
-    case 'DISCONNECTED':
+    case 'disconnected':
       $script->setVar('dial_status', VoipScript::DIAL_FAILED);
       break;
     case 'canceled':
