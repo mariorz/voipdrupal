@@ -316,6 +316,7 @@ class VoipTropoServer extends VoipServer {
    //set the url, number of POST vars, POST data 
    curl_setopt($ch,CURLOPT_URL,$url);
    curl_setopt($ch, CURLOPT_HTTPHEADERS, array('Content-Type: application/json'));
+   curl_setopt($ch, CURLOPT_POST, 1);
    curl_setopt($ch, CURLOPT_POSTFIELDS, array('json' => json_serialize($vars)));
    //curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 

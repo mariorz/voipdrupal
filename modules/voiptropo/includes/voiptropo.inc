@@ -37,8 +37,14 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
     //save_record doesn't have json
     try {
       $json = json_decode(@file_get_contents('php://input')); 
-      //watchdog('voiptropo', 'json: '.print_r($json,true));
-      $session = new Session();
+      if(!$json && isset($_POST['json'])) {
+         $json = json_decode($_POST['json']);
+         $session = new Session($_POST['json']);
+      }
+      else {
+        $session = new Session();
+      }
+      watchdog('voiptropo', 'json: '.print_r($json,true));
 
       if (empty($tropo_action)) {
         $tropo_action = $session->getParameters('tropo_action');
@@ -53,7 +59,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
       $vars = array();
       watchdog('voiptropo', $msg, $vars, WATCHDOG_INFO);
 
-      $incoming_sid = $session->getAccountID();
+      //$incoming_sid = $session->getAccountID();
     }
     catch (TropoException $e) {
       try{
@@ -520,7 +526,7 @@ function _voiptropo_script_handler($call, &$tropo) {
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $number = $script->evalString($cmd->getParam('number'));
           $number = str_replace(" ", "", $number); //remove any spaces from number
-          if ($call->getCurrentChannel() == 'text') {
+          if ($call->getCurrentChannel() == 'text'  || $call->getCurrentChannel() == 'offline_text') {
             //In case VoipCmdDial is called within text channel then instead of transfer we call the sender.
             //we are starting a call, hangup() the existing session
             $tropo->hangup();

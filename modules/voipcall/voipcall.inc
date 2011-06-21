@@ -634,7 +634,7 @@ class VoipCall {
       $direction = $dir_tmp ? $dir_tmp
                               : $data->direction;
       if(!isset($details->script)) {
-        if($details->current_channel=='text') {
+        if($details->current_channel=='text' || $details->current_channel=='offline_text') {
           $script_name = voipcall_get_default_inbound_text_script_name();
         } 
         else {
@@ -649,14 +649,7 @@ class VoipCall {
         $default_script = VoipScript::loadScript($script_name);
         $data->script = serialize($default_script);
       }
-  
-      // initialize text script with the default inbound one
-     /*if(!isset($details->text_script)) {
-       
-        $default_script = VoipScript::loadScript($script_name);
-        $data->text_script = serialize($default_script);
-      }*/
-  
+      
       // initialize 'Hangup Reason' field
       if(!isset($details->hangup_reason)) {
         $data->hangup_reason = NULL;
