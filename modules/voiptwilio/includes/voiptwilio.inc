@@ -716,8 +716,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           break;
 
         case 'VoipCmdSendText';
-          $call->setCallStatus(VoipCall::IN_PROGRESS);
-          
+          $call->setCallStatus(VoipCall::IN_PROGRESS);   
           $to = $script->evalString($cmd->getParam('to'));
           //If "to" is empty then send message to the caller
           if (!$to) {
