@@ -109,12 +109,15 @@ abstract class VoipServer {
    * $voipcall, VoipCall instance with information about the text
    * 
    * @param 
+   * $reply, whether the messages is to be sent as a reply to VoipCall instance
+   * 
+   * @param 
    * $server_config, configuration of the voip server to be used for the text message
    * 
    * @return
    * boolean, TRUE if success, FALSE in case of processing error
    */
-  abstract function send_text($text, $voipcall, $reply, $server_config=NULL);
+  abstract function send_text($text, $voipcall, $reply=FALSE, $server_config=NULL);
 
 
   /**
@@ -132,7 +135,7 @@ abstract class VoipServer {
   abstract function hangup($voipcall, $server_config=NULL);
   
   /**
-   * Common entry-point function for text handling.
+   * Common entry point function for text message handling.
    * 
    * @param 
    * $text_content, with the text body

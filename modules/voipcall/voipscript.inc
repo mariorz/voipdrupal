@@ -368,7 +368,8 @@ class VoipScript {
    *   Mixed. Can be any of the following
    *   - an executable string to be processed into a prompt string, a
    *     VoipPrompt instance, or an array of VoipPrompt instances
-   *   - a prompt string combining text and audio URLs to be played to the user   *     prompting him/her to type something
+   *   - a prompt string combining text and audio URLs to be played to the user
+   *     prompting him/her to type something
    *   - a VoipPrompt instance
    *   - an array of VoipPrompt instances to be processed
    *
@@ -939,7 +940,7 @@ class VoipScript {
   }
   
   /**
-   * Return the number of scripts in stack.
+   * Return the number of scripts in the stack.
    */
   function getStackLevel() {
     return count($this->stack);

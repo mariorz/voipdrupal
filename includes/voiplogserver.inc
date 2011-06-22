@@ -53,7 +53,7 @@ class VoipLogServer extends VoipServer {
     watchdog('voip', 'VoipLogServer dial() called with: @params', array('@params' => print_r($params, TRUE)), WATCHDOG_INFO);
     return TRUE;
   }
-  function send_text($text, $voipcall, $reply, $server_config=NULL) {
+  function send_text($text, $voipcall, $reply=FALSE, $server_config=NULL) {
     $params = array('text' => $text, 'voipcall' => $voipcall, 'reply' => $reply, 'options' => $options, 'server_config' => $server_config);
     watchdog('voip', 'VoipLogServer send_text() called with: @params', array('@params' => print_r($params, TRUE)), WATCHDOG_INFO);
     return TRUE;
@@ -66,7 +66,7 @@ class VoipLogServer extends VoipServer {
   }
   
   function text_handler($text_content, $origin ,$destination, $time, $network, $server_name) {
-    $params = array('text_content' => $text_content, 'origin' => $origin, 'destination' => $destination, 'time' => $time, 'network' => $network, 'network' => $server_name);
+    $params = array('text_content' => $text_content, 'origin' => $origin, 'destination' => $destination, 'time' => $time, 'network' => $network, 'server_name' => $server_name);
     watchdog('voip', 'VoipLogServer text_handler() called with: @params', array('@params' => print_r($params, TRUE)), WATCHDOG_INFO);
     return TRUE;
   }

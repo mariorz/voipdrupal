@@ -137,7 +137,7 @@ function voipcall_admin_form() {
   $form['voipcall_use_sms_framework'] = array(
       '#type' => 'checkbox',
       '#title' => t('Use SMS Framework'),
-      '#description' => t('By default sms messages are sent via the default voip server. Check this option to use SMS framework instead.'),
+      '#description' => t('By default, SMS messages are sent via the default VoIP server. Check this option to use the Drupal SMS Framework instead.'),
       '#default_value' => variable_get('voipcall_use_sms_framework', 0),
       '#disabled' => $disabled,
   );
@@ -145,7 +145,7 @@ function voipcall_admin_form() {
   $form['voipcall_default_session_time'] = array(
     '#type' => 'textfield',
     '#title' => t('Default Session Duration'),
-    '#description' => t('Default session duration time'),
+    '#description' => t('Default session duration time in seconds.'),
     '#default_value' => variable_get('voipcall_default_session_time', 300),
   );
 

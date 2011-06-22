@@ -205,7 +205,7 @@ watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
   /**
    * Implementation of the VoipServer send_text() API method
    */
-  function send_text($text, $voipcall, $reply, $server_config=NULL) {
+  function send_text($text, $voipcall, $reply=FALSE, $server_config=NULL) {
     $rc = FALSE;
     voip_error_reset();
     

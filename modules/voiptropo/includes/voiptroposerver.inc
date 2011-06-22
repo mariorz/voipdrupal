@@ -173,7 +173,7 @@ class VoipTropoServer extends VoipServer {
  /**
    * Implementation of the VoipServer send_text() API method
    */
-  function send_text($text, $voipcall, $reply, $server_config=NULL) {
+  function send_text($text, $voipcall, $reply=FALSE, $server_config=NULL) {
     voip_error_reset();
     
     //Determine from/to numbers

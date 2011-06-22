@@ -7,8 +7,9 @@ class VoipSession {
    function __construct($session=NULL) {
      $this->session = $session;
    }   
+
    /**
-   * Returns Session object associated with the matching pair of numbers
+   * Returns VoipSession object associated with the matching pair of numbers
    *
    * @param $origin_number
    *   String representing origin number.
