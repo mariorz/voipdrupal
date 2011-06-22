@@ -17,12 +17,15 @@ function voipscriptsamples_sms_group_parse_request($msg, $from) {
   if (count($request)>1) {
     $group_id = $request[1];
     switch (strtoupper($request[0])) {
+      default:
+        $ret = t("Invalid request");
+        break;
       case "S":
         $group = variable_get("voip_sms_group_".$group_id, array());
         $group[(string)$from] = $from;
         variable_set("voip_sms_group_".$group_id, $group);
         $ret = t("You are now subscribed to group ").$group_id;
-      break;
+        break;
       case "B":
         //Broadcast the message
         unset($request[0]);
@@ -42,7 +45,8 @@ function voipscriptsamples_sms_group_parse_request($msg, $from) {
             voip_text($text, $call);
           }
         }
-         $ret = t("Your message has been broadcasted to group ").$group_id;
+        $options = array('@gid' => $group_id);
+        $ret = t("Your message has been broadcasted to group @gid", $options);
       break;
       case "U":
         $group = variable_get("voip_sms_group_".$group_id, array());
