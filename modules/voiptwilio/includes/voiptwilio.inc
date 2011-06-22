@@ -311,6 +311,10 @@ watchdog('voiptwilio', "twilio status: $twilio_call_status, updated call status:
       case 'process_send_sms':
       case 'process_sms_callback':
         $call = _voiptwilio_process_sms_response($call, $_REQUEST);
+        if(strtolower($call->getCurrentChannel()) == 'text') {
+          $call->save();
+          return;
+        }
         break;
     }
   }
@@ -393,8 +397,8 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
   $processing = TRUE;
   $response = '';
   while($processing) {
-   
     $cmd = $script->getNextCommand();
+    watchdog('voiptwilio', 'CMD='.print_r($cmd,true));
     if(!$cmd) {
       // no more commands to be processed    
       if ($call->getCurrentChannel() != 'text') {
