@@ -89,9 +89,9 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
     $voip_session = VoipSession::getSessionByNumber($from, $to);
     if ($voip_session) {
       //$voip_session = new VoipSession($voip_session);
-      $call_id = $voip_session->getCallId();
+      $cid = $voip_session->getCid();
       // load the variables already associated with the call, if any
-      $call = VoipCall::load($call_id);
+      $call = VoipCall::load($cid);
       $voip_session->resetTimer();
       $voip_session->save();
     }
@@ -104,19 +104,28 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
       }
   }
   else {
-    //Check for session by number?
-    $voip_session = VoipSession::getSessionByCallId($cid);
+    $voip_session = VoipSession::getSessionByCid($cid);
     if ($voip_session) {
-      //$voip_session = new VoipSession($voip_session);
       $voip_session->resetTimer();
       $voip_session->save();
     }
-    else {
-      $voip_session = new VoipSession();
-      $voip_session->setOriginNumber($from);
-      $voip_session->setDestinationNumber($to);
-      $voip_session->save();
+    else if ($from && $to) {
+      $voip_session = VoipSession::getSessionByNumber($from, $to);
+      if ($voip_session) {
+        $cid = $voip_session->getCid();
+        // load the variables already associated with the call, if any
+        $call = VoipCall::load($cid);
+        $voip_session->resetTimer();
+        $voip_session->save();
+      }
+      else {
+        $voip_session = new VoipSession();
+        $voip_session->setOriginNumber($from);
+        $voip_session->setDestinationNumber($to);
+        $voip_session->save();
+      }
     }
+    //Else?
   }
   /*
      if($tropo_action=='process_voice_analysis'){
@@ -135,32 +144,6 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
    */
   // handle incoming call requests
   if ($tropo_action == 'process_inbound_calls') {    
-    
-    /*if($channel == 'text'){
-      //Check if session exists for this pair of numbers
-      $from = $json->session->from->id;
-      $to = $json->session->to->id;
-      $voip_session = VoipSession::getSessionByNumber($from, $to);
-      if ($voip_session) {
-        $voip_session = new VoipSession($voip_session);
-        $call_id = $voip_session->getCallId();
-        // load the variables already associated with the call, if any
-        $call = VoipCall::load($call_id);
-        $voip_session->resetTimer();
-        $voip_session->save();
-      }
-      else {
-        $call = new VoipCall();
-        $voip_session = new VoipSession();
-        $voip_session->setOriginNumber($from);
-        $voip_session->setDestinationNumber($to);
-        $voip_session->save();
-      }
-    }
-    else{
-      $call = new VoipCall();
-    }*/
-    
     $call_id=$session->getId(); 
     $call->setCallId($call_id);
     $call->setSource('tropo');
@@ -210,8 +193,8 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
   
   // get the cid of the call data
   $cid = $call->getCid();
-  if (!$voip_session->getCallId()) {
-    $voip_session->setCallId($cid);
+  if (!$voip_session->getCid()) {
+    $voip_session->setCid($cid);
     $voip_session->save();
   }
     
@@ -534,7 +517,7 @@ function _voiptropo_script_handler($call, &$tropo) {
             if (!$number) {
               $number = $call->getCallerNumber();
             }
-            $call = new VoipCall();
+            //$call = new VoipCall();
             $call->setDestNumber($number);
             $call->setScript($script);
             $call->save();
@@ -635,7 +618,15 @@ function _voiptropo_script_handler($call, &$tropo) {
         case 'VoipCmdHangup':
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $call->setHangupReason(VoipCall::HANGUP_SCRIPT_COMMAND);
-          watchdog('voiptropo','Stack='.$script->getStackLevel());
+          $end_session = $script->evalString($cmd->getParam('end_session'));
+          if ($end_session) {
+            //Kill the session if any
+            $cid = $call->getCid();
+            $session = VoipSession::getSessionByCid($cid);
+            if ($session) {
+              $session->destroy();
+            }
+          }
           $stack_level = $script->getStackLevel();
           if ($stack_level>0) {
             $script->addReturn();

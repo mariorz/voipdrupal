@@ -148,7 +148,7 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     $script->addSendText(t('hi, what is your name?'));
    
     $script->addLabel('end');
-    $script->addHangup();
+    $script->addHangup(FALSE);
   }
   if($script_name == 'voipscript_sms_group') {
     $script = _voipscriptsamples_sms_group();

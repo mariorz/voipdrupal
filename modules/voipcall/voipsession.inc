@@ -33,10 +33,14 @@ class VoipSession {
       if ($session_data->expiring_at < time()) {
         //Delete this session, its expired
         db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid);
-        return false;
+        return FALSE;
       }
-      $session = new self($session_data);
-      return $session;
+      if ($session_data) {
+        $session = new self($session_data);
+        return $session;
+      }
+      
+      return FALSE;
     }
     
      public static function getSessionByOutboundNumber($origin_number, $destination_number) {
@@ -44,30 +48,38 @@ class VoipSession {
       if ($session_data->expiring_at < time()) {
         //Delete this session, its expired
         db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid);
-        return false;
+        return FALSE;
       }
-      $session = new self($session_data);
-      return $session;
+      if ($session_data) {
+        $session = new self($session_data);
+        return $session;
+      }
+      
+      return FALSE;
     }
     
    /**
    * Returns Session object associated with the matching VoIP Call
    *
-   * @param $call_id
-   *   Integer representing VoIP Call ID.
+   * @param $cid
+   *   Integer representing VoIP Cid.
    *
    * @return
-   *    Session object.
+   *    Session instance or FALSE.
    */
-    public static function getSessionByCallId($call_id){
-      $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE call_id=%d", $call_id));
+    public static function getSessionByCid($cid){
+      $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE call_id=%d", $cid));
       if ($session_data->expiring_at < time()) {
         //Delete this session, its expired
         db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid);
         return false;
       }
-      $session = new self($session_data);
-      return $session;
+      if ($session_data) {
+        $session = new self($session_data);
+        return $session;
+      }
+      
+      return FALSE;
     }
     
    /**
@@ -90,12 +102,12 @@ class VoipSession {
       return $deleted_call_ids;
     }
 
-    public function getCallId(){
+    public function getCid(){
       return $this->session_data->call_id;
     }
     
-    public function setCallId($call_id){
-      $this->session_data->call_id = $call_id;
+    public function setCid($cid){
+      $this->session_data->call_id = $cid;
     }
     
     public function getOriginNumber(){
@@ -191,5 +203,17 @@ class VoipSession {
       drupal_write_record('voipsession', $data, $update);
       
       $this->session_data = $data;
+    }
+    
+    /**
+    * Destroy the session data to the database
+    */
+    public function destroy() {
+      $sid = $this->session_data->sid;
+      if ($sid) {
+        db_query("DELETE FROM {voipsession} WHERE sid=%d", $sid);
+      }
+      watchdog('voipsession',"Destroying session $sid");
+      $this->session_data = NULL;
     }
  }
