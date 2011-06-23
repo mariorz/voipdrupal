@@ -76,7 +76,6 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
   if (!$cid) {
     $voip_session = VoipSession::getSessionByNumber($from, $to);
     if ($voip_session) {
-      $voip_session = new VoipSession($voip_session);
       $call_id = $voip_session->getCallId();
       // load the variables already associated with the call, if any
       $call = VoipCall::load($call_id);
@@ -94,7 +93,6 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
   else {
     $voip_session = VoipSession::getSessionByCallId($cid);
     if ($voip_session) {
-      $voip_session = new VoipSession($voip_session);
       $voip_session->resetTimer();
       $voip_session->save();
     }

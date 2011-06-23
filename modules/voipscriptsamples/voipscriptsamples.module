@@ -137,7 +137,8 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
   }
   if($script_name == 'voipscript_sms_session') {
     $script = new VoipScript('voipscript_sms_session');
-    $script->addGotoIf('hi received', "^%inbound_text_contents == 'hi'");
+    $script->addSet('msg', '^strtolower(%inbound_text_contents)');
+    $script->addGotoIf('hi received', "^%msg == 'hi'");
     $script->addGotoIf('end', "^%inbound_text_contents == ''");
     
     $script->addSendText("nice meeting you, %inbound_text_contents");

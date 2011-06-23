@@ -88,7 +88,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
   if (!$cid) {
     $voip_session = VoipSession::getSessionByNumber($from, $to);
     if ($voip_session) {
-      $voip_session = new VoipSession($voip_session);
+      //$voip_session = new VoipSession($voip_session);
       $call_id = $voip_session->getCallId();
       // load the variables already associated with the call, if any
       $call = VoipCall::load($call_id);
@@ -107,7 +107,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
     //Check for session by number?
     $voip_session = VoipSession::getSessionByCallId($cid);
     if ($voip_session) {
-      $voip_session = new VoipSession($voip_session);
+      //$voip_session = new VoipSession($voip_session);
       $voip_session->resetTimer();
       $voip_session->save();
     }
