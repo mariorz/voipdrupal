@@ -53,6 +53,14 @@ function voipcall_menu() {
     'access arguments' => array('administer voipcall setup'),
   );
   
+   $items['voipsession/delete/%'] = array(
+    'title' => 'VoIP Delete Session',
+    'description' => 'Delete voip session.',
+    'page callback' => 'voipcall_session_delete',
+    'page arguments' => array(2),
+    'access arguments' => array('administer voipcall setup'),
+  );
+  
    $items['voip/sound/beep'] = array(
     'title' => 'Beep sound',
     'description' => 'Plays beep sound',
@@ -146,7 +154,7 @@ function voipcall_admin_form() {
     '#type' => 'textfield',
     '#title' => t('Default Session Duration'),
     '#description' => t('Default session duration time in seconds.'),
-    '#default_value' => variable_get('voipcall_default_session_time', 300),
+    '#default_value' => variable_get('voipcall_default_session_time', 60),
   );
 
   $form['submit'] = array(
@@ -365,6 +373,7 @@ function voipcall_session_log() {
   array('data' => t('destination_number'), 'field' => 'destination_number'),
   array('data' => t('expiration_time'), 'field' => 'expiration_time'),
   array('data' => t('expiring_at'), 'field' => 'expiring_at'),
+  array('data' => t('delete'), 'field' => 'delete'),
   );
   $sql = "SELECT * FROM {voipsession}".tablesort_sql($headers);
   $limit = 50;
@@ -375,11 +384,19 @@ function voipcall_session_log() {
     while($tmp = db_fetch_array($result)) {
       $tmp['expiring_at'] = format_date($tmp['expiring_at'], 'small');
       $tmp['call_id'] = l($tmp['call_id'],'voipcall/'.$tmp['call_id']);
+      $tmp['delete'] = l('Delete','voipsession/delete/'.$tmp['sid']);
       $data[] = $tmp;
     }
   }
   $output .= theme('table', $headers, $data);
   $output .= theme('pager', NULL, $limit, 0);
+  return $output;
+}
+
+function voipcall_session_delete($sid) {
+  db_query("DELETE FROM {voipsession} WHERE sid=%d", $sid);
+  $output = t("Voipsession @sid deleted.", array('@sid' => $sid));
+  $output .= l('Go back', 'admin/voip/session/log');
   return $output;
 }
 /**

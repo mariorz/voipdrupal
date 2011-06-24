@@ -128,14 +128,14 @@ class VoipSession {
     
      public function setExpirationTime($expiration_time=NULL){
       if (!$expiration_time) {
-        $expiration_time = variable_get('voipcall_default_session_time', 300);
+        $expiration_time = variable_get('voipcall_default_session_time', 60);
       }
       $this->session_data->expiration_time = $expiration_time;
     }
     
     public function resetTimer($expiration_time=NULL){
       if (!$expiration_time) {
-        $expiration_time = variable_get('voipcall_default_session_time', 300);
+        $expiration_time = variable_get('voipcall_default_session_time', 60);
       }
       $this->session_data->expiration_time = $expiration_time;
       $this->session_data->expiring_at = time()+$expiration_time;
@@ -166,8 +166,8 @@ class VoipSession {
         }
         // initialize the 'Expiration time' field
         if(!isset($this->session_data->expiration_time)) {
-          $data->expiration_time = variable_get('voipcall_default_session_time', 300);
-          $expiration_time = variable_get('voipcall_default_session_time', 300);
+          $data->expiration_time = variable_get('voipcall_default_session_time', 60);
+          $expiration_time = variable_get('voipcall_default_session_time', 60);
         }
         else {
           $expiration_time = $this->session_data->expiration_time;

@@ -403,6 +403,14 @@ class VoipCall {
   public function setDuration($time){
     return $this->call_data->duration = $time;
   }
+  
+  public function getSessionDuration(){
+    return $this->call_data->session_duration;
+  }
+
+  public function setSessionDuration($time){
+    return $this->call_data->session_duration = $time;
+  }
 
   public function getErrorMessage(){
     return $this->call_data->error_message;
@@ -670,7 +678,7 @@ class VoipCall {
   
     // update data fields
     $new_dest_number = $details->dest_number;
-    //if(isset($new_dest_number)) $data->title = check_plain($new_dest_number);
+
     if(isset($details->uid)) $data->uid = $details->uid;
   
     // update voipcall-specific fields
@@ -727,6 +735,10 @@ class VoipCall {
     $new_duration = $details->duration;
     if(isset($new_duration))
       $data->duration = $new_duration;
+    
+    $new_session_duration = $details->session_duration;
+    if(isset($new_session_duration))
+      $data->session_duration = $new_session_duration;    
   
     $new_error_message = $details->error_message;
     if(isset($new_error_message))
@@ -832,6 +844,9 @@ class VoipCall {
       $call_data->end_time);
     $script->setVar('duration',
       $call_data->duration);
+    
+    $script->setVar('session_duration',
+      $call_data->session_duration);    
   
     $script->setVar('error_message',
       $call_data->error_message);

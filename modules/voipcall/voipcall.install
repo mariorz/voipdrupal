@@ -8,6 +8,8 @@ function voipcall_install() {
 
 function voipcall_uninstall() {
   drupal_uninstall_schema('voipcall');
+  //Delete module variables
+  db_query("DELETE FROM {variable} WHERE name LIKE 'voipcall_%%'");
 }
 
 /**
@@ -55,6 +57,10 @@ function voipcall_schema() {
         'length' => 255, 
       ),
       'duration' => array(
+        'type' => 'varchar', 
+        'length' => 255, 
+      ),
+      'session_duration' => array(
         'type' => 'varchar', 
         'length' => 255, 
       ),
@@ -218,6 +224,15 @@ function voipcall_update_6100() {
   );
   
   db_add_field($ret, 'voipcall', 'inbound_text_script_name',
+    array(
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => TRUE,
+      'default' => '',
+    )
+  );
+  
+  db_add_field($ret, 'voipcall', 'session_duration',
     array(
       'type' => 'varchar',
       'length' => 255,
