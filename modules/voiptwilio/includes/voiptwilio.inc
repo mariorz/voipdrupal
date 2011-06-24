@@ -429,7 +429,6 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
             if (!$number) {
               $number = $call->getCallerNumber();
             }
-            $number = '13477090908';
             $caller_number = variable_get('voipcall_cid_number', NULL);
             $call->setDestNumber($number);
             $call->setCallerNumber($caller_number);
