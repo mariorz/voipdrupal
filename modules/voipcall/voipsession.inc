@@ -128,14 +128,14 @@ class VoipSession {
     
      public function setExpirationTime($expiration_time=NULL){
       if (!$expiration_time) {
-        $expiration_time = variable_get('voipcall_default_session_time', 60);
+        $expiration_time = _voipsession_default_expiration_time($this->session_data->call_id);
       }
       $this->session_data->expiration_time = $expiration_time;
     }
     
     public function resetTimer($expiration_time=NULL){
       if (!$expiration_time) {
-        $expiration_time = variable_get('voipcall_default_session_time', 60);
+        $expiration_time = _voipsession_default_expiration_time($this->session_data->call_id);
       }
       $this->session_data->expiration_time = $expiration_time;
       $this->session_data->expiring_at = time()+$expiration_time;
@@ -166,8 +166,8 @@ class VoipSession {
         }
         // initialize the 'Expiration time' field
         if(!isset($this->session_data->expiration_time)) {
-          $data->expiration_time = variable_get('voipcall_default_session_time', 60);
-          $expiration_time = variable_get('voipcall_default_session_time', 60);
+          $data->expiration_time = _voipsession_default_expiration_time($this->session_data->call_id);
+          $expiration_time = _voipsession_default_expiration_time($this->session_data->call_id);
         }
         else {
           $expiration_time = $this->session_data->expiration_time;
@@ -216,4 +216,13 @@ class VoipSession {
       watchdog('voipsession',"Destroying session $sid");
       $this->session_data = NULL;
     }
+ }
+ 
+ function _voipsession_default_expiration_time($cid) {
+   if ($cid) {
+     $call = VoipCall::load($cid);
+     $session_duration = $call->getSessionDuration();
+   }
+   
+   return $session_duration? $session_duration: variable_get('voipcall_default_session_time', 60);
  }
