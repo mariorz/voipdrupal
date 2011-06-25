@@ -60,7 +60,7 @@ function voipcall_schema() {
         'type' => 'varchar', 
         'length' => 255, 
       ),
-      'session_duration' => array(
+      'max_session_duration' => array(
         'type' => 'varchar', 
         'length' => 255, 
       ),
@@ -232,7 +232,7 @@ function voipcall_update_6100() {
     )
   );
   
-  db_add_field($ret, 'voipcall', 'session_duration',
+  db_add_field($ret, 'voipcall', 'max_session_duration',
     array(
       'type' => 'varchar',
       'length' => 255,

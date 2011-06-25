@@ -404,12 +404,12 @@ class VoipCall {
     return $this->call_data->duration = $time;
   }
   
-  public function getSessionDuration(){
-    return $this->call_data->session_duration;
+  public function getMaxSessionDuration(){
+    return $this->call_data->max_session_duration;
   }
 
-  public function setSessionDuration($time){
-    return $this->call_data->session_duration = $time;
+  public function setMaxSessionDuration($time){
+    return $this->call_data->max_session_duration = $time;
   }
 
   public function getErrorMessage(){
@@ -736,9 +736,9 @@ class VoipCall {
     if(isset($new_duration))
       $data->duration = $new_duration;
     
-    $new_session_duration = $details->session_duration;
-    if(isset($new_session_duration))
-      $data->session_duration = $new_session_duration;    
+    $new_max_session_duration = $details->max_session_duration;
+    if(isset($new_max_session_duration))
+      $data->max_session_duration = $new_max_session_duration;    
   
     $new_error_message = $details->error_message;
     if(isset($new_error_message))
@@ -845,8 +845,8 @@ class VoipCall {
     $script->setVar('duration',
       $call_data->duration);
     
-    $script->setVar('session_duration',
-      $call_data->session_duration);    
+    $script->setVar('max_session_duration',
+      $call_data->max_session_duration);    
   
     $script->setVar('error_message',
       $call_data->error_message);
