@@ -29,6 +29,7 @@ foreach (array('twilio.php') as $file) {
  *   - process_hangup, to handle call termination
  *   - process_record, process_record_mp3 and process_empty_recording, to handle
  *     responses to 'record' script commands
+ *   - process_wait, to continue after wait command
  *   - process_send_sms, to handle responses to 'send sms' script commands
  *   - process_sms_callback, to handle final responses to 'send sms'.
  *
@@ -261,6 +262,7 @@ watchdog('voiptwilio', "twilio status: $twilio_call_status, updated call status:
       case 'process_outbound_calls':
       case 'process_hangup':
       case 'process_inbound_text':
+      case 'process_wait':
         // nothing special to be done here. the above commands have already
         // been processed in the previous lines
         break;
@@ -365,34 +367,37 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
     }
   }
   
-  //check if inbound_text_script_name
-  $inbound_text_script_name = $call->getInboundTextScriptName();
-  $inbound_text_script_name_executed = $script->getVar('inbound_text_script_name_executed');
-  if($inbound_text_script_name && !$inbound_text_script_name_executed) {
-    $script->setVar('inbound_text_script_name_executed', TRUE);
-    // load inbound_text_script commands
-    $rc = $script->runGosub($inbound_text_script_name);
-    if($script->isError()){
-      $msg = $script->getErrorMessage();
-      $call->report_error('voiptwilio', $msg);
-      return FALSE;
-    }
+  //check if there is text handler
+  $text_handler = $call->getTextHandler();
+  $text_handler_executed = $script->getVar('text_handler_executed');
+  if($text_handler && !$text_handler_executed) {
+    // execute text_handler
+    $message = $script->getVar('inbound_text_contents');
+    $res = call_user_func_array($text_handler, array($message, $call->getCallerNumber(), $call->getDestNumber(), $call, $call->getCurrentNetwork()));
+    $processing = FALSE;
+    watchdog('voiptwilio',"Calling text handler: $text_handler with result: $res");
+  }
+  else {
+    // process script commands
+    $processing = TRUE;
   }
 
-  // process script commands
-  $processing = TRUE;
   $response = '';
   while($processing) {
     $cmd = $script->getNextCommand();
-    watchdog('voiptwilio', 'CMD='.print_r($cmd,true));
     if(!$cmd) {
       // no more commands to be processed    
-      if ($call->getCurrentChannel() != 'text') {
+      $stack_level = $script->getStackLevel();
+      if ($stack_level>0) {
+        //return to previous stack
+        $script->addReturn();
+      }
+      else if ($call->getCurrentChannel() != 'text') {
         // for voice channel send a final hangup request 
         $response .= '<Hangup/>';
         $msg = 'Script @name ended without a "hangup" command.';
         $params = array('@name' => $script->getName());
-        watchdog('voiptwilio', $msg, $params, WATCHDOG_WARNING);
+        watchdog('voiptropo', $msg, $params, WATCHDOG_WARNING);
         $call->setHangupReason(VoipCall::HANGUP_SCRIPT_END);
       }
       //for text channel don't do anything
@@ -401,7 +406,6 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
 
     // process current command
     else {
-
       $cmd_id = $cmd->getId();
    
       switch($cmd_id) {
@@ -546,31 +550,37 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $call->setHangupReason(VoipCall::HANGUP_SCRIPT_COMMAND);
           
-          $end_session = $script->evalString($cmd->getParam('end_session'));
-          if ($end_session) {
-            //Kill the session if any
-            $cid = $call->getCid();
-            $session = VoipSession::getSessionByCid($cid);
-            if ($session) {
-              $session->destroy();
-            }
-          }
+          $hangup_mode = $script->evalString($cmd->getParam('hangup_mode'));
           
-          $stack_level = $script->getStackLevel();
-          if ($stack_level>0) {
-            $script->addReturn();
+          switch ($hangup_mode) {
+            case 'resume':
+             if ($call->getCurrentChannel() != 'text') {
+               // send the hangup request and stop processing script commands
+               // Note: this will trigger a response from Twilio with $twilio_action = process_hangup and CallStatus = completed
+               $response .= '<Hangup/>';
+             }
+            break;
+            case 'reset':
+              //Reset script
+              $script->resetIndex();
+            break;
+            case 'end_session':
+              //Kill the session if any
+              $cid = $call->getCid();
+              $session = VoipSession::getSessionByCid($cid);
+              if ($session) {
+                $session->destroy();
+              }
+              
+              if ($call->getCurrentChannel() != 'text') {
+                // send the hangup request and stop processing script commands
+                // Note: this will trigger a response from Twilio with $twilio_action = process_hangup and CallStatus = completed
+                $response .= '<Hangup/>';
+              }
+            break;
           }
-          else {
-            //Reset script
-            $script = $call->getScript();
-            $script->resetIndex();
-            $call->setScript($script);
-            if ($call->getCurrentChannel() != 'text') {
-              // send the hangup request and stop processing script commands
-              // Note: this will trigger a response from Twilio with $twilio_action = process_hangup and CallStatus = completed
-              $response .= '<Hangup/>';
-            }
-          }
+
+         
            
           $processing = FALSE;
           break;
@@ -808,11 +818,16 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $script->unsetVar($var_name);
           break;
           
-        /*case 'VoipCmdWait';
+        case 'VoipCmdWait';
           $time_limit = $script->evalString($cmd->getParam('time_limit'));
-          //TODO:
+          $menu_path = 'voip/twilio/callhandler';
+          $cid = $call->getCid();
+          $response_url = $menu_path . '/process_wait/' . $cid;
+          $redirect_url = url($response_url, array('absolute' => TRUE));
+          $response .= '<Pause length="'.$time_limit.'"/><Redirect>'.$redirect_url.'</Redirect>';  
+          $processing = FALSE;
           break;  
-        */
+        
       }
 
       // go to next command

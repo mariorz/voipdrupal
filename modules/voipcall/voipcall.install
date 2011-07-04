@@ -77,7 +77,7 @@ function voipcall_schema() {
         'type' => 'varchar', 
         'length' => 255, 
       ),
-      'inbound_text_script_name' => array(
+      'text_handler' => array(
         'type' => 'varchar', 
         'length' => 255, 
       ),
@@ -280,5 +280,16 @@ function voipcall_update_6100() {
     db_create_table($ret, 'voipsession', $schema['voipsession']);
   }
   
+  return $ret;
+}
+
+function voipcall_update_6101() {
+  $ret = array();
+  db_change_field($ret, 'voipcall', 'inbound_text_script_name', 'text_handler', array(
+      'type' => 'varchar',
+      'length' => 255,
+      'not null' => TRUE,
+      'default' => '',
+  ));
   return $ret;
 }

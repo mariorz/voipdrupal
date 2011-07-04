@@ -22,6 +22,7 @@
  *   - process_hangup, to handle call termination
  *   - process_record, process_record_mp3 and process_empty_recording, to handle
  *     responses to 'record' script commands
+ *   - process_wait, to continue after wait command
  *   - process_send_sms, to handle responses to 'send sms' script commands
  *   - process_sms_callback, to handle final responses to 'send sms'.
  *
@@ -193,7 +194,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
   
   // get the cid of the call data
   $cid = $call->getCid();
-  if (!$voip_session->getCid()) {
+  if ($voip_session && !$voip_session->getCid()) {
     $voip_session->setCid($cid);
     $voip_session->save();
   }
@@ -250,6 +251,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
         break;
       case 'process_inbound_calls':
       case 'process_outbound_text':
+      case 'process_wait':
         // nothing special to be done here. the above commands have already
         // been processed in the previous lines
         break;
@@ -454,21 +456,22 @@ function _voiptropo_script_handler($call, &$tropo) {
     }
   }
   
-  //check if inbound_text_script_name
-  $inbound_text_script_name = $call->getInboundTextScriptName();
-  $inbound_text_script_name_executed = $script->getVar('inbound_text_script_name_executed');
-  if($inbound_text_script_name && !$inbound_text_script_name_executed) {
-    $script->setVar('inbound_text_script_name_executed', TRUE);
-    // load inbound_text_script commands
-    $rc = $script->runGosub($inbound_text_script_name);
-    if($script->isError()){
-      $msg = $script->getErrorMessage();
-      $call->report_error('voiptwilio', $msg);
-      return FALSE;
-    }
+  //check if there is text handler
+  $text_handler = $call->getTextHandler();
+  $text_handler_executed = $script->getVar('text_handler_executed');
+  if($text_handler && !$text_handler_executed) {
+    //$script->setVar('text_handler_executed', TRUE);
+    // execute text_handler
+    $message = $script->getVar('inbound_text_contents');
+    $res = call_user_func_array($text_handler, array($message, $call->getCallerNumber(), $call->getDestNumber(), $call, $call->getCurrentNetwork()));
+    $processing = FALSE;
+    watchdog('voiptropo',"Calling text handler: $text_handler with result: $res");
   }
-  // process script commands
-  $processing = TRUE;
+  else {
+    // process script commands
+    $processing = TRUE;
+  }
+
   $response = '';
 
   //Set script language
@@ -481,7 +484,12 @@ function _voiptropo_script_handler($call, &$tropo) {
     $cmd = $script->getNextCommand();
     if (!$cmd) {
       // no more commands to be processed
-      if ($call->getCurrentChannel() != 'text') {
+      $stack_level = $script->getStackLevel();
+      if ($stack_level>0) {
+        //return to previous stack
+        $script->addReturn();
+      }
+      else if ($call->getCurrentChannel() != 'text') {
         // for voice channel send a final hangup request 
         $tropo->hangup();
         $msg = 'Script @name ended without a "hangup" command.';
@@ -618,26 +626,39 @@ function _voiptropo_script_handler($call, &$tropo) {
         case 'VoipCmdHangup':
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $call->setHangupReason(VoipCall::HANGUP_SCRIPT_COMMAND);
-          $end_session = $script->evalString($cmd->getParam('end_session'));
-          if ($end_session) {
-            //Kill the session if any
-            $cid = $call->getCid();
-            $session = VoipSession::getSessionByCid($cid);
-            if ($session) {
-              $session->destroy();
-            }
+          $hangup_mode = $script->evalString($cmd->getParam('hangup_mode'));
+          
+          switch ($hangup_mode) {
+            case 'resume':
+              if ($call->getCurrentChannel() != 'text') {
+                // send the hangup request and stop processing script commands
+                // Note: this will trigger a response from Twilio with $twilio_action = process_hangup and CallStatus = completed
+                $response .= '<Hangup/>';
+              }
+            break;
+            case 'reset':
+              //Reset script
+              $script->resetIndex();
+            break;
+            case 'end_session':
+              //Kill the session if any
+              $cid = $call->getCid();
+              $session = VoipSession::getSessionByCid($cid);
+              if ($session) {
+                $session->destroy();
+              }
+              
+              if ($call->getCurrentChannel() != 'text') {
+                // send the hangup request and stop processing script commands
+                // Note: this will trigger a response from Twilio with $twilio_action = process_hangup and CallStatus = completed
+                $response .= '<Hangup/>';
+              }
+            break;
           }
-          $stack_level = $script->getStackLevel();
-          if ($stack_level>0) {
-            $script->addReturn();
-          }
-          else {
-            //Reset script
-            $script->resetIndex();
-            if ($call->getCurrentChannel() != 'text') {
-              // send the hangup request and stop processing script commands
-              $tropo->hangup();
-            }
+          
+          if ($call->getCurrentChannel() != 'text') {
+            // send the hangup request and stop processing script commands
+            $tropo->hangup();
           }
           
           $processing = FALSE;
@@ -931,11 +952,21 @@ watchdog('voiptropo',"(Say) V: $voice, L: $language, Id: $voice_id");
           $script->unsetVar($var_name);
           break;
           
-        /*case 'VoipCmdWait';
+        case 'VoipCmdWait';
           $time_limit = $script->evalString($cmd->getParam('time_limit'));
-          //TODO:
+          $menu_path = 'voip/tropo/callhandler';
+          $cid = $call->getCid();
+          $response_url = $menu_path . '/process_wait/' . $cid;
+          $redirect_url = url($response_url, array('absolute' => TRUE));
+          //#1430227 - Equivalent of the wait function?: https://www.tropo.com/account/tickets/tickets.jsp?bb-cid=155&bb-tid=1429227&bb-name=tropo_support
+          for ($i=0; $i<$time_limit; $i++) {
+            $periods.=". ";
+          }
+          $tropo->say($periods);
+          $tropo->on(array("event" => "continue", "next" =>  $redirect_url));
+          $processing = FALSE;
           break;  
-        */
+        
       }
       // go to next command
     }

@@ -221,7 +221,7 @@ class VoipSession {
  function _voipsession_default_expiration_time($cid) {
    if ($cid) {
      $call = VoipCall::load($cid);
-     $session_duration = $call->getSessionDuration();
+     $session_duration = $call->getMaxSessionDuration();
    }
    
    return $session_duration? $session_duration: variable_get('voipcall_default_session_time', 60);

@@ -458,12 +458,14 @@ class VoipScript {
   /**
    * Adds a 'hangup' command and resets script index.
    *
-   *  @param $end_session
-   *   Boolean indicating to kill a session with the end of the call.
-   *   When executed, the 'hangup' command either returns to previous script in stack or ends the call and resets script index.
+   *  @param $hangup_mode
+   *   String parameter with the following options:
+   *   "end_session", to end the session and leave the script index as is
+   *   "reset", to maintain the session but with the index back at the beginning of the command list and the stack back to its first level
+   *   "resume", to leave the session, index and stack as is 
    */
-  function addHangup($end_session=TRUE) {
-    $params['end_session'] = $end_session;
+  function addHangup($hangup_mode='end_session') {
+    $params['hangup_mode'] = $hangup_mode;
     $this->commands[] = new VoipCommand('VoipCmdHangup', $params);
   }
 
@@ -796,12 +798,12 @@ class VoipScript {
    * @param $time_limit
    *   Time the script should wait.
    * 
-   *//*
+   */
   function addWait($time_limit=60) {
     $params['time_limit'] = $time_limit;
     $this->commands[] = new VoipCommand('VoipCmdWait', $params);
   }
-*/
+
 
   /*
    * Execution of basic script commands that are not dependent on the voip

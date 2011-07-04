@@ -148,7 +148,7 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     $script->addSendText(t('hi, what is your name?'));
    
     $script->addLabel('end');
-    $script->addHangup(FALSE);
+    $script->addHangup('reset');
   }
   if($script_name == 'voipscript_sms_group') {
     $script = _voipscriptsamples_sms_group();
@@ -380,4 +380,14 @@ function _voipscriptsamples_get_send_sms() {
   $script->addHangup();
 
   return $script;
+}
+
+function voipscriptsamples_text_handler_demo($message, $caller_number, $dest_number, &$call, $network) {
+  watchdog('voipscriptsamples', "In voipscriptsamples_text_handler_demo with $message, $caller_number, $dest_number, $network");
+  
+  //When done with processing, set "text_handler_executed" variable to TRUE.
+  $script = $call->getScript();
+  $script->setVar('text_handler_executed', TRUE);
+  $call->setScript($script);
+  $call->save();
 }

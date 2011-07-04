@@ -9,7 +9,7 @@ function _voipscriptsamples_sms_group(){
   $script = new VoipScript('voipscript_sms_group');
   $script->addSet('request_result', '^voipscriptsamples_sms_group_parse_request(%inbound_text_contents, %caller_number)');
   $script->addSendText("%request_result");
-  $script->addHangup(FALSE);
+  $script->addHangup('reset');
   return $script;
 }
 function voipscriptsamples_sms_group_parse_request($msg, $from) {
