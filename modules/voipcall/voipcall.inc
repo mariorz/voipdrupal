@@ -41,7 +41,6 @@ class VoipCall {
   const NOT_CALLED='not_called'; // the call has yet to be called
   const QUEUED='queued'; // the call is waiting in line before going out
 
-// TODO: replace DIALING by RINGING
   const RINGING='ringing'; // the call is currently ringing
   const IN_PROGRESS='in_progress'; // the call is in progress
 
@@ -50,8 +49,6 @@ class VoipCall {
   const BUSY='busy';
   const INVALID='invalid_number';
   const CANCELED='canceled'; // canceled by the system while queued or ringing
-
-//TODO: deprecate MACHINE_HANGUP
 
   /**
    * 'direction' field values
@@ -117,7 +114,8 @@ class VoipCall {
    */
   public static function load($cid){
     $call = NULL;
-    $call_data = db_fetch_object(db_query("SELECT * FROM {voipcall} WHERE cid=%d", $cid));
+    $call_data =
+      db_fetch_object(db_query("SELECT * FROM {voipcall} WHERE cid=%d", $cid));
     if($call_data){
       // unserialize the call script
       $script = unserialize($call_data->script);
@@ -405,8 +403,8 @@ class VoipCall {
     return $this->call_data->max_session_duration;
   }
 
-  public function setMaxSessionDuration($time){
-    return $this->call_data->max_session_duration = $time;
+  public function setMaxSessionDuration($time_in_seconds){
+    return $this->call_data->max_session_duration = $time_in_seconds;
   }
 
   public function getErrorMessage(){

@@ -55,7 +55,7 @@ function voip_dial($voipcall) {
  * @return boolean with TRUE in case of success or FALSE otherwise
  */
 function voip_text($text, $voipcall, $reply = FALSE) {
-  //TODO: Conver to text perm.
+//TODO: Convert to text perm.
   //  make sure the user is allowed to make outbound calls
   $allowed = user_access('make outbound calls');
   if(!$allowed) {
@@ -140,6 +140,17 @@ function voip_text_handler($text_content, $origin ,$destination, $time, $network
   return $response;
 }
 
+
+/**
+ * Implementation of hook_sms_incoming().
+ */
+function voip_sms_incoming($op, $number, $message, $options) {
+  if ($op == 'process') {
+    $msg = "in voipcall_sms_incoming() with number: $number and message: $message ";
+    watchdog('voipcall', $msg);
+    voip_text_handler($message, $number ,'', time());
+  }
+}
 
 
 /**

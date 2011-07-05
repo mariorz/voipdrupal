@@ -103,22 +103,23 @@ abstract class VoipServer {
    * Send a text message
    * 
    * @param 
-   * $test, body of the message
+   * $text, body of the text message being sent
    *
    * @param 
-   * $voipcall, VoipCall instance with information about the text
+   * $voipcall, VoipCall instance with the origin, destination, the script, and
+   * addditional information about the way the message should be sent
    * 
    * @param 
-   * $reply, whether the messages is to be sent as a reply to VoipCall instance
+   * $reply, whether the messages is to be sent as a reply to an already
+   * existent VoipCall instance
    * 
    * @param 
-   * $server_config, configuration of the voip server to be used for the text message
+   * $server_config, configuration of the VoIP server to be used
    * 
    * @return
    * boolean, TRUE if success, FALSE in case of processing error
    */
   abstract function send_text($text, $voipcall, $reply=FALSE, $server_config=NULL);
-
 
   /**
    * Hangup an existing call

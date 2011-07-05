@@ -395,19 +395,9 @@ function voipcall_session_log() {
 
 function voipcall_session_delete($sid) {
   db_query("DELETE FROM {voipsession} WHERE sid=%d", $sid);
-  $output = t("Voipsession @sid deleted.", array('@sid' => $sid));
+  $output = t("Voipsession @sid deleted. ", array('@sid' => $sid));
   $output .= l('Go back', 'admin/voip/session/log');
   return $output;
-}
-/**
- * Implementation of hook_sms_incoming().
- */
-function voipcall_sms_incoming($op, $number, $message, $options) {
-  if ($op == 'process') {
-    $msg = "in voipcall_sms_incoming() with number: $number and message: $message ";
-    watchdog('voipcall', $msg);
-    voip_text_handler($message, $number ,'', time());
-  }
 }
 
 /**

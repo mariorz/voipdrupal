@@ -29,9 +29,9 @@ function voipscriptsamples_voipscript_get_script_names() {
   $script_names[] = 'voipscript_say_demo';
   $script_names[] = 'voipscript_small_office_ivr';
   $script_names[] = 'voipscript_sms_call_sender';
-  $script_names[] = 'voipscript_sms_session';
+  $script_names[] = 'voipscript_sms_dialog';
   $script_names[] = 'voipscript_sms_group';
-  $script_names[] = 'voipscript_voice_and_sms';
+  $script_names[] = 'voipscript_voice_with_sms_input';
   return $script_names;
 }
 
@@ -136,8 +136,8 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     $script->addSay(t('Thanks so much for calling our office. Bye bye.'));
     $script->addHangup();
   }
-  if($script_name == 'voipscript_sms_session') {
-    $script = new VoipScript('voipscript_sms_session');
+  if($script_name == 'voipscript_sms_dialog') {
+    $script = new VoipScript('voipscript_sms_dialog');
     $script->addSet('msg', '^strtolower(%inbound_text_contents)');
     $script->addGotoIf('hi received', "^%msg == 'hi'");
     $script->addGotoIf('end', "^%inbound_text_contents == ''");
@@ -154,17 +154,17 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
   if($script_name == 'voipscript_sms_group') {
     $script = _voipscriptsamples_sms_group();
   }
-  if($script_name == 'voipscript_voice_and_sms') {
-    $script = new VoipScript('voipscript_voice_and_sms');
+  if($script_name == 'voipscript_voice_with_sms_input') {
+    $script = new VoipScript('voipscript_voice_with_sms_input');
     $script->addSay(t('Please send us a SMS with your address.'));
     $script->addSet('text_handler','voipscriptsamples_text_handler_demo');
     $script->addGoto('waitcmd');
     
     $script->addLabel('wait');
     $script->addSay(t('No message received. Try again.'));
+
     $script->addLabel('waitcmd');
     $script->addWait(20);
-    
     $script->addGotoIf('wait', "^%user_address == ''");
     $script->addSay(t('You address is %user_address.'));
     $script->addHangup();
