@@ -123,9 +123,6 @@ class VoipCall {
       $script = unserialize($call_data->script);
       $call_data->script = $script;
       
-      // unserialize the text script
-      /*$text_script = unserialize($call_data->text_script);
-      $call_data->text_script = $text_script;*/
       $call = new VoipCall($call_data);
     }
     return $call;

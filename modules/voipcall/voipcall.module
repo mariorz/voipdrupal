@@ -407,15 +407,6 @@ function voipcall_sms_incoming($op, $number, $message, $options) {
     $msg = "in voipcall_sms_incoming() with number: $number and message: $message ";
     watchdog('voipcall', $msg);
     voip_text_handler($message, $number ,'', time());
-    /*$call = new VoipCall();
-    $call->setCurrentChannel('text');
-    $call->setCurrentNetwork('sms');
-    $call->setDestNumber($number);
-    $call->setScript($script);
-    $call->save();
-    // Send text.
-    $text = 'Hello from VoIP Drupal.';
-    voip_text($text, $call);*/
   }
 }
 

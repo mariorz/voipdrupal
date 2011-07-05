@@ -31,6 +31,7 @@ function voipscriptsamples_voipscript_get_script_names() {
   $script_names[] = 'voipscript_sms_call_sender';
   $script_names[] = 'voipscript_sms_session';
   $script_names[] = 'voipscript_sms_group';
+  $script_names[] = 'voipscript_voice_and_sms';
   return $script_names;
 }
 
@@ -152,6 +153,21 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
   }
   if($script_name == 'voipscript_sms_group') {
     $script = _voipscriptsamples_sms_group();
+  }
+  if($script_name == 'voipscript_voice_and_sms') {
+    $script = new VoipScript('voipscript_voice_and_sms');
+    $script->addSay(t('Please send us a SMS with your address.'));
+    $script->addSet('text_handler','voipscriptsamples_text_handler_demo');
+    $script->addGoto('waitcmd');
+    
+    $script->addLabel('wait');
+    $script->addSay(t('No message received. Try again.'));
+    $script->addLabel('waitcmd');
+    $script->addWait(20);
+    
+    $script->addGotoIf('wait', "^%user_address == ''");
+    $script->addSay(t('You address is %user_address.'));
+    $script->addHangup();
   }
   return $script;
 }
@@ -387,7 +403,7 @@ function voipscriptsamples_text_handler_demo($message, $caller_number, $dest_num
   
   //When done with processing, set "text_handler_executed" variable to TRUE.
   $script = $call->getScript();
-  $script->setVar('text_handler_executed', TRUE);
+  $script->setVar('user_address', '%inbound_text_contents');
   $call->setScript($script);
   $call->save();
 }

@@ -186,7 +186,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
       }
     }
   }
-  if ($channel == 'text') {
+  if (in_array($channel, array('offline_text','text'))) {
     //Set text-related variables in the call object 
     $inbound_text_contents = $session->getInitialText();
     $call->setTextVariables($inbound_text_contents, $from, $to, $network);
@@ -399,7 +399,22 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
 
     $tropo->message($text, $params);
   }
-
+  
+  if ($tropo_action == 'process_inbound_calls' && in_array($call->getCurrentChannel(), array('offline_text','text'))) {
+    //$text_handler = $call->getTextHandler();
+    $script = $call->getScript();
+    $text_handler = $script->getVar('text_handler');
+    if ($text_handler) {
+      $message = $script->getVar('inbound_text_contents');
+      $res = call_user_func_array($text_handler, array($message, $call->getCallerNumber(), $call->getDestNumber(), $call, $call->getCurrentNetwork()));
+      watchdog('voiptropo',"Calling text handler: $text_handler with result: $res");     
+     return;
+    }
+    else if($call->getCallChannel() != 'text') {
+      return;
+    }
+  }
+ 
   // process the call script
   $rc = _voiptropo_script_handler($call, $tropo);
   
@@ -457,7 +472,7 @@ function _voiptropo_script_handler($call, &$tropo) {
   }
   
   //check if there is text handler
-  $text_handler = $call->getTextHandler();
+  /*$text_handler = $call->getTextHandler();
   $text_handler_executed = $script->getVar('text_handler_executed');
   if($text_handler && !$text_handler_executed) {
     //$script->setVar('text_handler_executed', TRUE);
@@ -471,7 +486,8 @@ function _voiptropo_script_handler($call, &$tropo) {
     // process script commands
     $processing = TRUE;
   }
-
+*/
+  $processing = TRUE;
   $response = '';
 
   //Set script language
@@ -953,7 +969,7 @@ watchdog('voiptropo',"(Say) V: $voice, L: $language, Id: $voice_id");
           break;
           
         case 'VoipCmdWait';
-          $time_limit = $script->evalString($cmd->getParam('time_limit'));
+          $time_limit = $script->evalString($cmd->getParam('time_limit')) / 0.55;  //Looks like one period matches 0.55sec.
           $menu_path = 'voip/tropo/callhandler';
           $cid = $call->getCid();
           $response_url = $menu_path . '/process_wait/' . $cid;

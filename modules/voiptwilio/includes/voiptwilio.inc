@@ -180,7 +180,7 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     }
   }
   
-  if ($channel == 'text') {
+  if (in_array($channel, array('offline_text','text'))) {
     //Set text-related variables in the call object 
     $call->setTextVariables($_REQUEST['Body'], $_REQUEST['From'], $_REQUEST['To'], $network);
   }
@@ -324,6 +324,19 @@ watchdog('voiptwilio', "twilio status: $twilio_call_status, updated call status:
   // update the voipcall with the new values
   $call = $call->save();
 
+  if ($twilio_action == 'process_inbound_text') {
+    $script = $call->getScript();
+    $text_handler = $script->getVar('text_handler');
+    if ($text_handler) {
+      $message = $script->getVar('inbound_text_contents');
+      $res = call_user_func_array($text_handler, array($message, $call->getCallerNumber(), $call->getDestNumber(), $call, $call->getCurrentNetwork()));
+      watchdog('voiptwilio',"Calling text handler: $text_handler with result: $res");
+      return;
+    }
+    else if($call->getCallChannel() != 'text') {
+      return;
+    }
+  }
   // process the call script
   $rc = _voiptwilio_script_handler($call);
 
@@ -366,22 +379,9 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
       }
     }
   }
-  
-  //check if there is text handler
-  $text_handler = $call->getTextHandler();
-  $text_handler_executed = $script->getVar('text_handler_executed');
-  if($text_handler && !$text_handler_executed) {
-    // execute text_handler
-    $message = $script->getVar('inbound_text_contents');
-    $res = call_user_func_array($text_handler, array($message, $call->getCallerNumber(), $call->getDestNumber(), $call, $call->getCurrentNetwork()));
-    $processing = FALSE;
-    watchdog('voiptwilio',"Calling text handler: $text_handler with result: $res");
-  }
-  else {
-    // process script commands
-    $processing = TRUE;
-  }
 
+ // process script commands
+  $processing = TRUE;
   $response = '';
   while($processing) {
     $cmd = $script->getNextCommand();
@@ -1001,7 +1001,7 @@ function _voiptwilio_process_sms_response($call, $request){
   return $call;
 }
 
-define(VOIPTWILIO_URL_CHECK, '#(https?://\S+(?<![,.;?\:\!]))#');
+define('VOIPTWILIO_URL_CHECK', '#(https?://\S+(?<![,.;?\:\!]))#');
 
 /**
  * Generate a prompt to be played to the user
