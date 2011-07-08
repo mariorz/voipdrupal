@@ -77,10 +77,6 @@ function voipcall_schema() {
         'type' => 'varchar', 
         'length' => 255, 
       ),
-      'text_handler' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
-      ),
       'script' => array(
         'type' => 'text', 
         'size' => 'normal',
@@ -291,5 +287,11 @@ function voipcall_update_6101() {
       'not null' => TRUE,
       'default' => '',
   ));
+  return $ret;
+}
+
+function voipcall_update_6102() {
+  $ret = array();
+  db_drop_field($ret, 'voipcall', 'text_handler');
   return $ret;
 }

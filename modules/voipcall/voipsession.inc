@@ -25,6 +25,10 @@ class VoipSession {
         $session = VoipSession::getSessionByOutboundNumber($origin_number, $destination_number);
       }
       
+      if (!$session) {
+        $session = VoipSession::getSessionByTextNumber($origin_number, $destination_number);
+      }
+      
       return $session;
     }
     
@@ -43,7 +47,7 @@ class VoipSession {
       return FALSE;
     }
     
-     public static function getSessionByOutboundNumber($origin_number, $destination_number) {
+    public static function getSessionByOutboundNumber($origin_number, $destination_number) {
       $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number='%s' AND destination_number='%s'", $destination_number, $origin_number));
       if ($session_data->expiring_at < time()) {
         //Delete this session, its expired
@@ -55,6 +59,32 @@ class VoipSession {
         return $session;
       }
       
+      return FALSE;
+    }
+    
+    public static function getSessionByTextNumber($origin_number, $destination_number) {
+      $text_number = variable_get('voipcall_text_number','');
+      if ($text_number) {
+        if ($destination_number == $text_number) {
+          $search_number = $origin_number;
+        }
+        else {
+          $search_number = $destination_number;
+        }
+        
+        $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number='%s' || destination_number='%s'", $search_number, $search_number));
+          if ($session_data->expiring_at < time()) {
+            //Delete this session, its expired
+            db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid);
+            $session_data = NULL;
+          }
+
+       if ($session_data) {
+         $session = new self($session_data);
+         return $session;
+       }
+      }
+       
       return FALSE;
     }
     

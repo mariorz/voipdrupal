@@ -434,14 +434,6 @@ class VoipCall {
     $this->call_data->hangup_script = $name;
   }
   
-  public function getTextHandler(){
-    return $this->call_data->text_handler;
-  }
-
-  public function setTextHandler($name){
-    $this->call_data->text_handler = $name;
-  }
-
   public function getHangupReason(){
     return $this->call_data->hangup_reason;
   }
@@ -762,10 +754,6 @@ class VoipCall {
     $new_hangup_script_name = $details->hangup_script;
     if(isset($new_hangup_script_name))
       $data->hangup_script =  $new_hangup_script_name;
-      
-    $new_text_handler = $details->text_handler;
-    if(isset($new_text_handler))
-      $data->text_handler =  $new_text_handler;  
   
     $new_hangup_reason = $details->hangup_reason;
     if(isset($new_hangup_reason))

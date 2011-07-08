@@ -401,7 +401,6 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
   }
   
   if ($tropo_action == 'process_inbound_calls' && in_array($call->getCurrentChannel(), array('offline_text','text'))) {
-    //$text_handler = $call->getTextHandler();
     $script = $call->getScript();
     $text_handler = $script->getVar('text_handler');
     if ($text_handler) {
@@ -471,22 +470,6 @@ function _voiptropo_script_handler($call, &$tropo) {
     }
   }
   
-  //check if there is text handler
-  /*$text_handler = $call->getTextHandler();
-  $text_handler_executed = $script->getVar('text_handler_executed');
-  if($text_handler && !$text_handler_executed) {
-    //$script->setVar('text_handler_executed', TRUE);
-    // execute text_handler
-    $message = $script->getVar('inbound_text_contents');
-    $res = call_user_func_array($text_handler, array($message, $call->getCallerNumber(), $call->getDestNumber(), $call, $call->getCurrentNetwork()));
-    $processing = FALSE;
-    watchdog('voiptropo',"Calling text handler: $text_handler with result: $res");
-  }
-  else {
-    // process script commands
-    $processing = TRUE;
-  }
-*/
   $processing = TRUE;
   $response = '';
 
