@@ -407,6 +407,81 @@ class VoipTropoServer extends VoipServer {
     $voices['krzysztof'] = array(
       'language' => 'pl', 'region' => 'pl', 'voice' => 'man', 
       'description' => t('male voice in Polish'));
+      
+    $voices['jordi'] = array(
+      'language' => 'ca', 'region' => 'es', 'voice' => 'man', 
+      'description' => t('male voice in Catalan'));  
+    $voices['montserrat'] = array(
+      'language' => 'ca', 'region' => 'es', 'voice' => 'woman', 
+      'description' => t('female voice in Catalan')); 
+
+    $voices['magnus'] = array(
+      'language' => 'da', 'region' => 'dk', 'voice' => 'man', 
+      'description' => t('male voice in Danish'));  
+    $voices['frida'] = array(
+      'language' => 'da', 'region' => 'dk', 'voice' => 'woman', 
+      'description' => t('female voice in Danish'));   
+
+    $voices['mikko'] = array(
+      'language' => 'fi', 'region' => 'fi', 'voice' => 'man', 
+      'description' => t('male voice in Finnish'));  
+    $voices['milla'] = array(
+      'language' => 'fi', 'region' => 'fi', 'voice' => 'woman', 
+      'description' => t('female voice in Finnish'));     
+
+    $voices['carmela'] = array(
+      'language' => 'gl', 'region' => 'es', 'voice' => 'woman', 
+      'description' => t('female voice in Galacian')); 
+
+    $voices['nikos'] = array(
+      'language' => 'el', 'region' => 'gr', 'voice' => 'man', 
+      'description' => t('male voice in Greek'));  
+    $voices['afroditi'] = array(
+      'language' => 'el', 'region' => 'gr', 'voice' => 'woman', 
+      'description' => t('female voice in Greek'));
+
+    $voices['linlin'] = array(
+      'language' => 'cn', 'region' => 'cn', 'voice' => 'woman', 
+      'description' => t('female voice in Mandarin Chinese')); 
+
+    $voices['henrik'] = array(
+      'language' => 'no', 'region' => 'no', 'voice' => 'man', 
+      'description' => t('male voice in Norwegian'));  
+    $voices['vilde'] = array(
+      'language' => 'no', 'region' => 'no', 'voice' => 'woman', 
+      'description' => t('female voice in Norwegian'));      
+      
+    $voices['dmitri'] = array(
+      'language' => 'ru', 'region' => 'ru', 'voice' => 'man', 
+      'description' => t('male voice in Russian'));  
+    $voices['olga'] = array(
+      'language' => 'ru', 'region' => 'ru', 'voice' => 'woman', 
+      'description' => t('female voice in Russian'));    
+
+    $voices['eusebio'] = array(
+      'language' => 'pt', 'region' => 'pt', 'voice' => 'man', 
+      'description' => t('male voice in Portuguese'));  
+    $voices['amalia'] = array(
+      'language' => 'pt', 'region' => 'pt', 'voice' => 'woman', 
+      'description' => t('female voice in Portuguese')); 
+
+    $voices['felipe'] = array(
+      'language' => 'pt', 'region' => 'br', 'voice' => 'man', 
+      'description' => t('male voice in Portuguese (Brazilian)'));  
+    $voices['fernanda'] = array(
+      'language' => 'pt', 'region' => 'br', 'voice' => 'woman', 
+      'description' => t('female voice in Portuguese (Brazilian)')); 
+
+    $voices['sven'] = array(
+      'language' => 'sv', 'region' => 'se', 'voice' => 'man', 
+      'description' => t('male voice in Swedish'));  
+    $voices['annika'] = array(
+      'language' => 'sv', 'region' => 'se', 'voice' => 'woman', 
+      'description' => t('female voice in Swedish')); 
+
+    $voices['empar'] = array(
+      'language' => 'va', 'region' => 'va', 'voice' => 'woman', 
+      'description' => t('female voice in Valencian'));       
     return $voices;
   }
 }

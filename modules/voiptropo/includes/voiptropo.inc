@@ -1251,7 +1251,7 @@ watchdog('voiptropo',"(GetInput 2) V: $voice, L: $language, Id: $voice_id");
     }
     $say[] = new Say($text, $as, null, $voice);
   }
-
+  //$choices = '[3 DIGITS]';
   $choices = isset($choices) ? new Choices($choices, $mode, $end_key) : null;
  
   $ask = new Ask($attempts, $bargein, $choices, $minConfidence, $name, $required, $say, $timeout, $voice, $allowSignals, $recognizer);
