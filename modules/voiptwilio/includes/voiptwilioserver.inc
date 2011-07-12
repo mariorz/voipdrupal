@@ -226,7 +226,6 @@ watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
     if (voipscript_use_sms_framework()) {
       //Use SMS Framework to send SMS message if user enabled this option
       voipscript_send_sms_framework($to, $text);
-      watchdog('voiptwilio', 'new text sent over SMS Framework.');
       return TRUE;        
     }
     //Else use VoIP Drupal:

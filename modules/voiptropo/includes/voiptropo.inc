@@ -58,13 +58,11 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
       $msg = "in voiptropo_call_handler() with tropo_action: $tropo_action, cid: $cid and Session ". print_r($json, TRUE);
       $vars = array();
       watchdog('voiptropo', $msg, $vars, WATCHDOG_INFO);
-
-      //$incoming_sid = $session->getAccountID();
     }
     catch (TropoException $e) {
       try{
         $result = new Result();
-        watchdog('voiptropo', 'Result ' . print_r($result, TRUE) , $vars, WATCHDOG_INFO);
+        //watchdog('voiptropo', 'Result ' . print_r($result, TRUE) , $vars, WATCHDOG_INFO);
       }
       catch (TropoException $e) {
         watchdog('voiptropo', 'error in _voip_tropo_call_handler, Tropo reported: '. $e->getMessage(), array(), WATCHDOG_ERROR);
@@ -89,7 +87,6 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
   if (!$cid) {
     $voip_session = VoipSession::getSessionByNumber($from, $to);
     if ($voip_session) {
-      //$voip_session = new VoipSession($voip_session);
       $cid = $voip_session->getCid();
       // load the variables already associated with the call, if any
       $call = VoipCall::load($cid);
@@ -176,14 +173,14 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
       $call_id=$session->getId(); 
       $call->setCallId($call_id);
       
-      if ($tropo_action == 'process_outbound_calls') {
+      /*if ($tropo_action == 'process_outbound_calls') {
         //TODO:
         //$answered_by = $_REQUEST['AnsweredBy'];
         if ($answered_by) {
           $tmp = ($answered_by == 'human') ? VoipCall::ANSWERED_HUMAN : VoipCall::ANSWERED_MACHINE; 
           $call->setAnsweredBy($tmp);
         }
-      }
+      }*/
     }
   }
   if (in_array($channel, array('offline_text','text'))) {
@@ -308,7 +305,6 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
         //Save record duration
         $rec_actions = $result->getActions();
         $script = $call->getScript();
-        watchdog('voiptropodur','Duration: '.$rec_actions->duration);
         $script->setVar('recording_duration', $rec_actions->duration);
         $call->setScript($script);
         // update the voipcall with the new values
@@ -406,7 +402,6 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
     if ($text_handler) {
       $message = $script->getVar('inbound_text_contents');
       $res = call_user_func_array($text_handler, array($message, $call->getCallerNumber(), $call->getDestNumber(), $call, $call->getCurrentNetwork()));
-      watchdog('voiptropo',"Calling text handler: $text_handler with result: $res");     
      return;
     }
     else if($call->getCallChannel() != 'text') {
@@ -424,10 +419,6 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
     $tropo->on(array("event" => "continue", "next" => $action));
   }
 
-  //TESTING:
-  $msg = "Tropo output ". print_r($tropo, TRUE);
-  $vars = array();
-  watchdog('voiptropo', $msg, $vars, WATCHDOG_INFO);
   // send response back to tropo
   $tropo->renderJSON();
 
@@ -694,7 +685,6 @@ function _voiptropo_script_handler($call, &$tropo) {
           $params = array(
               'id' => $room,
               'mute' => $muted,
-              //'playTones' => ,
               'terminator' => $terminator,
               );
 
@@ -855,7 +845,6 @@ function _voiptropo_script_handler($call, &$tropo) {
               $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
               $language = $language_tmp ? $language_tmp : $default_language;
               $voice_id = VoipTropoServer::getVoiceId($voice, $language);
-watchdog('voiptropo',"(Say) V: $voice, L: $language, Id: $voice_id");
               $voice = $voice_id ? $voice_id : $script->getVoice();
               $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
               $say_params = array();
@@ -1048,10 +1037,7 @@ function _voiptropo_file_save_upload($source, $validators, $dest) {
  * Update 'call status' and 'hangup reason' based on tropo's response
  */
 function voiptropo_update_call_status($call, $tropo_call_status, $request=NULL) {
-  /*if(!empty($request)){
-    watchdog('voiptropostatus', "json:".print_r($request, TRUE), $vars, WATCHDOG_INFO);
-    }*/
-
+ 
   switch ($tropo_call_status) {
     default:
       $msg = 'Invalid CallStatus: @status for call cid: @cid';
@@ -1231,10 +1217,7 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
   $action = url($response_url, array('absolute' => TRUE));
   $attempts = 1;
   $timeout = (float)$timeout;
-            
-watchdog('voiptropo', '(GetInput) cmd: ' . print_r($cmd, true));
   $prompt = _voiptropo_prompt_validate($script, $cmd->getParam('prompt'));
-watchdog('voiptropo', '(GetInput) prompt: ' . print_r($prompt, true));
 
     foreach ($prompt as $p) {
     $text = $script->evalString($p->getText());
@@ -1244,14 +1227,12 @@ watchdog('voiptropo', '(GetInput) prompt: ' . print_r($prompt, true));
     $language = $language_tmp ? $language_tmp : $default_language;
     $voice_id = VoipTropoServer::getVoiceId($voice, $language);
     $voice = $voice_id ? $voice_id : $script->getVoice();
-watchdog('voiptropo',"(GetInput 2) V: $voice, L: $language, Id: $voice_id");
     $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
     if (empty($as) && !in_array($as, array('digits', 'date'))) {
             $as = NULL; 
     }
     $say[] = new Say($text, $as, null, $voice);
   }
-  //$choices = '[3 DIGITS]';
   $choices = isset($choices) ? new Choices($choices, $mode, $end_key) : null;
  
   $ask = new Ask($attempts, $bargein, $choices, $minConfidence, $name, $required, $say, $timeout, $voice, $allowSignals, $recognizer);
@@ -1268,7 +1249,6 @@ function _voiptropo_parse_numbers($str) {
   }
   
   return implode(" ", $str_array);
- // return preg_replace_callback('{(\d+)}', '_voiptropo_ssml_digits', $str);
 }
 
 function _voiptropo_ssml_digits($matches) {

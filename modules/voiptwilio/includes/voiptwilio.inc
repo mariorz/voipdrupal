@@ -42,8 +42,6 @@ function _voiptwilio_call_handler($twilio_action, $cid=NULL) {
 $msg = "in voiptwilio_call_handler() with twilio_action: $twilio_action, cid: $cid, and _REQUEST: " . print_r($_REQUEST, TRUE);
 $vars = array();
 watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
-//dsm($msg);
-watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
   // validate $_REQUEST['AccountSid'] to avoid hack attempts
   $server = VoipServer::getServer('twilio');
   $server_config = $server->getConfig();
@@ -218,7 +216,7 @@ watchdog('voiptwilio', 'REQUEST: '.print_r($_REQUEST,true));
     }
   }
 
-watchdog('voiptwilio', "twilio status: $twilio_call_status, call status: " . $call->getCallStatus());
+//watchdog('voiptwilio', "twilio status: $twilio_call_status, call status: " . $call->getCallStatus());
 
   // update call status
   // NOTE: sms callbacks do not have a call status associated with them
@@ -247,7 +245,7 @@ watchdog('voiptwilio', "twilio status: $twilio_call_status, call status: " . $ca
 
   $is_hangup = $call->isHangup();
 
-watchdog('voiptwilio', "twilio status: $twilio_call_status, updated call status: " . $call->getCallStatus() . ", is_hangup: $is_hangup");
+//watchdog('voiptwilio', "twilio status: $twilio_call_status, updated call status: " . $call->getCallStatus() . ", is_hangup: $is_hangup");
 
   // process responses to requests previously-issued by the call script
   if(!$is_hangup) {
@@ -330,7 +328,6 @@ watchdog('voiptwilio', "twilio status: $twilio_call_status, updated call status:
     if ($text_handler) {
       $message = $script->getVar('inbound_text_contents');
       $res = call_user_func_array($text_handler, array($message, $call->getCallerNumber(), $call->getDestNumber(), $call, $call->getCurrentNetwork()));
-      watchdog('voiptwilio',"Calling text handler: $text_handler with result: $res");
       return;
     }
     else if($call->getCallChannel() != 'text') {
