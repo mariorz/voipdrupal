@@ -39,7 +39,7 @@ function voipcall_menu() {
   
   $items['admin/voip/session/log'] = array(
     'title' => 'VoIP Session Log',
-    'description' => 'Lists all VoIP Drupal calls.',
+    'description' => 'Lists all VoIP Drupal sessions.',
     'page callback' => 'voipcall_session_log',
     'access arguments' => array('administer voipcall setup'),
   );
