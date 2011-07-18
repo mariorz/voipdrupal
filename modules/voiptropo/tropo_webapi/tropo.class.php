@@ -1302,8 +1302,22 @@ class Say extends BaseClass {
 		if(isset($this->_as)) { $this->as = $this->_as; }
 		if(isset($this->_voice)) { $this->voice = $this->_voice; }
 		if(isset($this->_allowSignals)) { $this->allowSignals = $this->_allowSignals; }	
-		return $this->unescapeJSON(json_encode($this));	
+        return $this->unescapeJSON(json_encode($this));	
 	}
+}
+
+function object_to_array($data) 
+{
+  if(is_array($data) || is_object($data))
+  {
+    $result = array(); 
+    foreach($data as $key => $value)
+    { 
+      $result[$key] = object_to_array($value); 
+    }
+    return $result;
+  }
+  return $data;
 }
 
 /**

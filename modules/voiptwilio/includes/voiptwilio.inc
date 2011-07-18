@@ -185,7 +185,7 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
   
   // get the cid of the call
   $cid = $call->getCid();
-  if(!$voip_session->getCid()){
+  if($voip_session && !$voip_session->getCid()){
     $voip_session->setCid($cid);
     $voip_session->save();
   }
