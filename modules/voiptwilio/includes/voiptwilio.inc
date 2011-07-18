@@ -394,7 +394,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
         $response .= '<Hangup/>';
         $msg = 'Script @name ended without a "hangup" command.';
         $params = array('@name' => $script->getName());
-        watchdog('voiptropo', $msg, $params, WATCHDOG_WARNING);
+        watchdog('voiptwilio', $msg, $params, WATCHDOG_WARNING);
         $call->setHangupReason(VoipCall::HANGUP_SCRIPT_END);
       }
       //for text channel don't do anything
