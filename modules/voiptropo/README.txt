@@ -35,8 +35,8 @@ Tropo configuration:
   - Fill the application name with a name of choice
 
   - Fill the "URL" field with
-    http://mysite.com/voip/Tropo/callhandler/ (for clean URLs)
-    or http:// mysite.com/voip/?q=Tropo/callhandler/
+    http://mysite.com/voip/tropo/callhandler/ (for clean URLs)
+    or http:// mysite.com/voip/?q=tropo/callhandler/
 
   - Press the "Create application" button
 
