@@ -473,11 +473,13 @@ function _voiptropo_script_handler($call, &$tropo) {
 
     $cmd = $script->getNextCommand();
     if (!$cmd) {
+      $processing = FALSE;
       // no more commands to be processed
       $stack_level = $script->getStackLevel();
       if ($stack_level>0) {
         //return to previous stack
-        $script->addReturn();
+        $script->runReturn();
+        $processing = TRUE;
       }
       else if ($call->getCurrentChannel() != 'text') {
         // for voice channel send a final hangup request 
@@ -488,7 +490,6 @@ function _voiptropo_script_handler($call, &$tropo) {
         $call->setHangupReason(VoipCall::HANGUP_SCRIPT_END);
       }
       //for text channel don't do anything
-      $processing = FALSE;
     }
     // process current command
     else {

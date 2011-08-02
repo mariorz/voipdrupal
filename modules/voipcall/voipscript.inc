@@ -267,7 +267,7 @@ class VoipScript {
    * Evaluates the given string based on the current value of script variables.
    *
    * @param $string
-   *   The string to be evaluated
+   *   The string (or array of strings) to be evaluated
    *
    * @return 
    *   The result of the evaluation
