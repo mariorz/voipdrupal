@@ -223,7 +223,7 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
   if ($twilio_action == 'process_sms_callback' || $twilio_action == 'process_inbound_text' || $twilio_action == 'process_send_sms'){
     $call->SetCallStatus(VoipCall::IN_PROGRESS);
   }
-  else{
+  else {
     $call = voiptwilio_update_call_status($call, $twilio_call_status);
   }
 
@@ -776,8 +776,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
               break;
 
               case 'sms':
-                $response .= '<Sms action="' . $action
-                             . '" statusCallback="' . $callback
+                $response .= '<Sms statusCallback="' . $callback
                              . '" method="' . $method;
                 if($to){
                   $response .= '" to="' . $to;
@@ -867,12 +866,12 @@ function _voiptwilio_send_response($response) {
 /**
  * Update 'call status' and 'hangup reason' based on Twilio's response
  */
-function voiptwilio_update_call_status($call, $twilio_call_status) {
+function voiptwilio_update_call_status($call, $twilio_call_status='in-progress') {
   switch($twilio_call_status) {
     default:
       $msg = 'Invalid CallStatus: @status for call cid: @cid';
       $cid = $call->getCid();
-      $params = array('@status' => $call_status, '@cid' => $cid);
+      $params = array('@status' => $twilio_call_status, '@cid' => $cid);
       $call->report_error('voiptwilio', $msg, $params);
       return NULL;
       break;
