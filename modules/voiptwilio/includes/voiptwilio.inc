@@ -223,7 +223,7 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
   if ($twilio_action == 'process_sms_callback' || $twilio_action == 'process_inbound_text' || $twilio_action == 'process_send_sms'){
     $call->SetCallStatus(VoipCall::IN_PROGRESS);
   }
-  else {
+  else{
     $call = voiptwilio_update_call_status($call, $twilio_call_status);
   }
 
@@ -782,7 +782,8 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
                 break;
 
               case 'sms':
-                $response .= '<Sms statusCallback="' . $callback
+                $response .= '<Sms action="' . $action
+                             . '" statusCallback="' . $callback
                              . '" method="' . $method;
                 if($to){
                   $response .= '" to="' . $to;
