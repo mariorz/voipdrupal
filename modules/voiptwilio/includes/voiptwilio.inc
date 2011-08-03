@@ -298,8 +298,12 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
       case 'process_sms_callback':
         $call = _voiptwilio_process_sms_response($call, $_REQUEST);
         if(strtolower($call->getCurrentChannel()) == 'text') {
+          // update sms status
           $call->save();
-          return;
+          // since 'process_sms_callback' is asynchronous, go back
+          if($twilio_action == 'process_sms_callback') {
+            return;
+          }
         }
         break;
     }
@@ -775,7 +779,7 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
                 $call->report_error('voiptwilio', $msg, $params);
                 $rc = FALSE;
                 $processing = FALSE;
-              break;
+                break;
 
               case 'sms':
                 $response .= '<Sms action="' . $action
@@ -790,9 +794,11 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
                 $response .= '" >';
                 $response .= $text;
                 $response .= '</Sms>';
+                // since the 'action' parameter prevents other commands from
+                // being executed, set $processing to FALSE
+                $processing = FALSE;
+                break;
             } 
-              $processing = TRUE;
-              break;
           }
           break;
           
