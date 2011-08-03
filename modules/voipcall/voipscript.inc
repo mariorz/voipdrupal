@@ -279,12 +279,19 @@ class VoipScript {
     $expand = FALSE;
     if(is_array($string)) {
 watchdog('to expand', print_r($string, true));
-      $string = json_encode($string);
+//      $string = json_encode($string);
       $expand = TRUE;
     }
+if(!is_array($string)) {
     $rc = _voipscript_expand_variables($string, $this->variables);
+}
+else {
+  foreach($string as $index => $str) {
+    $rc[$index] = _voipscript_expand_variables($str, $this->variables);
+  }
+}
     if($expand) {
-      $rc = (array)json_decode($rc);
+//      $rc = (array)json_decode($rc);
 watchdog('expanded', print_r($rc, true));
     }
     return $rc;
@@ -1193,9 +1200,6 @@ function voipscript_send_sms_framework($to, $text) {
  *   produce undesirable results if the variable starts with 0.
  */
 function _voipscript_expand_variables($str, $vars) {
-if(is_array($str)) {
-watchdog('inv str', print_r($str, true));
-}
   $eval = substr($str, 0, 1) == '^';
   $regex = '/\%(\w+)/e';
   $replacement = "_voipscript_replace_variable(\$1, \$vars, \$eval);" ;
