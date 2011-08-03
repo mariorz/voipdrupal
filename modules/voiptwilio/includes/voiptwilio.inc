@@ -487,9 +487,11 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $response .= '<Gather action="' . $action
                             . '" method="' . $method
                             . '" timeout="' . $timeout
-                            . '" finishOnKey="' . $end_key
-                            . '" numDigits="' . $num_digits
-                            . '" >';
+                            . '" finishOnKey="' . $end_key;
+          if($num_digits) {
+            $response .=      '" numDigits="' . $num_digits;
+          }
+          $response .= '" >';
           if($prompt) {
             $response .=  _voiptwilio_generate_audio_response($script, $prompt);
           }

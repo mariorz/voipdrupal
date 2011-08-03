@@ -1222,6 +1222,7 @@ function _voipscript_replace_variable($var_name, $vars, $eval) {
     if($eval) {
       return 'null';
     }
+// TODO: how to handle variables that contain strings with ', " or / ? Is there a need for a addslashes()?
 //  return "$var_name";
     return '';
   }
