@@ -276,23 +276,13 @@ class VoipScript {
    *   string to be evaluated
    */
   function evalString($string) {
-    $expand = FALSE;
-    if(is_array($string)) {
-watchdog('to expand', print_r($string, true));
-//      $string = json_encode($string);
-      $expand = TRUE;
+    if(!is_array($string)) {
+      $rc = _voipscript_expand_variables($string, $this->variables);
     }
-if(!is_array($string)) {
-    $rc = _voipscript_expand_variables($string, $this->variables);
-}
-else {
-  foreach($string as $index => $str) {
-    $rc[$index] = _voipscript_expand_variables($str, $this->variables);
-  }
-}
-    if($expand) {
-//      $rc = (array)json_decode($rc);
-watchdog('expanded', print_r($rc, true));
+    else {
+      foreach($string as $index => $str) {
+        $rc[$index] = _voipscript_expand_variables($str, $this->variables);
+      }
     }
     return $rc;
   }
