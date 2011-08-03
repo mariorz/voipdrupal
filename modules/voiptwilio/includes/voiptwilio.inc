@@ -996,6 +996,7 @@ function _voiptwilio_process_sms_response($call, $request){
     case 'sending':
       $text_status = VoipCall::TEXT_SENDING;
       break;
+    case 'received': // TODO: this is status is not documented in twilio.com. is this a twilio bug?
     case 'sent':
       $text_status = VoipCall::TEXT_SENT;
       break;
