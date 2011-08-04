@@ -281,9 +281,14 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
       case 'process_record_mp3':
         $suffix = ($twilio_action == 'process_record')? '.wav' : '.mp3';
         $script = $call->getScript();
-        $script->setVar('recording_url', $_REQUEST['RecordingUrl'] . $suffix);
+        $twilio_record_url = $_REQUEST['RecordingUrl'] . $suffix;
+        //Transfer the file to local server
+        $file = _voiptwilio_transfer_file($twilio_record_url);     
+        $script->setVar('recording_url', file_create_url($file['filepath']));
+        $script->setVar('recording_public_url', $twilio_record_url);
         $script->setVar('recording_duration', $_REQUEST['RecordingDuration']);
         $script->setVar('recording_digits', $_REQUEST['Digits']);
+        $script->setVar('recording_fid', $file['fid']);
         $call->setScript($script);
         break;
       case 'process_empty_recording':
@@ -1119,4 +1124,30 @@ function _voiptwilio_numbers_add_space($matches) {
   $string_array = str_split($matches[0]);
   $number_with_space = implode(" ",$string_array);
   return $number_with_space;
+}
+
+function _voiptwilio_transfer_file($url, $validators=array()) {
+    $filename = rawurldecode(basename($url));
+    $filepath = file_create_filename($filename, file_directory_temp());
+    
+    // Then make the actual request to download the file.
+    $data = file_get_contents($url); 
+    
+    //Save it to temporary file.
+    if ($fp = @fopen($filepath, 'w+')) {
+        fputs($fp, $data); 
+        fclose($fp);
+    }
+    
+    //Save it to default files directory.
+    $destination=file_directory_path();
+    $file = field_file_save_file($filepath, $validators, $destination);
+    // Delete the temporary file.
+    @unlink($filepath);
+    
+    if ($file) {
+      return $file;
+    }
+    
+    return NULL;
 }

@@ -660,9 +660,11 @@ class VoipScript {
    * @return
    *   The execution of the 'record' command sets the following script
    *   variables: 
-   *   - recording_url, with the location of the file recorded
+   *   - recording_url, with the local location of the file recorded
+   *   - recording_public_url, with the remote location of the file recorded
    *   - recording_duration, with the duration in seconds of the recording
    *   - recording_digits, the key (if any) pressed to end the recording
+   *   - recording_fid, with the fid of the file recorded
    */
   function addRecord($prompt='', $timeout=5, $end_key='#', $max_length=3600, $format='mp3', $play_beep=TRUE) {
     $params['prompt'] = $prompt;
