@@ -284,7 +284,7 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
         $twilio_record_url = $_REQUEST['RecordingUrl'] . $suffix;
         //Transfer the file to local server
         $file = _voiptwilio_transfer_file($twilio_record_url);     
-        $script->setVar('recording_url', file_create_url($file['filepath']));
+        $script->setVar('recording_path', file_create_url($file['filepath']));
         $script->setVar('recording_public_url', $twilio_record_url);
         $script->setVar('recording_duration', $_REQUEST['RecordingDuration']);
         $script->setVar('recording_digits', $_REQUEST['Digits']);
@@ -293,9 +293,11 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
         break;
       case 'process_empty_recording':
         $script = $call->getScript();
-        $script->setVar('recording_url', '');
+        $script->setVar('recording_path', '');
+        $script->setVar('recording_public_url', '');
         $script->setVar('recording_duration', 0);
         $script->setVar('recording_digits', NULL);
+        $script->setVar('recording_fid', NULL);
         $call->setScript($script);
         break;
 

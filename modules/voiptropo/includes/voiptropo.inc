@@ -293,7 +293,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
         $dest = file_directory_path();
         $file = _voiptropo_file_save_upload($filename, $validators, $dest);
         $script = $call->getScript();
-        $script->setVar('recording_url', file_create_url($file->filepath));
+        $script->setVar('recording_path', file_create_url($file->filepath));
         $script->setVar('recording_public_url', file_create_url($file->filepath));
         $script->setVar('recording_digits', NULL);
         $script->setVar('recording_fid', $file->fid);
@@ -313,9 +313,11 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
       break;	  
       case 'process_empty_recording':
         $script = $call->getScript();
-        $script->setVar('recording_url', '');
+        $script->setVar('recording_path', '');
+        $script->setVar('recording_public_url', '');
         $script->setVar('recording_duration', 0);
         $script->setVar('recording_digits', NULL);
+        $script->setVar('recording_fid', NULL);
         $call->setScript($script);
         break;
 
