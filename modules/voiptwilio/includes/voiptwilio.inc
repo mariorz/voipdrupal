@@ -116,7 +116,7 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
   // handle incoming call and text requests
   if($twilio_action == 'process_inbound_calls') {
 
-    $call = new VoipCall();
+    $call = new VoipCall(); //TODO: Why was this restored?
     $call_sid = $_REQUEST['CallSid']; // unique identifier of the call, 34 char
     $call->setCallId($call_sid);
     $call->setSource('twilio');
