@@ -19,12 +19,3 @@ function voipscriptui_node_info() {
   );
   return $items;
 }
-
-/**
- * Implementation of hook_views_api().
- */
-function voipscriptui_views_api() {
-  return array(
-    'api' => '2',
-  );
-}
