@@ -142,21 +142,21 @@ function voipscriptui_scripts_page() {
   );
   
   if ($clone_all || $clone_ui) {
-    $headers[] = array('data' => t('Clone'), 'field' => 'clone');
+    $headers[] = array('data' => t('Clone script'), 'field' => 'clone');
   }
   $scripts = VoipScript::getScriptNames();
   foreach ($scripts as $script_name) {
     $row= array(
       'title' => $script_name,
-      'code' => l('Click here to view','admin/voip/call/scripts/view/' . $script_name),
+      'code' => l('view','admin/voip/call/scripts/view/' . $script_name),
       'type' => 'Module',
     );
     
     if ($clone_all) {
-      $row['clone'] = l('Clone Script','node/add/voipscriptui', array('query' => 'clone_voipscript=' . $script_name));
+      $row['clone'] = l('clone','node/add/voipscriptui', array('query' => 'clone_voipscript=' . $script_name));
     }
     
-    $data[$script_name] = $row;
+    $data[strtolower($script_name)] = $row;
   }
 
   //Get UI Scripts
@@ -164,14 +164,14 @@ function voipscriptui_scripts_page() {
   while ($script_ui = db_fetch_array($res)) {
     $row= array(
       'title' => $script_ui['title'],
-      'code' => l('Click here to view','node/' . $script_ui['nid']),
+      'code' => l('view','node/' . $script_ui['nid']),
       'type' => 'VoIP Script UI',
     );
     
     if ($clone_all || $clone_ui) {
-      $row['clone'] = l('Clone Script','node/add/voipscriptui', array('query' => 'clone_voipscript=' . $script_ui['nid'].'&type=node'));
+      $row['clone'] = l('clone','node/add/voipscriptui', array('query' => 'clone_voipscript=' . $script_ui['nid'].'&type=node'));
     }
-     $data[$script_ui['title']] = $row;
+     $data[strtolower($script_ui['title'])] = $row;
   }
   ksort($data);
   $output .= theme('table', $headers, $data);
