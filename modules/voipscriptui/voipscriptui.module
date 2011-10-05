@@ -191,7 +191,6 @@ function voipscriptui_scripts_page() {
 }
 
 function voipscriptui_scripts_view_page($script_name) {
-watchdog('debug', "script name: $script_name");
     $output = _voipscriptui_reverse_parser($script_name);
     return $output;
 }
