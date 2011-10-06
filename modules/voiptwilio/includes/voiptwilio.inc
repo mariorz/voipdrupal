@@ -220,7 +220,17 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
 
   // update call status
   // NOTE: sms callbacks do not have a call status associated with them
-  if ($twilio_action == 'process_sms_callback' || $twilio_action == 'process_inbound_text' || $twilio_action == 'process_send_sms'){
+  // NOTE: when the user hangs up during a recording, Twilio sends the record 
+  // response with the recording data AND CallStatus set to 'completed'. Once that is done,
+  // Twilio calls our process_hangup url to inform, once again, that the call has been hanged.
+  
+  if ($twilio_action == 'process_sms_callback'
+      || $twilio_action == 'process_inbound_text'
+      || $twilio_action == 'process_send_sms'
+      || $twilio_action == 'process_record'
+      || $twilio_action == 'process_record_mp3'
+      || $twilio_action == 'process_empty_recording'
+  ){
     $call->SetCallStatus(VoipCall::IN_PROGRESS);
   }
   else{
@@ -244,6 +254,7 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
   }
 
   $is_hangup = $call->isHangup();
+
 
 //watchdog('voiptwilio', "twilio status: $twilio_call_status, updated call status: " . $call->getCallStatus() . ", is_hangup: $is_hangup");
 
