@@ -1276,6 +1276,7 @@ function _voiptropo_is_url($str) {
 
 function _voiptropo_strip_special_chars($string) {
   //Tropo doesn't support double quotes https://www.tropo.com/bizblog/viewer?&bb-name=tropo_support&bb-q=quotes&&bb-cid=100&bb-tid=1337679#bb
-  $string = str_replace('"','&quot;',$string);
+  //$string = str_replace('"','&quot;',$string);
+  $string = htmlspecialchars($string);
   return $string;
 }
