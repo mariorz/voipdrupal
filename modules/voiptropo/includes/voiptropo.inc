@@ -756,6 +756,7 @@ function _voiptropo_script_handler($call, &$tropo) {
             the current call. Therefore getting last item in array and moving it to record() command.*/
           $last_say = array_pop($prompt);
           $text = $script->evalString($last_say->getText());
+          $text = _voiptropo_strip_special_chars($text);
           $voice_tmp = $last_say->getVoice() ? $script->evalString($last_say->getVoice()) : '';
           $voice = $voice_tmp ? $voice_tmp : $default_voice;
           $language_tmp = $last_say->getLanguage() ? $script->evalString($last_say->getLanguage()) : '';
@@ -772,6 +773,7 @@ function _voiptropo_script_handler($call, &$tropo) {
 
           foreach ($prompt as $p) {
             $text = $script->evalString($p->getText());
+            $text = _voiptropo_strip_special_chars($text);
             $voice_tmp = $p->getVoice() ? $script->evalString($p->getVoice()) : '';
             $voice = $voice_tmp ? $voice_tmp : $default_voice;
             $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
@@ -792,7 +794,8 @@ function _voiptropo_script_handler($call, &$tropo) {
           //What next:
           $tropo->on(array("event" => "continue", "next" => $success_action));
           // in case of empty recording...
-          $tropo->on(array("event" => "incomplete", "next" => $timeout_action));  
+          $tropo->on(array("event" => "incomplete", "next" => $timeout_action));
+          $response_url = $menu_path . '/process_record/' . $cid;      
 
           $rc = TRUE;
           $processing = FALSE;
@@ -844,6 +847,7 @@ function _voiptropo_script_handler($call, &$tropo) {
           for ($i=0;$i<$loop;$i++) {              
             foreach ($prompt as $p) {
               $text = $script->evalString($p->getText());
+              $text = _voiptropo_strip_special_chars($text);
               $voice_tmp = $p->getVoice() ? $script->evalString($p->getVoice()) : '';
               $voice = $voice_tmp ? $voice_tmp : $default_voice;
               $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
@@ -1225,6 +1229,7 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
 
     foreach ($prompt as $p) {
     $text = $script->evalString($p->getText());
+    $text = _voiptropo_strip_special_chars($text);
     $voice_tmp = $p->getVoice() ? $script->evalString($p->getVoice()) : '';
     $voice = $voice_tmp ? $voice_tmp : $default_voice;
     $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
@@ -1267,4 +1272,10 @@ function _voiptropo_is_url($str) {
   //       http://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url , it seems to serve our purposes!
   $rc = preg_match('#(https?://\S+(?<![,.;?\:\!]))#', $str);
   return $rc;
+}
+
+function _voiptropo_strip_special_chars($string) {
+  //Tropo doesn't support double quotes https://www.tropo.com/bizblog/viewer?&bb-name=tropo_support&bb-q=quotes&&bb-cid=100&bb-tid=1337679#bb
+  $string = str_replace('"','&quot;',$string);
+  return $string;
 }
