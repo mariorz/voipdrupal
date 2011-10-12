@@ -422,7 +422,10 @@ class VoipCall {
     return $updated_script;
   }
 
-  public function setScript($script) {  
+  public function setScript($script) {
+    if (!($script instanceof VoipScript)) {
+      $this->report_error('VoipCall', 'Scripts must be an object of type VoipScript when calling VoipCall::setScript()  Input: @script', array('@script' => $script));
+    }  
     $this->call_data->script = $script;
   }
 
