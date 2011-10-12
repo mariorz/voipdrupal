@@ -303,10 +303,15 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
         return;
         break;
       case 'process_record':
+      case 'process_record_hangup':
         //Save record duration
         $rec_actions = $result->getActions();
         $script = $call->getScript();
         $script->setVar('recording_duration', $rec_actions->duration);
+        if($tropo_action) {
+          $digits = 'hangup';
+        }
+        $script->setVar('recording_digits', $digits);
         $call->setScript($script);
         // update the voipcall with the new values
         $call = $call->save();
@@ -359,7 +364,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
     //Add events for outbound dial.
     $response_url = $menu_path . '/process_hangup/' . $cid ;
     $action = url($response_url, array('absolute' => TRUE));
-    $tropo->on(array("event" => "hangup", "next" => $action));
+    //$tropo->on(array("event" => "hangup", "next" => $action));
 
     $response_url = $menu_path . '/process_callstatus/' . $cid;
     $action = url($response_url . '/error', array('absolute' => TRUE));
@@ -795,7 +800,9 @@ function _voiptropo_script_handler($call, &$tropo) {
           $tropo->on(array("event" => "continue", "next" => $success_action));
           // in case of empty recording...
           $tropo->on(array("event" => "incomplete", "next" => $timeout_action));
-          $response_url = $menu_path . '/process_record/' . $cid;      
+          $response_url = $menu_path . '/process_record_hangup/' . $cid;      
+          $hangup_action = url($response_url, array('absolute' => TRUE));
+          $tropo->on(array("event" => "hangup", "next" => $hangup_action));
 
           $rc = TRUE;
           $processing = FALSE;
