@@ -1233,7 +1233,7 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
   $attempts = 1;
   $timeout = (float)$timeout;
   $prompt = _voiptropo_prompt_validate($script, $cmd->getParam('prompt'));
-
+  $ask_text = '<speak>';
     foreach ($prompt as $p) {
     $text = $script->evalString($p->getText());
     $text = _voiptropo_strip_special_chars($text);
@@ -1245,14 +1245,27 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
     $voice = $voice_id ? $voice_id : $script->getVoice();
     $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
     if (empty($as) && !in_array($as, array('digits', 'date'))) {
-            $as = NULL; 
+            $as = 'number'; 
     }
-    $say[] = new Say($text, $as, null, $voice);
+   
+    
+    //Tropo doesn't support multiple voices in ask(): https://www.tropo.com/bizblog/viewer?&bb-name=tropo_support&bb-q=&&bb-cid=99&bb-tid=1427328#bb
+    //Therefore using SSML directly
+    $ask_text .= '<voice name=\''.$voice.'\'><say-as interpret-as=\'vxml:'.$as.'\'>'.$text.'</say-as></voice>';
+    //$say[] = new Say($text, $as, null, $voice);
   }
-  $choices = isset($choices) ? new Choices($choices, $mode, $end_key) : null;
- 
-  $ask = new Ask($attempts, $bargein, $choices, $minConfidence, $name, $required, $say, $timeout, $voice, $allowSignals, $recognizer);
-  $tropo->ask($ask);
+  $ask_text .= '</speak>';
+  //$choices = isset($choices) ? new Choices($choices, $mode, $end_key) : null;
+  //$ask = new Ask($attempts, $bargein, $choices, $minConfidence, $name, $required, $say, $timeout, $voice, $allowSignals, $recognizer);
+  $params = array(
+    'choices' => $choices,
+    'mode' => $mode,
+    'terminator' => $end_key,
+    'attempts' => $attempts,
+    'timeout' => $timeout,
+    'recognizer' => $recognizer,
+  );
+  $tropo->ask($ask_text, $params);
   $tropo->on(array("event" => "continue", "next" => $action)); 
 }
 
@@ -1283,7 +1296,8 @@ function _voiptropo_is_url($str) {
 
 function _voiptropo_strip_special_chars($string) {
   //Tropo doesn't support double quotes https://www.tropo.com/bizblog/viewer?&bb-name=tropo_support&bb-q=quotes&&bb-cid=100&bb-tid=1337679#bb
-  //$string = str_replace('"','&quot;',$string);
-  $string = htmlspecialchars($string);
+  $string = str_replace('"','&quot;',$string);
+  //This would be better but it breaks SSML:
+  //$string = htmlspecialchars($string);
   return $string;
 }
