@@ -949,7 +949,8 @@ watchdog("debug", "Say: voice: $voice, language: $language, text: $text");
 
         case 'VoipCmdSetVoice';
           $voice = $script->evalString($cmd->getParam('voice'));
-          $script->setVoice($voice);
+          $voice_id = VoipTropoServer::getVoiceId($voice,$language);
+          $script->setVoice($voice_id);
           break;
 
         case 'VoipCmdUnset';
