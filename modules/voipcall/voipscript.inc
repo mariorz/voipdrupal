@@ -205,14 +205,14 @@ class VoipScript {
   }
 
   /**
-   * Set the current language of the script
+   * Sets the current language of the script
    */
   function setLanguage($language) {
     $this->language = $language;
   }
 
   /**
-   * Return the current language of the script
+   * Returns the current language of the script
    */
   function getLanguage() {
     $language = $this->language;
@@ -224,14 +224,14 @@ class VoipScript {
   }
 
   /**
-   * Set the current voice of the script
+   * Sets the current voice of the script
    */
   function setVoice($voice) {
     $this->voice = $voice;
   }
 
   /**
-   * Return the current voice of the script
+   * Returns the current voice of the script
    */
   function getVoice() {
     $voice = $this->voice;
@@ -363,7 +363,7 @@ class VoipScript {
     $this->commands[] = new VoipCommand('VoipCmdDial', $params);
   }
   
-  /*
+  /**
    * Adds a 'get input' command to the script. 
    *
    * When executed, the 'get input' command reads user input from the phone
@@ -585,7 +585,7 @@ class VoipScript {
    *   String with the number of seconds to wait for an input digit to be
    *   pressed. The default is 5
    *
-   * @output
+   * @return
    *   Set the %ivr_option_selected script variable with the label associated
    *   with the option selected.
    */
@@ -661,10 +661,15 @@ class VoipScript {
    *   The execution of the 'record' command sets the following script
    *   variables: 
    *   - recording_path, with the local location of the file recorded
-   *   - recording_public_url, with the remote location of the file recorded if available, otherwise will store local location.
+   *   - recording_public_url, with the remote location of the file recorded if
+   *     available, otherwise will store local location.
    *   - recording_duration, with the duration in seconds of the recording
    *   - recording_digits, the key (if any) pressed to end the recording
    *   - recording_fid, with the fid of the file recorded
+   *
+   *   NOTE: If the call is hang up in the middle of a recording, the variable 
+   *   "recording_digits" will be set to "hangup" and the other variables will 
+   *   be set to their appropriate values.
    */
   function addRecord($prompt='', $timeout=5, $end_key='#', $max_length=3600, $format='mp3', $play_beep=TRUE) {
     $params['prompt'] = $prompt;
@@ -821,7 +826,7 @@ class VoipScript {
    */
 
   /**
-   * Execute the specified script and then return to the current script
+   * Executes the specified script and then returns to the current script
    */
   function runGosub($script_name, $options=NULL) {
     $script_state = array('name' => $this->name,
@@ -833,7 +838,7 @@ class VoipScript {
   }
 
   /**
-   * Jump script execution to the command associated with the specified label
+   * Jumps script execution to the command associated with the specified label
    */
   function runGoto($label_name) {
     $rc = TRUE;
@@ -866,7 +871,7 @@ class VoipScript {
   }
 
   /**
-   * Run the specified IVR menu
+   * Runs the specified IVR menu
    */
   function runIvrMenu($options) {
     // execute the predefined IVR script menu
@@ -875,7 +880,7 @@ class VoipScript {
   }
 
   /**
-   * Load the specified script
+   * Loads the specified script
    *
    * @param $script_name
    *  string, name of script to be loaded
@@ -920,7 +925,7 @@ class VoipScript {
   } 
 
   /**
-   * Log the given message
+   * Logs the given message
    */
   function runLog($input, $name=NULL) {
     $options = array('@name' => $name, '@input' => $input);
@@ -934,7 +939,7 @@ class VoipScript {
   }
 
   /**
-   * Return to the script that has originally issued the Gosub that started the
+   * Returns to the script that has originally issued the Gosub that started the
    * present script
    */
   function runReturn() {
@@ -955,7 +960,7 @@ class VoipScript {
   }
   
   /**
-   * Return the number of scripts in the stack.
+   * Returns the number of scripts in the stack.
    */
   function getStackLevel() {
     return count($this->stack);
