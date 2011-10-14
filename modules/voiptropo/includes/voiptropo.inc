@@ -860,7 +860,9 @@ function _voiptropo_script_handler($call, &$tropo) {
               $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
               $language = $language_tmp ? $language_tmp : $default_language;
               $voice_id = VoipTropoServer::getVoiceId($voice, $language);
-              $voice = $voice_id ? $voice_id : $script->getVoice();
+              $default_voice_id = VoipTropoServer::getVoiceId($default_voice, $language);
+              $voice = $voice_id ? $voice_id : $default_voice_id;
+watchdog("debug", "Say: voice: $voice, language: $language, text: $text");
               $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
               $say_params = array();
               if($as == 'digits'){
