@@ -358,15 +358,16 @@ watchdog('voipplivo', 'new call: ' . print_r($voipcall, true));
    */
 // TODO:  private static function _get_available_voices() {
 static function _get_available_voices() {
+    // Note: check http://festvox.org/voicedemos.html for demos of the different voices
     $voices = array();
     $voices['slt'] = array('language' => 'en', 'voice' => 'woman',
-                        'description' => t('female voice in English'));
+                        'description' => t('female voice in American English (slt)'));
     $voices['rms'] = array('language' => 'en', 'voice' => 'man',
-                        'description' => t('man voice in English'));
+                        'description' => t('male voice in American English (rms)'));
     $voices['awb'] = array('language' => 'en2', 'voice' => 'man',
-                        'description' => t('man voice in Scotish English'));
-    $voices['kal'] = array('language' => 'en2', 'voice' => 'man',
-                        'description' => t('man voice in ??'));
+                        'description' => t('male voice in Scottish English (awb)'));
+    $voices['kal'] = array('language' => 'en3', 'voice' => 'man',
+                        'description' => t('male voice in American English (kal)'));
     return $voices;
   }
 }
