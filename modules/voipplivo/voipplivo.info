@@ -1,0 +1,7 @@
+; $Id$
+name = "VoIP Plivo"
+description = "Allows the VoIP Drupal framework to work with the Plivo service."
+package = VoIP Drupal
+dependencies[] = voip
+dependencies[] = voipcall
+core = 6.x
