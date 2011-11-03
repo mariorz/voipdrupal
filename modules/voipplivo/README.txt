@@ -12,6 +12,9 @@ In order to install the voipplivo.module, you will need:
 
 2. The VoIP Drupal module (http://drupal.org/project/voipdrupal)
 
+3. The PHP Curl extension in your system. For Debian systems, just run
+  $ sudo apt-get install php5-curl
+  $ sudo /etc/init.d/apache2 restart 
 
 == Installation ==
 Installing voipplivo.module is very simple.  It requires a few configuration steps on your Drupal site to let it know how to reach your Plivo server. It also requires a few settings in your Plivo configuration to make sure it knows which Drupal site to use.

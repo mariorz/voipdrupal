@@ -18,6 +18,9 @@ In order to install the voiptropo.module, you will need:
 
 2. The VoIP Drupal module (http://drupal.org/project/voipdrupal)
 
+3. The PHP Curl extension in your system. For Debian systems, just run
+  $ sudo apt-get install php5-curl
+  $ sudo /etc/init.d/apache2 restart 
 
 == Installation ==
 
