@@ -11,7 +11,7 @@ function voipplivo_requirements($phase) {
       $requirements['plivo_curl'] = array(
         'value' => $t('PHP curl not installed.'),
         'severity' => REQUIREMENT_ERROR,
-        'description' => $t("The VoIP Plivo module requires PHP Curl extension to be installed."),
+        'description' => $t("The VoIP Plivo module requires the PHP Curl extension to be installed."),
       );
     }
     else {
