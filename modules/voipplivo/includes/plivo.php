@@ -5,10 +5,11 @@
     // ========================================================================
 
     // ensure Curl is installed
-    if(!extension_loaded("curl"))
+    //@tamerzg: removed and added into drupal hook_requirements
+    /*if(!extension_loaded("curl"))
         throw(new Exception(
             "Curl extension is required for PlivoRestClient to work"));
-
+    */
     /*
      * PlivoRestResponse holds all the REST response data
      * Before using the reponse, check IsError to see if an exception

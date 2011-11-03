@@ -329,16 +329,14 @@ class VoipTropoServer extends VoipServer {
    * Implementation of the VoipServer ping() API method
    */
   function ping($server_config=NULL) {
- 
     // tropo configuration
     $username = $server_config['voiptropo_account_username'];
     $password = $server_config['voiptropo_account_password'];
 
-    // Instantiate a new tropo Rest Client
-    $provisioning=new ProvisioningAPI($username, $password);
-
     voip_error_reset();    
     try{
+      // Instantiate a new tropo Rest Client
+      $provisioning=new ProvisioningAPI($username, $password);
       // Request a list of applications as a way to test the server connectivity
       $response = $provisioning->viewApplications();
     }
