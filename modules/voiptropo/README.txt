@@ -22,6 +22,7 @@ In order to install the voiptropo.module, you will need:
   $ sudo apt-get install php5-curl
   $ sudo /etc/init.d/apache2 restart 
 
+
 == Installation ==
 
 Installing voiptropo.module is very simple.  It requires a few configuration steps on your Drupal site to let it know how to reach your Tropo account. It also requires a few settings in your Tropo account to make sure it knows which Drupal site to use.
@@ -116,4 +117,4 @@ Now you should be able to call your VoIP Drupal site on any of the numbers liste
 
 == About ==
 
-The VoIP Tropo module has been originally developed by Leo Burd and Tamer Zoubi under the sponsorship of the MIT Center for Future Civic Media (http://civic.mit.edu).
+The VoIP Tropo module has been originally developed by Leo Burd and Tamer Zoubi under the sponsorship of the MIT Center for Civic Media (http://civic.mit.edu).

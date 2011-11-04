@@ -72,4 +72,4 @@ Twilio configuration:
 
 == About ==
 
-This module was originally designed and implemented by Leo Burd from the MIT Center for Future Civic Media (http://civic.mit.edu/). 
+This module was originally designed and implemented by Leo Burd from the MIT Center for Civic Media (http://civic.mit.edu/). 

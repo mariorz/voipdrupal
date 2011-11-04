@@ -1,7 +1,8 @@
 == Introduction ==
-Plivo is a Communications Framework to rapidly build voice based apps, to make or receive calls, using your existing web development skills and your existing infrastructure.
 
 The voipplivo.module makes it possible for the VoIP Drupal platform to make and receive calls via the Plivo framework (http://www.plivo.org/).
+
+Plivo is a Communications Framework to rapidly build voice based apps, to make or receive calls, using your existing web development skills and your existing infrastructure.
 
 
 == Requirements ==
@@ -16,18 +17,29 @@ In order to install the voipplivo.module, you will need:
   $ sudo apt-get install php5-curl
   $ sudo /etc/init.d/apache2 restart 
 
+
 == Installation ==
-Installing voipplivo.module is very simple.  It requires a few configuration steps on your Drupal site to let it know how to reach your Plivo server. It also requires a few settings in your Plivo configuration to make sure it knows which Drupal site to use.
+
+Installing voipplivo.module is simple.  It requires a few configuration steps on your Drupal site to let it know how to reach your Plivo server. It also requires a few settings in your Plivo configuration to make sure it knows which Drupal site to use.
+
 
 Plivo configuration:
 
 1. Go to the /pathtoplivoinstall/etc/plivo and open default.conf in editor
+
 2. Change this values:
+
   - DEFAULT_HTTP_METHOD = POST
+
   - DEFAULT_ANSWER_URL = http://mysite.com/voip/plivo/callhandler/ (for clean URLs) or http://mysite.com/voip/?q=plivo/callhandler/
+
   - EXTRA_FS_VARS = variable_duration
+
   - AUTH_ID = enter any value, this is your authentication id
+
   - AUTH_TOKEN = enter any value, this is your authentication token
+
+
 3. Save the file and restart Plivo
 
 
@@ -41,11 +53,11 @@ Drupal configuration:
 
   - Click on Plivo's "configure" link
 
-  - Fill in the fields with the "Account SID", "Auth Token" with your Plivo auth_id and auth_token values(see "Plivo configuration" above).
+  - Fill in the fields "Account SID" and "Auth Token" with your Plivo "AUTH_ID" and "AUTH_TOKEN" values, respectively (see "Plivo configuration" above)
   
-  - If your Plivo is on a different server than Drupal then change the value of Plivo REST API Url
+  - If your Plivo is on a different server than Drupal, change the value of "Plivo REST API Url" to the new server's URL
   
-  - Optionally click the Advanced settings and setup the other values as per your needs.
+  - Optionally click "Plivo Outbound Call Parameters", to set up advanced options as per your needs
   
   - Press "Save". That will take you back to admin/voip/servers
 
@@ -68,6 +80,7 @@ Drupal configuration:
 == Try it out ==    
 
 Now you should be able to call your VoIP Drupal site on  Plivo default number (1000@yourserverip:5080). Enjoy!
+
 
 == About ==
 
