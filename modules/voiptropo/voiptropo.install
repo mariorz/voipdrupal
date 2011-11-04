@@ -9,14 +9,13 @@ function voiptropo_requirements($phase) {
   if ($phase == 'runtime' || $phase == 'install') {
     if (!extension_loaded("curl")) {
       $requirements['tropo_curl'] = array(
-        'value' => $t('PHP curl not installed.'),
         'severity' => REQUIREMENT_ERROR,
         'description' => $t("The VoIP Tropo module requires the PHP Curl extension to be installed."),
       );
     }
     else {
       $requirements['tropo_curl'] = array(
-        'value' => $t('PHP curl is installed.'),
+        'value' => $t('PHP Curl is installed.'),
         'severity' => REQUIREMENT_OK,
       );
     }
