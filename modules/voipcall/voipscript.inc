@@ -1014,13 +1014,13 @@ class VoipCommand {
 
 class VoipPrompt {
 
-  /*
+  /**
    * @variable $text 
    *   String combining text and audio URLs to be played to the user
    */
   private $text;
     
-  /*
+  /**
    * @variable $voice
    *   String with the type of voice to be used for the prompt.  If NULL, use
    *   the script's current voice as defined by the 'voipscript_voice' script
@@ -1029,7 +1029,7 @@ class VoipPrompt {
    */
   private $voice;
 
-  /*
+  /**
    * @variable $language.
    *   String with the language entonation to be used for the prompt. If NULL,
    *   use the script's current language as defined by the 
@@ -1038,7 +1038,7 @@ class VoipPrompt {
    */
   private $language;
 
-  /*
+  /**
    * @variable $as
    *   String that determines how numbers should be pronounced. Supported
    *   values include 'number' (to read '12' as 'twelve') or 'digits' (to read
@@ -1069,6 +1069,49 @@ class VoipPrompt {
     return $this->as;
   }
 
+  // methods created to handle the fact that json_encode does not deal with
+  // private properties
+
+  private function to_array() {
+    $a = array();
+    $a['text'] = $this->text;
+    $a['voice'] = $this->voice;
+    $a['language'] = $this->language;
+    $a['as'] = $this->as;
+    return $a;
+  }
+
+  private static function from_array($a) {
+    $prompt = new VoipPrompt($a['text'], $a['voice'], $a['language'], $a['as']);
+    return $prompt;
+  }
+
+  static function encode($prompt) {
+    if(is_string($prompt)){
+      $prompt_list[] = new VoipPrompt($prompt);
+    }
+    else if (is_object($prompt)){
+      $prompt_list[] = $prompt;
+    }
+    else {
+      $prompt_list = $prompt;
+    }
+      
+    foreach($prompt_list as $p) {
+      $to_encode[] = $p->to_array();
+    }
+    $encoded = json_encode($to_encode);
+    return $encoded;
+  }
+
+  static function decode($encoded) {
+    $array_list = json_decode($encoded, true);
+    foreach($array_list as $a){
+      $prompts[] = VoipPrompt::from_array($a);
+    }
+    return $prompts;
+  }
+
 }
     
 /**
@@ -1084,7 +1127,7 @@ function voipscript_get_run_ivr_menu_script($options) {
 
   // initialize script variables
 
-  $script->addSet('_menu_options', json_encode($options['prompt']));
+  $script->addSet('_menu_options', VoipPrompt::encode($options['prompt']));
 
   $input_options = $options['input_options'];
   $script->addSet('_input_options', json_encode($input_options));
@@ -1102,7 +1145,7 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addLabel('play_menu_options');
   $script->addSet('_counter', '^%_counter - 1');
   $script->addGotoIf('go_back', '^%_counter < 0');
-  $script->addGetInput('^json_decode(%_menu_options, TRUE)', 1, '', '%_timeout');
+  $script->addGetInput("^VoipPrompt::decode(%_menu_options)", 1, '', '%_timeout');
   $script->addGotoIf('no_input_received', "^%input_digits == ''");
 /**
   TODO: ideally, the correct line should be as follows
