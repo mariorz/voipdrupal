@@ -528,13 +528,14 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $options = $script->evalString($cmd->getParam('options'));
           $rc = $script->runGosub($script_name, $options);
           if($script->isError()){
-              $msg = $script->getErrorMessage();
-              $params = array();
-              $call->report_error('voiptwilio', $msg, $params);
-              $rc = FALSE;
-              $processing = FALSE;
-              $found = TRUE;
-              $response .= "<Say>Processing error in gosub command.</Say>";
+            $msg = $script->getErrorMessage();
+            $params = array();
+            $call->report_error('voiptwilio', $msg, $params);
+            $rc = FALSE;
+            $processing = FALSE;
+            $found = TRUE;
+            $voice_msg = t('Processing error. Please contact your system administrator.');
+            $response .= "<Say>$voice_msg</Say>";
           }
           break;
 
@@ -548,7 +549,8 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
             $rc = FALSE;
             $processing = FALSE;
             $found = TRUE;
-            $response .= "<Say>$msg.</Say>";
+            $voice_msg = t('Processing error. Please contact your system administrator.');
+            $response .= "<Say>$voice_msg</Say>";
           }
           break;
 
@@ -564,7 +566,8 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
               $rc = FALSE;
               $processing = FALSE;
               $found = TRUE;
-              $response .= "<Say>$msg.</Say>";
+              $voice_msg = t('Processing error. Please contact your system administrator.');
+              $response .= "<Say>$voice_msg</Say>";
             }
           }
           break;
