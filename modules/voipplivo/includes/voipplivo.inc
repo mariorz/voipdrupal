@@ -540,13 +540,16 @@ watchdog('voipplivo', $msg, array(), WATCHDOG_INFO);
           $options = $script->evalString($cmd->getParam('options'));
           $rc = $script->runGosub($script_name, $options);
           if($script->isError()){
-              $msg = $script->getErrorMessage();
-              $params = array();
-              $call->report_error('voipplivo', $msg, $params);
-              $rc = FALSE;
-              $processing = FALSE;
-              $found = TRUE;
-              $response .= "<Speak>Processing error in gosub command.</Speak>";
+            $msg = $script->getErrorMessage();
+            $params = array();
+            $call->report_error('voipplivo', $msg, $params);
+            $rc = FALSE;
+            $processing = FALSE;
+            $found = TRUE;
+            $text = 'Processing error. Please contact your system administrator.';
+            $langcode = $script->getLanguage();
+            $text = t($text, NULL, $langcode);
+            $response .= "<Speak>$text</Speak>";
           }
           break;
 
@@ -560,7 +563,10 @@ watchdog('voipplivo', $msg, array(), WATCHDOG_INFO);
             $rc = FALSE;
             $processing = FALSE;
             $found = TRUE;
-            $response .= "<Speak>$msg.</Speak>";
+            $text = 'Processing error. Please contact your system administrator.';
+            $langcode = $script->getLanguage();
+            $text = t($text, NULL, $langcode);
+            $response .= "<Speak>$text</Speak>";
           }
           break;
 
@@ -576,7 +582,10 @@ watchdog('voipplivo', $msg, array(), WATCHDOG_INFO);
               $rc = FALSE;
               $processing = FALSE;
               $found = TRUE;
-              $response .= "<Speak>$msg.</Speak>";
+              $text = 'Processing error. Please contact your system administrator.';
+              $langcode = $script->getLanguage();
+              $text = t($text, NULL, $langcode);
+              $response .= "<Speak>$text</Speak>";
             }
           }
           break;

@@ -584,7 +584,7 @@ function _voiptropo_script_handler($call, &$tropo) {
             $rc = FALSE;
             $processing = FALSE;
             $found = TRUE;
-            $text = "Processing error in gosub command.";
+            $text = 'Processing error. Please contact your system administrator.';
             $langcode = $script->getLanguage();
             $text = t($text, NULL, $langcode);
             $tropo->say($text);
@@ -601,7 +601,10 @@ function _voiptropo_script_handler($call, &$tropo) {
             $rc = FALSE;
             $processing = FALSE;
             $found = TRUE;
-            $tropo->say($msg);
+            $text = 'Processing error. Please contact your system administrator.';
+            $langcode = $script->getLanguage();
+            $text = t($text, NULL, $langcode);
+            $tropo->say($text);
           }
           break;
 
@@ -617,7 +620,10 @@ function _voiptropo_script_handler($call, &$tropo) {
               $rc = FALSE;
               $processing = FALSE;
               $found = TRUE;
-              $tropo->say($msg);
+              $text = 'Processing error. Please contact your system administrator.';
+              $langcode = $script->getLanguage();
+              $text = t($text, NULL, $langcode);
+              $tropo->say($text);
             }
           }
           break;

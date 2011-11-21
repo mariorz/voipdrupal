@@ -534,8 +534,10 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
             $rc = FALSE;
             $processing = FALSE;
             $found = TRUE;
-            $voice_msg = t('Processing error. Please contact your system administrator.');
-            $response .= "<Say>$voice_msg</Say>";
+            $text = 'Processing error. Please contact your system administrator.';        
+            $langcode = $script->getLanguage();
+            $text = t($text, NULL, $langcode);
+            $response .= "<Say>$text</Say>";
           }
           break;
 
@@ -549,8 +551,10 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
             $rc = FALSE;
             $processing = FALSE;
             $found = TRUE;
-            $voice_msg = t('Processing error. Please contact your system administrator.');
-            $response .= "<Say>$voice_msg</Say>";
+            $text = 'Processing error. Please contact your system administrator.';        
+            $langcode = $script->getLanguage();
+            $text = t($text, NULL, $langcode);
+            $response .= "<Say>$text</Say>";
           }
           break;
 
@@ -566,8 +570,10 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
               $rc = FALSE;
               $processing = FALSE;
               $found = TRUE;
-              $voice_msg = t('Processing error. Please contact your system administrator.');
-              $response .= "<Say>$voice_msg</Say>";
+              $text = 'Processing error. Please contact your system administrator.';        
+              $langcode = $script->getLanguage();
+              $text = t($text, NULL, $langcode);
+              $response .= "<Say>$text</Say>";
             }
           }
           break;
