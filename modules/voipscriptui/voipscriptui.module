@@ -43,24 +43,6 @@ function voipscriptui_voipscript_load_script($script_name, $options=NULL) {
 }
 
 /**
- * Implementation of hook_validate()
- */
- 
-function voipscriptui_validate($node, &$form) {
-// TODO: why this function is not called?
-  $script_code = $node->field_voipscriptui_code[0]['value'];
-dsm($script_code, '$script_code');
-  ob_start();
-  if(eval("$script_code")===false) {
-    ob_end_clean();
-    form_set_error('field_voipscriptui_code',
-        t('PHP syntax error in script: @script',
-          array('@script' => $script_code)));
-  }
-  ob_end_clean();
-}
-
-/**
  * Implementation of hook_nodeapi()
  */
 function voipscriptui_nodeapi($node, $op, $a3, $a4 ) {
@@ -75,6 +57,17 @@ function voipscriptui_nodeapi($node, $op, $a3, $a4 ) {
         t('A script called @script_name already exists. To edit it, click <a target="_blank" href="'.base_path().'node/'.$exist.'/edit">here</a>',
           array('@script_name' => $node->title)));
     }
+    $script_code = '$script = new VoipScript("'.$node->title.'");';
+    $script_code .= $node->field_voipscriptui_code[0]['value'];
+    
+    ob_start();
+    if(eval("$script_code")===false) {
+      ob_end_clean();
+      form_set_error('field_voipscriptui_code',
+        t('PHP syntax error in script: @script',
+          array('@script' => $script_code)));
+    }
+    ob_end_clean();
   }
 }
 
