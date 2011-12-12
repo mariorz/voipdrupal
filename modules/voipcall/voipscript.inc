@@ -1126,9 +1126,7 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script = new VoipScript('voipscript_run_ivr_menu');
 
   // initialize script variables
-
   $script->addSet('_menu_options', VoipPrompt::encode($options['prompt']));
-
   $input_options = $options['input_options'];
   $script->addSet('_input_options', json_encode($input_options));
 

@@ -1260,7 +1260,9 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
     
     //Tropo doesn't support multiple voices in ask(): https://www.tropo.com/bizblog/viewer?&bb-name=tropo_support&bb-q=&&bb-cid=99&bb-tid=1427328#bb
     //Therefore using SSML directly
+    $text =_voiptropo_parse_audio($text);
     $ask_text .= '<voice name=\''.$voice.'\'><say-as interpret-as=\'vxml:'.$as.'\'>'.$text.'</say-as></voice>';
+    //$ask_text .= '<voice name=\''.$voice.'\'><say-as>'.$text.'</say-as></voice>';
     //$say[] = new Say($text, $as, null, $voice);
   }
   $ask_text .= '</speak>';
@@ -1283,6 +1285,18 @@ function _voiptropo_parse_numbers($str) {
   foreach ($str_array as $key => $word) {
     if(!_voiptropo_is_url($word)){
       $str_array[$key] = preg_replace_callback('{(\d+)}', '_voiptropo_ssml_digits', $word);
+    }
+  }
+  
+  return implode(" ", $str_array);
+}
+
+/*Replace url with <audio> tag*/
+function _voiptropo_parse_audio($str) {
+  $str_array = explode(" ",$str);
+  foreach ($str_array as $key => $word) {
+    if(_voiptropo_is_url($word)){
+      $str_array[$key] = "<audio src='".$word."'/>";
     }
   }
   
