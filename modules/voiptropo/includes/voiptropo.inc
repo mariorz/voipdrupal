@@ -948,14 +948,15 @@ watchdog("debug", "Say: voice: $voice, language: $language, text: $text");
           $script->setVar($var_name, $var_value);
           break;
 
-        case 'VoipCmdSetLanguage';
+        /*case 'VoipCmdSetLanguage';
           $language = $script->evalString($cmd->getParam('language'));
           $script->setLanguage($language);
           break;
-
+*/
         case 'VoipCmdSetVoice';
           $voice = $script->evalString($cmd->getParam('voice'));
-          $voice_id = VoipTropoServer::getVoiceId($voice,$language);
+          $voice_id = VoipVoice::getVoice($voice);
+          //$voice_id = VoipTropoServer::getVoiceId($voice,$language);
           $script->setVoice($voice_id);
           break;
 

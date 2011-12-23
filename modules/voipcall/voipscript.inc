@@ -787,11 +787,11 @@ class VoipScript {
   /**
    * Set the current language of the script
    */
-  function addSetLanguage($language='en') {
+  /*function addSetLanguage($language='en') {
     $params['language'] = $language;
     $this->commands[] = new VoipCommand('VoipCmdSetLanguage', $params);
   }
-
+*/
   /**
    * Set the current voice of the script
    */

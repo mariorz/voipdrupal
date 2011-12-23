@@ -41,13 +41,13 @@ function voiptwilio_admin_form($configuration) {
     '#default_value' => ($configuration['voiptwilio_auth_token']?$configuration['voiptwilio_auth_token']:''),
   );
 
-  $form['voiptwilio_voice_id'] = array(
+  /*$form['voiptwilio_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default voice'),
     '#description' => t('Voice to be used in automatic text-to-speech generation.'),
     '#options' => VoipTwilioServer::getVoicesList(),
     '#default_value' => $configuration['voiptwilio_voice_id']?$configuration['voiptwilio_voice_id']:'en_man',
-  );
+  );*/
 
 
   return $form;
@@ -87,4 +87,46 @@ function voiptwilio_menu() {
   return $items;
 }
 
+/**
+ * Implements hook_getvoices().
+ */
+function voiptwilio_getvoices($language , $gender, $is_local) {
 
+  if(variable_get('voip_default_server', 'log') != 'twilio') {
+    //Return if this VoIP Server is not set as default
+    return array();
+  }
+  if($is_local) {
+    //This module doesn't declare local voices
+    return array();
+  }
+  
+  $voices = VoipTwilioServer::_get_available_voices();
+    //Search
+    foreach($voices as $key => $voice) {
+    if($language && $gender) {
+      //Search by language and gender
+      if($voice['language'] == $language && $voice['voice'] == $gender) {
+        $matched_voices[$key] = $voice['description'];
+      }
+    }
+    else if($language) {
+       //Search by language
+      if($voice['language'] == $language ) {
+        $matched_voices[$key] = $voice['description'];
+      }
+    }
+    else if($gender) {
+       //Search by gender
+      if($voice['voice'] == $gender ) {
+        $matched_voices[$key] = $voice['description'];
+      }
+    }
+    else {
+      $matched_voices[$key] = $voice['description'];
+    }
+    
+  }
+ 
+  return $matched_voices;
+}

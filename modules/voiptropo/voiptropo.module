@@ -53,13 +53,13 @@ function voiptropo_admin_form($configuration) {
     '#default_value' => ($configuration['voiptropo_sms_token']?$configuration['voiptropo_sms_token']:''),
   );
 
-  $form['voiptropo_voice_id'] = array(
+  /*$form['voiptropo_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default voice'),
     '#description' => t('Default voice to be used in automatic text-to-speech generation.'),
     '#options' => VoipTropoServer::getVoicesList(),
     '#default_value' => $configuration['voiptropo_voice_id']?$configuration['voiptropo_voice_id']:'dave',
-  );
+  );*/
 
   return $form;
 }
@@ -211,4 +211,48 @@ function json_wrap($any, $skipAssoc = false) {
   }
   }
   return $any;
+}
+
+/**
+ * Implements hook_getvoices().
+ */
+function voiptropo_getvoices($language , $gender, $is_local){
+  if(variable_get('voip_default_server', 'log') != 'tropo') {
+    //Return if this VoIP Server is not set as default
+    return array();
+  }
+  
+  if($is_local) {
+    //This module doesn't declare local voices
+    return array();
+  }
+  
+  $voices = VoipTropoServer::_get_available_voices();
+    //Search
+    foreach($voices as $key => $voice) {
+    if($language && $gender) {
+      //Search by language and gender
+      if($voice['language'] == $language && $voice['voice'] == $gender) {
+        $matched_voices[$key] = $voice['description'];
+      }
+    }
+    else if($language) {
+       //Search by language
+      if($voice['language'] == $language ) {
+        $matched_voices[$key] = $voice['description'];
+      }
+    }
+    else if($gender) {
+       //Search by gender
+      if($voice['voice'] == $gender ) {
+        $matched_voices[$key] = $voice['description'];
+      }
+    }
+    else {
+      $matched_voices[$key] = $voice['description'];
+    }
+    
+  }
+ 
+  return $matched_voices;
 }
