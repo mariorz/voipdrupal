@@ -130,3 +130,47 @@ function voipplivo_menu() {
 }
 
 
+
+/**
+ * Implements hook_getvoices().
+ */
+function voipplivo_getvoices($language , $gender, $is_local) {
+
+  if(variable_get('voip_default_server', 'log') != 'plivo') {
+    //Return if this VoIP Server is not set as default
+    return array();
+  }
+  if($is_local) {
+    //This module doesn't declare local voices
+    return array();
+  }
+  
+  $voices = VoipPlivoServer::_get_available_voices();
+    //Search
+    foreach($voices as $key => $voice) {
+    if($language && $gender) {
+      //Search by language and gender
+      if($voice['language'] == $language && $voice['voice'] == $gender) {
+        $matched_voices[$key] = $voice['description'];
+      }
+    }
+    else if($language) {
+       //Search by language
+      if($voice['language'] == $language ) {
+        $matched_voices[$key] = $voice['description'];
+      }
+    }
+    else if($gender) {
+       //Search by gender
+      if($voice['voice'] == $gender ) {
+        $matched_voices[$key] = $voice['description'];
+      }
+    }
+    else {
+      $matched_voices[$key] = $voice['description'];
+    }
+    
+  }
+ 
+  return $matched_voices;
+}

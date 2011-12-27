@@ -772,8 +772,9 @@ function _voiptropo_script_handler($call, &$tropo) {
           $voice = $voice_tmp ? $voice_tmp : $default_voice;
           $language_tmp = $last_say->getLanguage() ? $script->evalString($last_say->getLanguage()) : '';
           $language = $language_tmp ? $language_tmp : $default_language;
-          $voice_id = VoipTropoServer::getVoiceId($voice, $language);
-          $voice = $voice_id ? $voice_id : $script->getVoice();
+          //$voice = VoipVoice::getVoice($voice);
+          $voice = VoipTropoServer::getVoiceId($voice, $language);
+          //$voice = $voice_id ? $voice_id : $script->getVoice();
           $as = $last_say->getAs() ? $script->evalString($last_say->getAs()) : '';
 
           if (!empty($as) && in_array($as, array('digits', 'date'))) {
@@ -789,8 +790,9 @@ function _voiptropo_script_handler($call, &$tropo) {
             $voice = $voice_tmp ? $voice_tmp : $default_voice;
             $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
             $language = $language_tmp ? $language_tmp : $default_language;
-            $voice_id = VoipTropoServer::getVoiceId($voice, $language);
-            $voice = $voice_id ? $voice_id : $script->getVoice();
+            //$voice = VoipVoice::getVoice($voice);
+            $voice = VoipTropoServer::getVoiceId($voice, $language);
+            //$voice = $voice_id ? $voice_id : $script->getVoice();
             $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
             $say_params = array();
             if (!empty($as) && in_array($as, array('digits', 'date'))) {
@@ -865,9 +867,10 @@ function _voiptropo_script_handler($call, &$tropo) {
               $voice = $voice_tmp ? $voice_tmp : $default_voice;
               $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
               $language = $language_tmp ? $language_tmp : $default_language;
-              $voice_id = VoipTropoServer::getVoiceId($voice, $language);
-              $default_voice_id = VoipTropoServer::getVoiceId($default_voice, $language);
-              $voice = $voice_id ? $voice_id : $default_voice_id;
+              //$voice = VoipVoice::getVoice($voice);
+              $voice = VoipTropoServer::getVoiceId($voice, $language);
+              //$default_voice_id = VoipTropoServer::getVoiceId($default_voice, $language);
+              //$voice = $voice_id ? $voice_id : $default_voice_id;
 watchdog("debug", "Say: voice: $voice, language: $language, text: $text");
               $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
               $say_params = array();
@@ -955,8 +958,8 @@ watchdog("debug", "Say: voice: $voice, language: $language, text: $text");
 */
         case 'VoipCmdSetVoice';
           $voice = $script->evalString($cmd->getParam('voice'));
-          $voice_id = VoipVoice::getVoice($voice);
-          //$voice_id = VoipTropoServer::getVoiceId($voice,$language);
+          //$voice_id = VoipVoice::getVoice($voice);
+          $voice_id = VoipTropoServer::getVoiceId($voice,$language);
           $script->setVoice($voice_id);
           break;
 
@@ -1251,8 +1254,9 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
     $voice = $voice_tmp ? $voice_tmp : $default_voice;
     $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
     $language = $language_tmp ? $language_tmp : $default_language;
-    $voice_id = VoipTropoServer::getVoiceId($voice, $language);
-    $voice = $voice_id ? $voice_id : $script->getVoice();
+    //$voice = VoipVoice::getVoice($voice);
+    $voice = VoipTropoServer::getVoiceId($voice, $language);
+    //$voice = $voice_id ? $voice_id : $script->getVoice();
     $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
     if (empty($as) && !in_array($as, array('digits', 'date'))) {
             $as = 'number'; 

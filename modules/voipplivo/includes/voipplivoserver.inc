@@ -366,7 +366,7 @@ static function _get_available_voices() {
                         'description' => t('male voice in American English (rms)'));
     $voices['awb'] = array('language' => 'en2', 'voice' => 'man',
                         'description' => t('male voice in Scottish English (awb)'));
-    $voices['kal'] = array('language' => 'en3', 'voice' => 'man',
+    $voices['kal'] = array('language' => 'en-us', 'voice' => 'man',
                         'description' => t('male voice in American English (kal)'));
     return $voices;
   }

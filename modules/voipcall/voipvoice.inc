@@ -1,10 +1,4 @@
 <?php 
-/*
-TODO: 
-asDate($number) -> convert to date
-asDigits($number) -> convert as digits (1 2 3 ...)
-asNumber($number) -> return $number
-*/
 /**
  * @file
  * Implementation of VoIP Voice class
@@ -12,9 +6,28 @@ asNumber($number) -> return $number
 
   class VoipVoice {
   
+    /**
+    * @variable $voice
+    *   String with the type of voice to be used for the prompt. 
+    */
     private $voice_code;
+    /**
+    * @variable $gender
+    *   String with the type of gender to be used for the prompt.  Supports following formats: man, male, m, woman, female, w, f
+    */
     private $gender;
+    
+    
+    /**
+    * @variable $language.
+    *   String with the language entonation to be used for the prompt. 
+    */
     private $language;
+    
+    /**
+    * @variable $voice
+    *  Boolean indicating if this voice is generated on local server or not.
+    */
     private $is_local;
    
    function __construct($voice_code, $gender, $language, $is_local) {
@@ -89,7 +102,7 @@ asNumber($number) -> return $number
     public static function getVoices($language = NULL, $gender=NULL, $is_local=NULL) {
       //call a hook_getvoices()
       $voices = module_invoke_all('getvoices', $language , $gender, $is_local);
-      sort($voices);
+      arsort($voices);
       return $voices;
     }
     
@@ -151,7 +164,20 @@ asNumber($number) -> return $number
     }
     
     function getGender(){
-      return $this->gender;
+      switch(strtolower($this->gender)) {
+        case 'man':
+        case 'male':
+        case 'm':
+          $gender = 'man';
+          break;
+        case 'woman':
+        case 'female':
+        case 'f':
+        case 'w':
+          $gender = 'woman';
+          break;            
+      }
+      return $gender;
     }
     
     function getLanguage(){
@@ -205,7 +231,7 @@ asNumber($number) -> return $number
         return v($text, $params['args'], $this->getVoiceCode());
       }
       else {
-        return new VoipPrompt($text, $this->getVoiceCode()); 
+        return new VoipPrompt($text, $this->getGender(), $this->getLanguage()); 
       }
     }
  }
