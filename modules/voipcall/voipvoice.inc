@@ -7,13 +7,13 @@
   class VoipVoice {
   
     /**
-    * @variable $voice
+    * @variable $voice_id
     *   String with the type of voice to be used for the prompt. 
     */
-    private $voice_code;
+    private $voice_id;
     /**
     * @variable $gender
-    *   String with the type of gender to be used for the prompt.  Supports following formats: man, male, m, woman, female, w, f
+    *   String with the type of gender to be used for the prompt.  Supports following formats: man, woman, neutral
     */
     private $gender;
     
@@ -25,13 +25,13 @@
     private $language;
     
     /**
-    * @variable $voice
+    * @variable $voice_id
     *  Boolean indicating if this voice is generated on local server or not.
     */
     private $is_local;
    
-   function __construct($voice_code, $gender, $language, $is_local) {
-     $this->voice_code = $voice_code;
+   function __construct($voice_id, $gender, $language, $is_local) {
+     $this->voice_id = $voice_id;
      $this->gender = $gender;
      $this->language = $language;
      $this->is_local = $is_local;
@@ -40,15 +40,15 @@
    /**
    * Sets default VoIP Voice
    *
-   * @param $voice_code
-   *   Integer representing voice code
+   * @param $voice_id
+   *   String representing voice code
    *
    * @return
    *   
    */
-    public static function setDefaultVoice($voice_code){
-      //TODO: Check if voice_code is valid
-      variable_set('voipcall_voice_id', $voice_code);
+    public static function setDefaultVoice($voice_id){
+      //TODO: Check if voice_id is valid
+      variable_set('voipcall_voice_id', $voice_id);
     }
     
    /**
@@ -59,31 +59,31 @@
    *   interger representing voice code of default VoIP Voice.
    */
     public static function getDefaultVoice(){
-       $voice_code = variable_get('voipcall_voice_id', '');
-       return $voice_code;
+       $voice_id = variable_get('voipcall_voice_id', '');
+       return $voice_id;
     }
     
    /**
    * Get the VoIP Voice
    *
-   * @param $voice_code
-   *   Integer representing voice code
+   * @param $voice_id
+   *   String representing voice code
    *
    * @return
    *   interger representing voice code of default VoIP Voice.
    */
-    public static function getVoice($voice_code = NULL){
-      if ($voice_code == 'man') {
+    public static function getVoice($voice_id = NULL){
+      if ($voice_id == 'man') {
         return variable_get('voipcall_man_voice_id', '');
       }
-      else if ($voice_code == 'woman') {
+      else if ($voice_id == 'woman') {
         return variable_get('voipcall_woman_voice_id', '');
       }
-      else if (empty($voice_code)) {
+      else if (empty($voice_id)) {
         return self::getDefaultVoice();
       }
       else {
-        return $voice_code;
+        return $voice_id;
       }
     }
     
@@ -109,34 +109,34 @@
    /**
    * This method defines which voice to be used whenever the id is 'man'
    *
-   * @param $voice_code
-   *   String representing voice code
+   * @param $voice_id
+   *   String representing voice id
    *
    * @return
    *   
    */
-    public static function setDefaultManVoice($voice_code = NULL){
-      variable_set('voipcall_man_voice_id', $voice_code);
+    public static function setDefaultManVoice($voice_id = NULL){
+      variable_set('voipcall_man_voice_id', $voice_id);
     }
     
    /**
    * This method defines which voice to be used whenever the id is 'woman'
    *
-   * @param $voice_code
-   *   String representing voice code
+   * @param $voice_id
+   *   String representing voice id
    *
    * @return
    *   
    */
-    public static function setDefaultWomanVoice($voice_code = NULL){
-      variable_set('voipcall_woman_voice_id', $voice_code);
+    public static function setDefaultWomanVoice($voice_id = NULL){
+      variable_set('voipcall_woman_voice_id', $voice_id);
     }
     
       /**
    * This method defines which voice to be used whenever the id is 'man'
    *
-   * @param $voice_code
-   *   String representing voice code
+   * @param $voice_id
+   *   String representing voice id
    *
    * @return
    *   
@@ -148,7 +148,7 @@
    /**
    * This method returns default woman voice
    *
-   * @param $voice_code
+   * @param $voice_id
    *   String representing voice code
    *
    * @return
@@ -159,12 +159,12 @@
     }
     
 
-    function getVoiceCode(){
-      return $this->voice_code;
+    function getVoiceId(){
+      return $this->voice_id;
     }
     
     function getGender(){
-      switch(strtolower($this->gender)) {
+      /*switch(strtolower($this->gender)) {
         case 'man':
         case 'male':
         case 'm':
@@ -176,8 +176,8 @@
         case 'w':
           $gender = 'woman';
           break;            
-      }
-      return $gender;
+      }*/
+      return $this->gender;
     }
     
     function getLanguage(){
@@ -223,15 +223,42 @@
     
     function getPrompt($text, $params = NULL) {
       /*
-      *** the implementation of v() will call this method for the current voice
+      *** the implementation of voipvoice_get_prompt() will call this method for the current voice
 *** for local voices, this method should return the audio file(s) associated with the $text
 *** for non-local voices, this method should just return the $text itself (or its translation)
       */
       if ($this->isLocal()) {
-        return v($text, $params['args'], $this->getVoiceCode());
+        if(module_exists('voipvoice')) {
+          //Use voipvoice function to get locally recorder voice
+          return voipvoice_get_prompt($text, $params['args'], $this->getVoiceId());
+        }
+        else {
+          //Log error and return plain text
+          watchdog('voipcall', 'getPrompt() called with local voice, but voipvoice.module is not installed.', NULL, WATCHDOG_ERROR);
+          return $text;
+        }
+        
       }
       else {
         return new VoipPrompt($text, $this->getGender(), $this->getLanguage()); 
       }
     }
  }
+ 
+ /* Helper functions */
+ 
+function voipvoice_set_current_voice($voice_tmp) {
+  global $voipvoice_current_voice;
+  $voipvoice_current_voice = $voice_tmp;
+}
+
+function v($text, $args) {
+ global $voipvoice_current_voice;
+
+ if(!$voipvoice_current_voice) {
+  //TODO: initialize with default
+ }
+ $params['args'] = $args;
+ $prompt = $voipvoice_current_voice->getPrompt($text, $params);
+ return $prompt;
+}
