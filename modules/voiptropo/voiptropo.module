@@ -222,7 +222,7 @@ function voiptropo_getvoices($language , $gender, $is_local){
     return array();
   }
   
-  if($is_local) {
+  if($is_local === TRUE) {
     //This module doesn't declare local voices
     return array();
   }

@@ -140,7 +140,7 @@ function voipplivo_getvoices($language , $gender, $is_local) {
     //Return if this VoIP Server is not set as default
     return array();
   }
-  if($is_local) {
+  if($is_local === TRUE) {
     //This module doesn't declare local voices
     return array();
   }
