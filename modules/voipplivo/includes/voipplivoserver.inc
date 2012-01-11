@@ -70,7 +70,7 @@ class VoipPlivoServer extends VoipServer {
    */
   function getDefaultLanguage(){
     $server_config = $this->getConfig();
-    $voice_id = $server_config['voipplivo_voice_id'];
+    $voice_id = VoipVoice::getDefaultVoice()->getVoiceId();
     $voices_available = self::_get_available_voices();
     $voice_descriptor = $voices_available[$voice_id];
     $voice = $voice_descriptor['language'];
@@ -82,7 +82,7 @@ class VoipPlivoServer extends VoipServer {
    */
   function getDefaultVoice(){
     $server_config = $this->getConfig();
-    $voice_id = $server_config['voipplivo_voice_id'];
+    $voice_id = VoipVoice::getDefaultVoice()->getVoiceId();
     return $voice_id;
   }
 

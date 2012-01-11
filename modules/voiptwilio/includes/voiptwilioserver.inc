@@ -58,7 +58,7 @@ class VoipTwilioServer extends VoipServer {
   function getDefaultLanguage(){
     $server_config = $this->getConfig();
     //$voice_id = $server_config['voiptwilio_voice_id'];
-    $voice_id = VoipVoice::getDefaultVoice();
+    $voice_id = VoipVoice::getDefaultVoice()->getVoiceId();
     $voices_available = self::_get_available_voices();
     $voice_descriptor = $voices_available[$voice_id];
     $voice = $voice_descriptor['language'];
@@ -71,7 +71,7 @@ class VoipTwilioServer extends VoipServer {
   function getDefaultVoice(){
     $server_config = $this->getConfig();
     //$voice_id = $server_config['voiptwilio_voice_id'];
-    $voice_id = VoipVoice::getDefaultVoice();
+    $voice_id = VoipVoice::getDefaultVoice()->getVoiceId();
     $voices_available = self::_get_available_voices();
     $voice_descriptor = $voices_available[$voice_id];
     $voice = $voice_descriptor['voice'];
