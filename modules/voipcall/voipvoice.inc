@@ -244,7 +244,7 @@ function voipvoice_set_current_voice($voice_tmp) {
   $voipvoice_current_voice = $voice_tmp;
 }
 
-function v($text, $args) {
+function v($text, $args = NULL) {
  global $voipvoice_current_voice;
 
  if(!$voipvoice_current_voice) {
