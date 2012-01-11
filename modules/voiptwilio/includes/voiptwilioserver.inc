@@ -459,21 +459,21 @@ watchdog('voiptwilio', "in hangup() with call id: $id and status: $status");
 static function _get_available_voices() {
     $voices = array();
     $voices['en_man'] = array('language' => 'en', 'voice' => 'man',
-                        'description' => t('male voice in English'));
+                        'description' => t('Dave - male voice in English'));
     $voices['en_woman'] = array('language' => 'en', 'voice' => 'woman',
-                        'description' => t('female voice in English'));
+                        'description' => t('Allison - female voice in English'));
     $voices['es_man'] = array('language' => 'es', 'voice' => 'man',
-                        'description' => t('male voice in Spanish'));
+                        'description' => t('Jorge - male voice in Spanish'));
     $voices['es_woman'] = array('language' => 'es', 'voice' => 'woman',
-                        'description' => t('female voice in Spanish'));
+                        'description' => t('Carmen - female voice in Spanish'));
     $voices['fr_man'] = array('language' => 'fr', 'voice' => 'man',
-                        'description' => t('male voice in French'));
+                        'description' => t('Bernard - male voice in French'));
     $voices['fr_woman'] = array('language' => 'fr', 'voice' => 'woman',
-                        'description' => t('female voice in French'));
+                        'description' => t('Florence - female voice in French'));
     $voices['de_man'] = array('language' => 'de', 'voice' => 'man',
-                        'description' => t('male voice in German'));
+                        'description' => t('Stefan - male voice in German'));
     $voices['de_woman'] = array('language' => 'de', 'voice' => 'woman',
-                        'description' => t('female voice in German'));
+                        'description' => t('Katrin - female voice in German'));
     return $voices;
   }
 

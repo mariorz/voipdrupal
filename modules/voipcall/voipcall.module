@@ -166,28 +166,32 @@ function voipcall_admin_form() {
     '#default_value' => variable_get('voipcall_default_session_time', 0),
   );
   
+  $voices = VoipVoice::getVoices(NULL, NULL, FALSE);
+  foreach($voices as $key => $voice) {
+    $voice_selection[$key] = $voice['description'];
+  }
   $form['voipcall_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default voice'),
     '#description' => t('Voice to be used in automatic text-to-speech generation.'),
-    '#options' => VoipVoice::getVoices(NULL, NULL, FALSE),
-    '#default_value' => VoipVoice::getDefaultVoice(),
+    '#options' => $voice_selection,
+    '#default_value' => VoipVoice::getDefaultVoice()->getVoiceId(),
   );
   
   $form['voipcall_man_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default man voice'),
     '#description' => t('Man voice to be used in automatic text-to-speech generation.'),
-    '#options' => VoipVoice::getVoices(NULL, NULL, FALSE),
-    '#default_value' => VoipVoice::getDefaultManVoice(),
+    '#options' => $voice_selection,
+    '#default_value' => VoipVoice::getDefaultManVoice()->getVoiceId(),
   );
   
   $form['voipcall_woman_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default woman voice'),
     '#description' => t('Woman voice to be used in automatic text-to-speech generation.'),
-    '#options' => VoipVoice::getVoices(NULL, NULL, FALSE),
-    '#default_value' => VoipVoice::getDefaultWomanVoice(),
+    '#options' =>$voice_selection,
+    '#default_value' => VoipVoice::getDefaultWomanVoice()->getVoiceId(),
   );
 
   $form['submit'] = array(
