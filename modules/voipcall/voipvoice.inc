@@ -220,7 +220,7 @@ class VoipVoice {
    *   An associative array of replacements to be made in the prompt afters
    *   translation. Similar to the $args parameter of t()
    *
-   * @paramm $as
+   * @param $as
    *   String that determines how numbers should be pronounced. Supported values
    *   include 'number' (to read '12' as 'twelve') or 'digits' (to read '12' as
    *   'one two'). By default, numbers should be read as 'number'.
@@ -229,20 +229,20 @@ class VoipVoice {
    *   String combining text and audio urls to be read and processed by VoIP
    *   servers.
    */
-  function getPrompt($text, $params = NULL) { 
+  function getPrompt($text, $args = NULL, $as = NULL) { 
     if ($this->isLocal()) {
       if(module_exists('voipvoice')) {
         //Use voipvoice function to get locally recorder voice
-        return voipvoice_get_prompt($text, $params, $this->getVoiceId());
+        return voipvoice_get_prompt($text, $args, $this->getVoiceId());
       }
       else {
-        //Log error and return plain text
-        watchdog('voipcall', 'getPrompt() called with local voice, but voipvoice.module is not installed.', NULL, WATCHDOG_ERROR);
-        return $text;
+       //Log error and return plain text
+       watchdog('voipcall', 'getPrompt() called with local voice, but voipvoice.module is not installed.', NULL, WATCHDOG_ERROR);
+       return $text;
       }
     }
     else {
-      return new VoipPrompt($text, $this->getGender(), $this->getLanguage(), $params); 
+      return new VoipPrompt($text, $this->getGender(), $this->getLanguage(), $as); 
     }
   }
 }
@@ -262,7 +262,7 @@ function voipvoice_set_current_voice($voice_tmp) {
 /**
  * Wrapper around VoiceVoice's getPrompt() method
  */
-function v($text, $params = NULL, $voice_id=NULL) {
+function v($text, $args = NULL, $as = NULL,  $voice_id=NULL) {
  if ($voice_id) {
    $voipvoice_current_voice = VoipVoice::getVoice($voice_id);
  }
@@ -275,6 +275,6 @@ function v($text, $params = NULL, $voice_id=NULL) {
    }
  }
 
- $prompt = $voipvoice_current_voice->getPrompt($text, $params);
+ $prompt = $voipvoice_current_voice->getPrompt($text, $args, $as);
  return $prompt;
 }
