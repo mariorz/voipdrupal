@@ -226,19 +226,20 @@ class VoipVoice {
    *   'one two'). By default, numbers should be read as 'number'.
    *
    * @return
-   *   String combining text and audio urls to be read and processed by VoIP
+   *   VoipPrompt instance combining text and audio urls to be read by VoIP
    *   servers.
    */
   function getPrompt($text, $args = NULL, $as = NULL) { 
     if ($this->isLocal()) {
       if(module_exists('voipvoice')) {
         //Use voipvoice function to get locally recorder voice
-        return voipvoice_get_prompt($text, $args, $this->getVoiceId());
+        $url_or_text = voipvoice_get_prompt($text, $args, $this->getVoiceId());
+        return new VoipPrompt($url_or_text, $this->getVoiceId(), $as);
       }
       else {
        //Log error and return plain text
        watchdog('voipcall', 'getPrompt() called with local voice, but voipvoice.module is not installed.', NULL, WATCHDOG_ERROR);
-       return $text;
+       return new VoipPrompt($text, $this->getVoiceId(), $as);
       }
     }
     else {
