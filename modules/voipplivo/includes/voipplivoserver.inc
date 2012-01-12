@@ -361,13 +361,13 @@ static function _get_available_voices() {
     // Note: check http://festvox.org/voicedemos.html for demos of the different voices
     $voices = array();
     $voices['slt'] = array('language' => 'en', 'voice' => 'woman',
-                        'description' => t('Slt - female voice in American English'));
+                        'description' => t('Slt (female voice in American English)'));
     $voices['rms'] = array('language' => 'en', 'voice' => 'man',
-                        'description' => t('Rms - male voice in American English'));
+                        'description' => t('Rms (male voice in American English)'));
     $voices['awb'] = array('language' => 'en2', 'voice' => 'man',
-                        'description' => t('Awb - male voice in Scottish English'));
+                        'description' => t('Awb (male voice in Scottish English)'));
     $voices['kal'] = array('language' => 'en-us', 'voice' => 'man',
-                        'description' => t('Kal - male voice in American English'));
+                        'description' => t('Kal (male voice in American English)'));
     return $voices;
   }
 }
