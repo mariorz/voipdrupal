@@ -244,12 +244,17 @@ function voipvoice_set_current_voice($voice_tmp) {
   $voipvoice_current_voice = $voice_tmp;
 }
 
-function v($text, $args = NULL) {
- global $voipvoice_current_voice;
-
- if(!$voipvoice_current_voice) {
-  //initialize with default
-  $voipvoice_current_voice = VoipVoice::getDefaultVoice();
+function v($text, $args = NULL, $voice_id=NULL) {
+ if ($voice_id) {
+   $voipvoice_current_voice = VoipVoice::getVoice($voice_id);
+ }
+ else {
+   //Use voice set in voipvoice_set_current_voice()
+   global $voipvoice_current_voice;
+   if(!$voipvoice_current_voice) {
+    //initialize with default
+    $voipvoice_current_voice = VoipVoice::getDefaultVoice();
+   }
  }
  $params['args'] = $args;
  $prompt = $voipvoice_current_voice->getPrompt($text, $params);
