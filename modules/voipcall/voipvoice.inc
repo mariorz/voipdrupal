@@ -107,7 +107,7 @@
     public static function getVoices($language = NULL, $gender=NULL, $is_local=NULL) {
       //call a hook_getvoices()
       $voices = module_invoke_all('getvoices', $language , $gender, $is_local);
-      arsort($voices);
+      ksort($voices);
       return $voices;
     }
     
