@@ -50,14 +50,9 @@ class VoipScript {
   private $stack;
 
   /**
-   * Voice being currently used for text-to-speech generation
+   * The id of the voice being currently used for text-to-speech generation
    */
-  private $voice;
-
-  /**
-   * Language being currently used for text-to-speech generation
-   */
-  private $language;
+  private $voice_id;
 
   /**
    * Flag indicating script execution error
@@ -205,41 +200,29 @@ class VoipScript {
   }
 
   /**
-   * Sets the current language of the script
-   */
-  function setLanguage($language) {
-    $this->language = $language;
-  }
-
-  /**
    * Returns the current language of the script
    */
   function getLanguage() {
-    $language = $this->language;
-    if(!$language) {
-      $server = VoipServer::getDefaultServer();
-      $language = $server->getDefaultLanguage();
-    }
+    $language = VoipVoice::getVoice($this->voice_id)->getLanguage();
     return $language;
   }
 
   /**
    * Sets the current voice of the script
    */
-  function setVoice($voice) {
-    $this->voice = $voice;
+  function setVoice($voice_id) {
+    $this->voice_id = $voice_id;
   }
 
   /**
    * Returns the current voice of the script
    */
   function getVoice() {
-    $voice = $this->voice;
-    if(!$voice) {
-      $server = VoipServer::getDefaultServer();
-      $voice = $server->getDefaultVoice();
+    $voice_id = $this->voice_id;
+    if(!$voice_id) {
+      $voice_id = VoipVoice::getDefaultVoice()->getVoiceId();
     }
-    return $voice;
+    return $voice_id;
   }
 
 
@@ -1021,22 +1004,11 @@ class VoipPrompt {
   private $text;
     
   /**
-   * @variable $voice
-   *   String with the type of voice to be used for the prompt.  If NULL, use
-   *   the script's current voice as defined by the 'voipscript_voice' script
-   *   variable. In case that variable is not set, use the default 'voice'
-   *   setting defined by the voip server.
+   * @variable $voice_id
+   *   String with the id of voice to be used for the prompt.  If NULL, use
+   *   the script's current voice
    */
-  private $voice;
-
-  /**
-   * @variable $language.
-   *   String with the language entonation to be used for the prompt. If NULL,
-   *   use the script's current language as defined by the 
-   *   'voipscript_language' script variable. If that variable is not set,
-   *   use the default 'language' setting defined by the voip server.
-   */
-  private $language;
+  private $voice_id;
 
   /**
    * @variable $as
@@ -1046,10 +1018,9 @@ class VoipPrompt {
    */
   private $as;
 
-  function __construct($text, $voice=NULL, $language=NULL, $as=NULL) {
+  function __construct($text, $voice_id=NULL, $as=NULL) {
     $this->text = $text;
-    $this->voice = $voice;
-    $this->language = $language;
+    $this->voice_id = $voice_id;
     $this->as = $as;
   }
 
@@ -1058,11 +1029,7 @@ class VoipPrompt {
   }
 
   function getVoice() {
-    return $this->voice;
-  }
-
-  function getLanguage() {
-    return $this->language;
+    return $this->voice_id;
   }
 
   function getAs() {
@@ -1075,14 +1042,13 @@ class VoipPrompt {
   private function to_array() {
     $a = array();
     $a['text'] = $this->text;
-    $a['voice'] = $this->voice;
-    $a['language'] = $this->language;
+    $a['voice_id'] = $this->voice_id;
     $a['as'] = $this->as;
     return $a;
   }
 
   private static function from_array($a) {
-    $prompt = new VoipPrompt($a['text'], $a['voice'], $a['language'], $a['as']);
+    $prompt = new VoipPrompt($a['text'], $a['voice_id'], $a['as']);
     return $prompt;
   }
 

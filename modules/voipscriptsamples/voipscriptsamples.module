@@ -111,20 +111,18 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
 
   if($script_name == 'voipscript_say_demo') {
     $script = new VoipScript('voipscript_say_demo');
-    $p1 = new VoipPrompt(t('Reading string as number: 12345'), 'man','us_en');
+    $p1 = new VoipPrompt(t('Reading string as number: 12345'), 'man');
     $say = array($p1);
     $script->addSay($say);
-    $p2 = new VoipPrompt(t('Reading string as digits: 12345'), 'woman', 'us_en', 'digits');
+    $p2 = new VoipPrompt(t('Reading string as digits: 12345'), 'woman', 'digits');
     $say = array($p2);
     $script->addSay($say);
-    //Date should be only used with Tropo
-    /*
-    
+
     $script->addSay(t('Reading string as date.'));
-    $p3 = new VoipPrompt('1.1.2011', NULL, NULL, 'date');
+    $p3 = new VoipPrompt(VoipVoice::getDate('1.1.2012'));
     $say = array($p3);
     $script->addSay($say);
-    */
+    
     $script->addHangup();
   }
 
@@ -408,7 +406,7 @@ function _voipscriptsamples_get_send_sms() {
 
   $args = array('@digits' => '%input_digits');
   $text = t('You typed @digits.', $args);
-  $prompt  = new VoipPrompt($text, NULL, NULL, 'digits');
+  $prompt  = new VoipPrompt($text, NULL, 'digits');
   $script->addSay($prompt);
   $script->addSet('sms_number','%input_digits');
 

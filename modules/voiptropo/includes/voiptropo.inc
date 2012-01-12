@@ -951,11 +951,6 @@ watchdog("debug", "Say: voice: $voice, language: $language, text: $text");
           $script->setVar($var_name, $var_value);
           break;
 
-        /*case 'VoipCmdSetLanguage';
-          $language = $script->evalString($cmd->getParam('language'));
-          $script->setLanguage($language);
-          break;
-*/
         case 'VoipCmdSetVoice';
           $voice = $script->evalString($cmd->getParam('voice'));
           //$voice_id = VoipVoice::getVoice($voice);
@@ -1219,7 +1214,6 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
     $recognize_as_tmp = $script->evalString($cmd->getParam('recognize_as'));
     $default_region = VoipTropoServer::getVoiceRegionId($default_voice, $default_language);
     $recognizer = $recognize_as_tmp ? $recognize_as_tmp : $default_region;
-    //$tropo->setLanguage($recognize_as);
             
     $allowed_modes = array('keypad', 'speech', 'any');
     if(in_array($mode, $allowed_modes)) {

@@ -837,14 +837,8 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $script->setVar($var_name, $var_value);
           break;
 
-        /*case 'VoipCmdSetLanguage';
-          $language = $script->evalString($cmd->getParam('language'));
-          $script->setLanguage($language);
-          break;
-*/
         case 'VoipCmdSetVoice';
           $voice = $script->evalString($cmd->getParam('voice'));
-          //$voice_id = VoipVoice::getVoice($voice);
           $script->setVoice($voice_id);
           break;
 

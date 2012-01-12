@@ -242,7 +242,7 @@ class VoipVoice {
       }
     }
     else {
-      return new VoipPrompt($text, $this->getGender(), $this->getLanguage(), $as); 
+      return new VoipPrompt($text, $this->getVoiceId(), $as); 
     }
   }
 }
