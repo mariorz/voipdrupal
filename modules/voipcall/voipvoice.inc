@@ -213,12 +213,26 @@
       return date("F j, Y",$timestamp); 
     }
     
-    function getPrompt($text, $params = NULL) {
-      /*
-      *** the implementation of voipvoice_get_prompt() will call this method for the current voice
-*** for local voices, this method should return the audio file(s) associated with the $text
-*** for non-local voices, this method should just return the $text itself (or its translation)
-      */
+   /**
+   * This method returns:
+   *   - for local voices, this method should return the audio file(s) associated with the $text
+   *   - for non-local voices, this method returns the $text in VoipPrompt format.
+   *
+   * @param $text
+   *   String representing the prompt
+   *
+   * @param $param
+   *   String representing:
+   *    - for local voices, an associative array of replacements to make after translation. Based on the first character of the key, the value is 
+   *    escaped and/or themed. See format_string() for details.
+   *    - for non-local voices, string that determines how numbers should be pronounced. Supported values include 'number' (to read '12' as 'twelve') 
+   *      or 'digits' (to read '12' as 'one two'). By default, numbers should be read as 'number'
+   *
+   * @return
+   *   - for local voices, this method should return the audio file(s) url associated with the $text
+   *   - for non-local voices, this method returns the $text in VoipPrompt format.
+   */
+    function getPrompt($text, $params = NULL) { 
       if ($this->isLocal()) {
         if(module_exists('voipvoice')) {
           //Use voipvoice function to get locally recorder voice
