@@ -43,11 +43,8 @@
    * @param $voice_id
    *   String representing voice id
    *
-   * @return
-   *   
    */
     public static function setDefaultVoice($voice_id){
-      //TODO: Check if voice_id is valid
       variable_set('voipcall_voice_id', $voice_id);
     }
     
@@ -117,8 +114,6 @@
    * @param $voice_id
    *   String representing voice id
    *
-   * @return
-   *   
    */
     public static function setDefaultManVoice($voice_id = NULL){
       variable_set('voipcall_man_voice_id', $voice_id);
@@ -221,22 +216,24 @@
    * @param $text
    *   String representing the prompt
    *
-   * @param $param
-   *   String representing:
-   *    - for local voices, an associative array of replacements to make after translation. Based on the first character of the key, the value is 
-   *    escaped and/or themed. See format_string() for details.
-   *    - for non-local voices, string that determines how numbers should be pronounced. Supported values include 'number' (to read '12' as 'twelve') 
+   * @param $args
+   *   Associative array of replacements to make after translation. Based on the first character of the key, the value is 
+   *   escaped and/or themed. See format_string() for details.
+   *
+   * @param $as   
+   *    String that determines how numbers should be pronounced. Supported values include 'number' (to read '12' as 'twelve') 
    *      or 'digits' (to read '12' as 'one two'). By default, numbers should be read as 'number'
    *
    * @return
    *   - for local voices, this method should return the audio file(s) url associated with the $text
    *   - for non-local voices, this method returns the $text in VoipPrompt format.
    */
-    function getPrompt($text, $params = NULL) { 
+   
+function getPrompt($text, $args = NULL, $as = NULL) { 
       if ($this->isLocal()) {
         if(module_exists('voipvoice')) {
           //Use voipvoice function to get locally recorder voice
-          return voipvoice_get_prompt($text, $params, $this->getVoiceId());
+          return voipvoice_get_prompt($text, $args, $this->getVoiceId());
         }
         else {
           //Log error and return plain text
@@ -246,10 +243,10 @@
         
       }
       else {
-        return new VoipPrompt($text, $this->getGender(), $this->getLanguage(), $params); 
+        return new VoipPrompt($text, $this->getGender(), $this->getLanguage(), $as); 
       }
     }
- }
+}
  
  /* Helper functions */
  
@@ -258,7 +255,7 @@ function voipvoice_set_current_voice($voice_tmp) {
   $voipvoice_current_voice = $voice_tmp;
 }
 
-function v($text, $params = NULL, $voice_id=NULL) {
+function v($text, $args = NULL, $as = NULL,  $voice_id=NULL) {
  if ($voice_id) {
    $voipvoice_current_voice = VoipVoice::getVoice($voice_id);
  }
@@ -271,6 +268,6 @@ function v($text, $params = NULL, $voice_id=NULL) {
    }
  }
 
- $prompt = $voipvoice_current_voice->getPrompt($text, $params);
+ $prompt = $voipvoice_current_voice->getPrompt($text, $args, $as);
  return $prompt;
 }
