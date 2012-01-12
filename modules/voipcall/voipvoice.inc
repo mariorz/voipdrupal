@@ -222,7 +222,7 @@
       if ($this->isLocal()) {
         if(module_exists('voipvoice')) {
           //Use voipvoice function to get locally recorder voice
-          return voipvoice_get_prompt($text, $params['args'], $this->getVoiceId());
+          return voipvoice_get_prompt($text, $params, $this->getVoiceId());
         }
         else {
           //Log error and return plain text
@@ -232,7 +232,7 @@
         
       }
       else {
-        return new VoipPrompt($text, $this->getGender(), $this->getLanguage()); 
+        return new VoipPrompt($text, $this->getGender(), $this->getLanguage(), $params); 
       }
     }
  }
@@ -244,7 +244,7 @@ function voipvoice_set_current_voice($voice_tmp) {
   $voipvoice_current_voice = $voice_tmp;
 }
 
-function v($text, $args = NULL, $voice_id=NULL) {
+function v($text, $params = NULL, $voice_id=NULL) {
  if ($voice_id) {
    $voipvoice_current_voice = VoipVoice::getVoice($voice_id);
  }
@@ -256,7 +256,7 @@ function v($text, $args = NULL, $voice_id=NULL) {
     $voipvoice_current_voice = VoipVoice::getDefaultVoice();
    }
  }
- $params['args'] = $args;
+
  $prompt = $voipvoice_current_voice->getPrompt($text, $params);
  return $prompt;
 }
