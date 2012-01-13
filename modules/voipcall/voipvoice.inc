@@ -265,7 +265,7 @@ function voipvoice_set_current_voice($voice_id) {
  */
 function v($text, $args = NULL, $as = NULL,  $voice_id=NULL) {
  if ($voice_id) {
-   $voipvoice_current_voice = VoipVoice::getVoice($voice_id);
+   $voipvoice = VoipVoice::getVoice($voice_id);
  }
  else {
    //Use voice set in voipvoice_set_current_voice()
@@ -274,8 +274,9 @@ function v($text, $args = NULL, $as = NULL,  $voice_id=NULL) {
     //initialize with default
     $voipvoice_current_voice = VoipVoice::getDefaultVoice();
    }
+   $voipvoice = $voipvoice_current_voice;
  }
 
- $prompt = $voipvoice_current_voice->getPrompt($text, $args, $as);
+ $prompt = $voipvoice->getPrompt($text, $args, $as);
  return $prompt;
 }
