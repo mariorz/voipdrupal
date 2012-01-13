@@ -53,13 +53,29 @@ function voiptropo_admin_form($configuration) {
     '#default_value' => ($configuration['voiptropo_sms_token']?$configuration['voiptropo_sms_token']:''),
   );
 
-  /*$form['voiptropo_voice_id'] = array(
+  $form['voipcall_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default voice'),
-    '#description' => t('Default voice to be used in automatic text-to-speech generation.'),
+    '#description' => t('Voice to be used in automatic text-to-speech generation.'),
     '#options' => VoipTropoServer::getVoicesList(),
-    '#default_value' => $configuration['voiptropo_voice_id']?$configuration['voiptropo_voice_id']:'dave',
-  );*/
+    '#default_value' => VoipVoice::getDefaultVoice()->getVoiceId(),
+  );
+  
+  $form['voipcall_man_voice_id'] = array(
+    '#type' => 'select',
+    '#title' => t('Default man voice'),
+    '#description' => t('Man voice to be used in automatic text-to-speech generation.'),
+    '#options' => VoipTropoServer::getVoicesList(),
+    '#default_value' => VoipVoice::getDefaultManVoice()->getVoiceId(),
+  );
+  
+  $form['voipcall_woman_voice_id'] = array(
+    '#type' => 'select',
+    '#title' => t('Default woman voice'),
+    '#description' => t('Woman voice to be used in automatic text-to-speech generation.'),
+    '#options' => VoipTropoServer::getVoicesList(),
+    '#default_value' => VoipVoice::getDefaultWomanVoice()->getVoiceId(),
+  );
 
   return $form;
 }

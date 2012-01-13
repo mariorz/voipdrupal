@@ -103,7 +103,13 @@ function voip_admin_server_form_submit($form, &$form_state) {
   
   // Remove unecessary values
   unset($form_state['values']['op'], $form_state['values']['submit'], $form_state['values']['server'], $form_state['values']['form_token'], $form_state['values']['form_id']);
-
+  
+  //Save VoIP Voice
+  VoipVoice::setDefaultVoice($form_state['values']['voipcall_voice_id']);
+  VoipVoice::setDefaultManVoice($form_state['values']['voipcall_man_voice_id']);
+  VoipVoice::setDefaultWomanVoice($form_state['values']['voipcall_woman_voice_id']);
+  unset($form_state['values']['voipcall_voice_id'], $form_state['values']['voipcall_man_voice_id'], $form_state['values']['voipcall_woman_voice_id']);
+  
   // store server configuration
   $server_id = $server->getId();
   variable_set('voip_'. $server_id .'_settings', $form_state['values']);

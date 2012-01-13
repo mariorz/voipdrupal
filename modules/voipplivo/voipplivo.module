@@ -49,12 +49,28 @@ function voipplivo_admin_form($configuration) {
     '#default_value' => ($configuration['voipplivo_auth_token']?$configuration['voipplivo_auth_token']:''),
   );
 
-  $form['voipplivo_voice_id'] = array(
+  $form['voipcall_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default voice'),
     '#description' => t('Voice to be used in automatic text-to-speech generation.'),
     '#options' => VoipPlivoServer::getVoicesList(),
-    '#default_value' => $configuration['voipplivo_voice_id']?$configuration['voipplivo_voice_id']:'en_man',
+    '#default_value' => VoipVoice::getDefaultVoice()->getVoiceId(),
+  );
+  
+  $form['voipcall_man_voice_id'] = array(
+    '#type' => 'select',
+    '#title' => t('Default man voice'),
+    '#description' => t('Man voice to be used in automatic text-to-speech generation.'),
+    '#options' => VoipPlivoServer::getVoicesList(),
+    '#default_value' => VoipVoice::getDefaultManVoice()->getVoiceId(),
+  );
+  
+  $form['voipcall_woman_voice_id'] = array(
+    '#type' => 'select',
+    '#title' => t('Default woman voice'),
+    '#description' => t('Woman voice to be used in automatic text-to-speech generation.'),
+    '#options' => VoipPlivoServer::getVoicesList(),
+    '#default_value' => VoipVoice::getDefaultWomanVoice()->getVoiceId(),
   );
   
   $form['voipplivo_config_outbound_call'] = array(
