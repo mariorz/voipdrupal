@@ -1070,20 +1070,15 @@ function _voiptwilio_generate_audio_response($script, $prompt, $loop=1) {
     $prompt_list = $prompt;
   }
 
-  //$default_language = $script->getLanguage();
   $default_voice_id = $script->getVoice();
 
   foreach($prompt_list as $p) {
     $text = $script->evalString($p->getText());
-    $voice_id_tmp = $p->getVoice() ? $p->getVoice() : '';
-    $voice_id = $voice_id_tmp ? $voice_id_tmp : $default_voice_id;
-    /*$language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
-    $language = $language_tmp ? $language_tmp : $default_language;*/
+    $voice_id = $p->getVoice() ? $p->getVoice() : $default_voice_id;
     $voice = VoipVoice::getVoice($voice_id);
     $gender = $voice->getGender();
     $language = $voice->getLanguage();
-    
-            
+       
     $as_tmp = $p->getAs() ? $p->getAs() : '';
     $as = $as_tmp ? $as_tmp : 'number';
 
