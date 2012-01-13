@@ -255,9 +255,9 @@ class VoipVoice {
 /**
  * Stores the current voice of the system
  */
-function voipvoice_set_current_voice($voice_tmp) {
+function voipvoice_set_current_voice($voice_id) {
   global $voipvoice_current_voice;
-  $voipvoice_current_voice = $voice_tmp;
+  $voipvoice_current_voice = VoipVoice::getVoice($voice_id);
 }
 
 /**
