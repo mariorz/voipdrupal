@@ -687,7 +687,7 @@ class VoipScript {
   /**
    * Add a 'say' command to the script.
    *
-   * Says the given prompt the specified number of times in the given voice.
+   * Says the given prompt the specified number of times.
    *
    * @param $prompt
    * String combining text to be converted to speech and audio URLs to be
