@@ -690,15 +690,15 @@ class VoipScript {
    * Says the given prompt the specified number of times in the given voice.
    *
    * @param $prompt
-   *   String combining text to be converted to speech and audio URLs to be
-   *   played.
-   *   Mixed. Can be any of the following
-   *   - an executable string to be processed into a prompt string, a
-   *     VoipPrompt instance, or an array of VoipPrompt instances
-   *   - a prompt string combining text to be converted to speech and audio
-   *     URLs to be played to the user
-   *   - a VoipPrompt instance
-   *   - an array of VoipPrompt instances to be processed
+   * String combining text to be converted to speech and audio URLs to be
+   * played.
+   * Mixed. Can be any of the following:
+   * - a prompt string combining text to be converted to speech and audio
+   * URLs to be played to the user
+   * - a VoipPrompt instance
+   * - an array of VoipPrompt instances to be processed
+   * - an executable string that, when processed returns any of the above
+   * options
    *
    * @param $loop
    *   Integer with the number of times that the prompt should be repeated
