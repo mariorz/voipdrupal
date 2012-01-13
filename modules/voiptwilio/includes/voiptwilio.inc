@@ -729,13 +729,16 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
             $processing = FALSE;
             $found = TRUE;
             // report the error to the phone user
-            $language= $script->getLanguage();
-            $voice = $script->getVoice();
+            
+            $voice_id = $script->getVoice();
+            //Twilio uses gender instead of voice id
+            $voice = VoipVoice::getVoice($voice_id);
+            $gender = $voice->getGender();
+            $language = $voice->getLanguage();
             $text = 'Processing error. Please contact your system administrator.';
             // translate the text
-            $langcode = $language;
-            $text = t($text, NULL, $langcode);
-            $response .= "<Say voice='$voice' language='$language'>$text</Say>";
+            $text = t($text, NULL, $language);
+            $response .= "<Say voice='$gender' language='$language'>$text</Say>";
           }
           break;
 
@@ -1067,16 +1070,21 @@ function _voiptwilio_generate_audio_response($script, $prompt, $loop=1) {
     $prompt_list = $prompt;
   }
 
-  $default_language = $script->getLanguage();
-  $default_voice = $script->getVoice();
+  //$default_language = $script->getLanguage();
+  $default_voice_id = $script->getVoice();
 
   foreach($prompt_list as $p) {
     $text = $script->evalString($p->getText());
-    $voice_tmp = $p->getVoice() ? $script->evalString($p->getVoice()) : '';
-    $voice = $voice_tmp ? $voice_tmp : $default_voice;
-    $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
-    $language = $language_tmp ? $language_tmp : $default_language;
-    $as_tmp = $p->getAs() ? $script->evalString($p->getAs()) : '';
+    $voice_id_tmp = $p->getVoice() ? $p->getVoice() : '';
+    $voice_id = $voice_id_tmp ? $voice_id_tmp : $default_voice_id;
+    /*$language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
+    $language = $language_tmp ? $language_tmp : $default_language;*/
+    $voice = VoipVoice::getVoice($voice_id);
+    $gender = $voice->getGender();
+    $language = $voice->getLanguage();
+    
+            
+    $as_tmp = $p->getAs() ? $p->getAs() : '';
     $as = $as_tmp ? $as_tmp : 'number';
 
     // split the text into audio URLs and text elements
@@ -1103,7 +1111,7 @@ function _voiptwilio_generate_audio_response($script, $prompt, $loop=1) {
               //Convert numbers into digits
               $element = _voiptwilio_parse_numbers($element);
             }
-            $response .= "<Say voice='$voice' language='$language'>$element</Say>";
+            $response .= "<Say voice='$gender' language='$language'>$element</Say>";
           }
         }
       }
