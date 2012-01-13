@@ -41,10 +41,6 @@ function voiptwilio_admin_form($configuration) {
     '#default_value' => ($configuration['voiptwilio_auth_token']?$configuration['voiptwilio_auth_token']:''),
   );
 
-  $voices = VoipVoice::getVoices(NULL, NULL, FALSE);
-  foreach($voices as $key => $voice) {
-    $voice_selection[$key] = $voice['description'];
-  }
   $form['voipcall_voice_id'] = array(
     '#type' => 'select',
     '#title' => t('Default voice'),
@@ -68,7 +64,6 @@ function voiptwilio_admin_form($configuration) {
     '#options' =>  VoipTwilioServer::getVoicesList(),
     '#default_value' => VoipVoice::getDefaultWomanVoice()->getVoiceId(),
   );
-
 
   return $form;
 }
