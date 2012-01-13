@@ -24,8 +24,7 @@ class VoipLogServer extends VoipServer {
   function __construct() {
     $id = 'log';
     $name = t('Log only');
-    $config_form = 'voip_log_admin_form';
-    parent::__construct($id, $name, $config_form);
+    parent::__construct($id, $name);
   }
 
 
@@ -108,33 +107,4 @@ function voip_getvoices($language , $gender, $is_local) {
                         'description' => t('Log - VoIP Drupal Log voice'));
  
   return $voices;
-}
-
-function voip_log_admin_form($configuration) {
-
-  $form['voipcall_voice_id'] = array(
-    '#type' => 'select',
-    '#title' => t('Default voice'),
-    '#description' => t('Voice to be used in automatic text-to-speech generation.'),
-    '#options' =>  array('voip_log' => t('Log - VoIP Drupal Log voice')),
-    '#default_value' => VoipVoice::getDefaultVoice()->getVoiceId(),
-  );
-  
-  $form['voipcall_man_voice_id'] = array(
-    '#type' => 'select',
-    '#title' => t('Default man voice'),
-    '#description' => t('Man voice to be used in automatic text-to-speech generation.'),
-    '#options' =>  array('voip_log' => t('Log - VoIP Drupal Log voice')),
-    '#default_value' => VoipVoice::getDefaultManVoice()->getVoiceId(),
-  );
-  
-  $form['voipcall_woman_voice_id'] = array(
-    '#type' => 'select',
-    '#title' => t('Default woman voice'),
-    '#description' => t('Woman voice to be used in automatic text-to-speech generation.'),
-    '#options' =>  array('voip_log' => t('Log - VoIP Drupal Log voice')),
-    '#default_value' => VoipVoice::getDefaultWomanVoice()->getVoiceId(),
-  );
-
-  return $form;
 }
