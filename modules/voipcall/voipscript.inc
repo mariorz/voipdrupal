@@ -218,11 +218,12 @@ class VoipScript {
    * Returns the current voice of the script
    */
   function getVoice() {
-    $voice_id = $this->voice_id;
+    return VoipVoice::getVoice($this->voice_id)->getVoiceId();
+    /*$voice_id = $this->voice_id;
     if(!$voice_id) {
       $voice_id = VoipVoice::getDefaultVoice()->getVoiceId();
     }
-    return $voice_id;
+    return $voice_id;*/
   }
 
 
@@ -1029,7 +1030,7 @@ class VoipPrompt {
   }
 
   function getVoice() {
-    return $this->voice_id;
+    return VoipVoice::getVoice($this->voice_id)->getVoiceId();
   }
 
   function getAs() {
