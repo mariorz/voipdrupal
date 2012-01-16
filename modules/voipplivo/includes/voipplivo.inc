@@ -1042,15 +1042,11 @@ function _voipplivo_generate_audio_response($script, $prompt, $loop=1) {
     $prompt_list = $prompt;
   }
 
-  $default_language = $script->getLanguage();
-  $default_voice = $script->getVoice();
-
   foreach($prompt_list as $p) {
     $text = $script->evalString($p->getText());
-    $voice_tmp = $p->getVoice() ? $script->evalString($p->getVoice()) : '';
-    $voice = $voice_tmp ? $voice_tmp : $default_voice;
-    $language_tmp = $p->getLanguage() ? $script->evalString($p->getLanguage()) : '';
-    $language = $language_tmp ? $language_tmp : $default_language;
+    $voice_id = $p->getVoice();
+    $voice = VoipVoice::getVoice($voice_id);
+    $language = $voice->getLanguage();
     $as_tmp = $p->getAs() ? $script->evalString($p->getAs()) : '';
     $as = $as_tmp ? $as_tmp : 'number';
 
@@ -1078,7 +1074,7 @@ function _voipplivo_generate_audio_response($script, $prompt, $loop=1) {
               //Convert numbers into digits
               $element = _voipplivo_parse_numbers($element);
             }
-            $response .= "<Speak voice='$voice' language='$language'>$element</Speak>";
+            $response .= "<Speak voice='$voice_id' language='$language'>$element</Speak>";
           }
         }
       }
