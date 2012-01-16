@@ -234,7 +234,9 @@ function _voipscriptsamples_get_dial_test_script() {
   $script->addGotoIf('no input received', "^%input_digits == ''");
 
   $args = array('@digits' => '%input_digits');
-  $script->addSay(t('You typed @digits. ', $args));
+  $text = t('You typed @digits. ', $args);
+  $prompt  = new VoipPrompt($text, NULL, 'digits');
+  $script->addSay($prompt);
   $script->addSet('dial_number','%input_digits');
 
   $script->addLabel('accept menu');
