@@ -239,11 +239,13 @@ class VoipVoice {
       else {
        //Log error and return plain text
        watchdog('voipcall', 'getPrompt() called with local voice, but voipvoice.module is not installed.', NULL, WATCHDOG_ERROR);
-       return new VoipPrompt($text, $this->getVoiceId(), $as);
+       $prompt_text = t($text, $args, $this->getLanguage());
+       return new VoipPrompt($prompt_text, $this->getVoiceId(), $as);
       }
     }
     else {
-      return new VoipPrompt($text, $this->getVoiceId(), $as); 
+      $prompt_text = t($text, $args, $this->getLanguage());
+      return new VoipPrompt($prompt_text, $this->getVoiceId(), $as); 
     }
   }
 }
