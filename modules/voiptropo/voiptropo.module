@@ -246,30 +246,29 @@ function voiptropo_getvoices($language , $gender, $is_local){
   $voices = VoipTropoServer::_get_available_voices();
     //Search
     foreach($voices as $key => $voice) {
-      $voice['is_local'] = FALSE;
     if($language && $gender) {
       //Search by language and gender
       if($voice['language'] == $language && $voice['voice'] == $gender) {
-        $matched_voices[$key] = $voice;
+        $voipvoices[$key] = new VoipVoice($key, $voice['voice'], $voice['language']);
       }
     }
     else if($language) {
        //Search by language
       if($voice['language'] == $language ) {
-        $matched_voices[$key] = $voice;
+        $voipvoices[$key] = new VoipVoice($key, $voice['voice'], $voice['language']);
       }
     }
     else if($gender) {
        //Search by gender
       if($voice['voice'] == $gender ) {
-        $matched_voices[$key] = $voice;
+        $voipvoices[$key] = new VoipVoice($key, $voice['voice'], $voice['language']);
       }
     }
     else {
-      $matched_voices[$key] = $voice;
+      $voipvoices[$key] = new VoipVoice($key, $voice['voice'], $voice['language']);
     }
     
   }
  
-  return $matched_voices;
+  return $voipvoices;
 }

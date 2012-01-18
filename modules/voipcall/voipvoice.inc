@@ -35,7 +35,7 @@ class VoipVoice {
   /**
    * Constructor
    */
-  function __construct($voice_id, $gender, $language, $is_local) {
+  function __construct($voice_id, $gender, $language, $is_local = FALSE) {
     $this->voice_id = $voice_id;
     $this->gender = $gender;
     $this->language = $language;
@@ -49,7 +49,6 @@ class VoipVoice {
    *   String representing the voice id
    */
   public static function setDefaultVoice($voice_id){
-    //TODO: Check if voice_id is valid
     variable_set('voipcall_voice_id', $voice_id);
   }
     
@@ -61,9 +60,7 @@ class VoipVoice {
    */
   public static function getDefaultVoice(){
     $voice_id = variable_get('voipcall_voice_id', '');
-    $voices = self::getVoices();
-    $voice = $voices[$voice_id];
-    $voipvoice_voice = new VoipVoice($voice_id, $voice['voice'],  $voice['language'], $voice['is_local']);
+    $voipvoice_voice = self::getVoice($voice_id);
     return $voipvoice_voice;
   }
     
@@ -86,11 +83,16 @@ class VoipVoice {
     else if (empty($voice_id)) {
       $voice_id = variable_get('voipcall_voice_id', '');
     }
-      
-    $voices = self::getVoices();
-    $voice = $voices[$voice_id];
-    $voipvoice_voice = new VoipVoice($voice_id, $voice['voice'],  $voice['language'], $voice['is_local']);
-    return $voipvoice_voice;
+
+    $voipvoices = self::getVoices();
+    $voipvoice = $voipvoices[$voice_id];
+    if (empty($voipvoice)) {
+      //If wrong voice_id
+      watchdog('voipcall', 'VoipVoice::getVoice called with non-existing id: '. $voice_id, NULL, WATCHDOG_ERROR);
+      //Load default voice instead
+      $voipvoice = self::getDefaultVoice();
+    }
+    return $voipvoice;
   }
     
   /**
@@ -103,7 +105,7 @@ class VoipVoice {
    *   String representing the gender of the voice ("man", "woman", "neutral")
    *
    * @return
-   *   Array representing all available voices matching the criteria.
+   *   Array of VoipVoice instances representing all available voices matching the criteria.
    */
   public static function getVoices($language = NULL, $gender=NULL, $is_local=NULL) {
     // call hook_getvoices()
@@ -124,7 +126,7 @@ class VoipVoice {
   public static function setDefaultManVoice($voice_id = NULL){
     variable_set('voipcall_man_voice_id', $voice_id);
   }
-    
+
   /**
    * Defines which voice is to be used whenever the id is 'woman'
    *
@@ -209,9 +211,7 @@ class VoipVoice {
   /**
    * Returns a voice prompt ready to be processed by a VoIP server
    *
-   * For local voices, this method returns the audio file(s) associated with
-   * $text.  For non-local voices, this method returns the string to be read out
-   * loud by the VoIP Server.
+   * This method returns the VoipPrompt instance
    *
    * @param $text
    *   String with the prompt
@@ -226,30 +226,15 @@ class VoipVoice {
    *   'one two'). By default, numbers should be read as 'number'.
    *
    * @return
-   *   VoipPrompt instance combining text and audio urls to be read by VoIP
+   *   VoipPrompt instance combining text to be read by VoIP
    *   servers.
    */
   function getPrompt($text, $args = NULL, $as = NULL) { 
-    if ($this->isLocal()) {
-      if(module_exists('voipvoice')) {
-        //Use voipvoice function to get locally recorder voice
-        $url_or_text = voipvoice_get_prompt($text, $args, $this->getVoiceId());
-        return new VoipPrompt($url_or_text, $this->getVoiceId(), $as);
-      }
-      else {
-       //Log error and return plain text
-       watchdog('voipcall', 'getPrompt() called with local voice, but voipvoice.module is not installed.', NULL, WATCHDOG_ERROR);
-       $prompt_text = t($text, $args, $this->getLanguage());
-       return new VoipPrompt($prompt_text, $this->getVoiceId(), $as);
-      }
-    }
-    else {
-      $prompt_text = t($text, $args, $this->getLanguage());
-      return new VoipPrompt($prompt_text, $this->getVoiceId(), $as); 
-    }
+    $prompt_text = t($text, $args, $this->getLanguage());
+    return new VoipPrompt($prompt_text, $this->getVoiceId(), $as); 
   }
 }
- 
+
 /**
  * Helper functions
  */
