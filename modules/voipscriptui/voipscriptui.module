@@ -50,12 +50,19 @@ function voipscriptui_nodeapi($node, $op, $a3, $a4 ) {
     //check for duplicate script names before saving a new script
     if ($node->nid) {
       $where = "AND nid!=".$node->nid;
+      $old_script_name = db_result(db_query("SELECT title FROM {node} WHERE type='voipscriptui' AND nid=%d", $node->nid));
     }
     $exist = db_result(db_query("SELECT nid FROM {node} WHERE type='voipscriptui' AND title='%s' $where LIMIT 1", $node->title));
     if ($exist) {
       form_set_error('field_voipscriptui_code',
         t('A script called @script_name already exists. To edit it, click <a target="_blank" href="'.base_path().'node/'.$exist.'/edit">here</a>',
           array('@script_name' => $node->title)));
+    }
+    else if($node->title != $old_script_name) {
+      $all_scripts = VoipScript::getScriptNames();
+      if(in_array($node->title, $all_scripts)) {
+        form_set_error('field_voipscriptui_code', t('A script called @script_name already exists.', array('@script_name' => $node->title)));
+      }
     }
     $script_code = '$script = new VoipScript("'.$node->title.'");';
     $script_code .= $node->field_voipscriptui_code[0]['value'];
