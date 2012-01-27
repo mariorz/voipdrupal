@@ -40,7 +40,7 @@ Tropo configuration:
 
   - Fill the "URL" field with
     http://mysite.com/voip/tropo/callhandler/ (for clean URLs)
-    or http:// mysite.com/voip/?q=tropo/callhandler/
+    or http://mysite.com/?q=voip/tropo/callhandler/
 
   - Press the "Create application" button
 
