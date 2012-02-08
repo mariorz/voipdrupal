@@ -31,7 +31,7 @@ Plivo configuration:
 
   - DEFAULT_HTTP_METHOD = POST
 
-  - DEFAULT_ANSWER_URL = http://mysite.com/voip/plivo/callhandler/ (for clean URLs) or http://mysite.com/voip/?q=plivo/callhandler/
+  - DEFAULT_ANSWER_URL = http://mysite.com/voip/plivo/callhandler/ (for clean URLs) or http://mysite.com/?q=voip/plivo/callhandler/
 
   - EXTRA_FS_VARS = variable_duration
 
