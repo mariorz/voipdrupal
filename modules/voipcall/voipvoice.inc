@@ -266,3 +266,21 @@ function v($text, $args = NULL, $as = NULL,  $voice_id=NULL) {
  $prompt = $voipvoice_current_voice->getPrompt($text, $args, $as);
  return $prompt;
 }
+
+/**
+ * Implements hook_getvoices().
+ */
+function voipcall_getvoices($language , $gender, $is_local){
+  if($gender == 'man') {
+    $voipvoices['man'] = new VoipVoice('man', 'man', 'en');
+  }
+  else if($gender == 'woman') {
+    $voipvoices['woman'] = new VoipVoice('woman', 'woman', 'en');
+  }
+  else {
+    $voipvoices['man'] = new VoipVoice('man', 'man', 'en');
+    $voipvoices['woman'] = new VoipVoice('woman', 'woman', 'en');
+  }
+ 
+  return $voipvoices;
+}
