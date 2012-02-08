@@ -379,7 +379,7 @@ class VoipScript {
    *   The 'get input' command sets the script variable input_digits to the
    *   input received.  In case nothing is typed, input_digits gets set to ''
    */
-  function addGetInput($prompt='', $num_digits=NULL, $end_key='#', $timeout=5) {
+  function addGetInput($prompt='', $num_digits=1, $end_key='#', $timeout=5) {
     $params['prompt'] = $prompt;
     $params['num_digits'] = $num_digits;
     $params['end_key'] = $end_key;
