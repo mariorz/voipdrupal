@@ -96,15 +96,14 @@ function voip_getvoices($language , $gender, $is_local) {
     //Return if this VoIP Server is not set as default
     return array();
   }
+
   if($is_local === TRUE) {
     //This module doesn't declare local voices
     return array();
   }
   
-  
-  $voices = array();
-  $voices['voip_log'] = array('language' => 'en', 'voice' => 'man',
-                        'description' => t('Log - VoIP Drupal Log voice'));
+  $voice = new VoipVoice('log', 'man', 'en');
+  $voices['log'] = $voice;
  
   return $voices;
 }
