@@ -109,10 +109,14 @@ class VoipCall {
    * @param $cid
    *   The id of the call row
    *
+   * @param $load_user
+   *  Boolean indicating whether the call's uid should be used to load the
+   *  global $user
+   * 
    * @return
    *   The VoipCall instance, or NULL in case of an invalid cid
    */
-  public static function load($cid){
+  public static function load($cid, $load_user=FALSE){
     $call = NULL;
     $call_data =
       db_fetch_object(db_query("SELECT * FROM {voipcall} WHERE cid=%d", $cid));
@@ -244,6 +248,15 @@ class VoipCall {
     $this->call_data->uid = $uid;
   }
     
+  public function loadGlobalUser(){
+    $uid = $this->getUid();
+    if(empty($uid)){
+      $uid = 0;
+    }
+    global $user;
+    $user = user_load($uid);
+  }
+
   public function getCallId(){
     return $this->call_data->call_id;
   }
@@ -796,7 +809,8 @@ class VoipCall {
 
     // add call variables to script variables
   
-    $script->setVar('uid', $call_data->uid);
+    // Note: 'uid' should only be accessed from global $user
+    // $script->setVar('uid', $call_data->uid);
   
     $script->setVar('call_id',
       $call_data->call_id);

@@ -223,6 +223,7 @@ watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
                        : variable_get('voipcall_cid_number', NULL);
     }
     
+// TODO: make sure the voipscript sms functions update session table properly to enable sms dialogs
     if (voipscript_use_sms_framework()) {
       //Use SMS Framework to send SMS message if user enabled this option
       voipscript_send_sms_framework($to, $text);

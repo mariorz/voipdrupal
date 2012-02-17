@@ -178,8 +178,14 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
     }
   }
   
+  // load global $user based on call user
+  global $user;
+  $stored_user = $user;
+  $call->loadGlobalUser();
+  watchdog('voiptwilio', 'Logged user %uid in.', array('%uid' => $user->uid));
+
+  // set text channel variables
   if (in_array($channel, array('offline_text','text'))) {
-    //Set text-related variables in the call object 
     $call->setTextVariables($_REQUEST['Body'], $_REQUEST['From'], $_REQUEST['To'], $network);
   }
   
@@ -358,6 +364,13 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
   }
   // process the call script
   $rc = _voiptwilio_script_handler($call);
+
+  // If global user has been replaced for call user.
+  // Process shouldn't go further, so just for good practice.
+  if(! empty($stored_user)) {
+    $user = $stored_user;
+    watchdog('voiptwilio', 'Reverted to logged in user %uid', array('%uid' => $user->uid));
+  }
 
   return;  // NOTE: this function MUST NOT return any value.  If it does, the
            //       output to Twilio will get messed up with Drupal hmtl...
