@@ -185,6 +185,12 @@ watchdog('voipplivo', $msg, $vars, WATCHDOG_INFO);
     }
   }
   
+  // load global $user based on call user
+  global $user;
+  $stored_user = $user;
+  $call->loadGlobalUser();
+  watchdog('voipplivo', 'Logged user %uid in.', array('%uid' => $user->uid));
+
   //Left because offline_text
   if (in_array($channel, array('offline_text','text'))) {
     //Set text-related variables in the call object 
@@ -364,6 +370,13 @@ watchdog('voipplivo', $msg, $vars, WATCHDOG_INFO);
   }*/
   // process the call script
   $rc = _voipplivo_script_handler($call);
+
+  // If global user has been replaced for call user.
+  // Process shouldn't go further, so just for good practice.
+  if(! empty($stored_user)) {
+    $user = $stored_user;
+    watchdog('voipplivo', 'Reverted to logged in user %uid', array('%uid' => $user->uid));
+  }
 
   return;  // NOTE: this function MUST NOT return any value.  If it does, the
            //       output to Plivo will get messed up with Drupal hmtl...

@@ -183,8 +183,15 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
       }*/
     }
   }
+
+  // load global $user based on call user
+  global $user;
+  $stored_user = $user;
+  $call->loadGlobalUser();
+  watchdog('voiptropo', 'Logged user %uid in.', array('%uid' => $user->uid));
+
+  //Set text-related variables in the call object 
   if (in_array($channel, array('offline_text','text'))) {
-    //Set text-related variables in the call object 
     $inbound_text_contents = $session->getInitialText();
     $call->setTextVariables($inbound_text_contents, $from, $to, $network);
   }
@@ -429,6 +436,13 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
 
   // send response back to tropo
   $tropo->renderJSON();
+
+  // If global user has been replaced for call user.
+  // Process shouldn't go further, so just for good practice.
+  if(! empty($stored_user)) {
+    $user = $stored_user;
+    watchdog('voiptropo', 'Reverted to logged in user %uid', array('%uid' => $user->uid));
+  }
 
   return;  // NOTE: this function MUST NOT return any value.  If it does, the
   //       output to tropo will get messed up with Drupal hmtl...
