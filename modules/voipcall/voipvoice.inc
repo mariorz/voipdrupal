@@ -108,8 +108,8 @@ class VoipVoice {
    *   Array of VoipVoice instances representing all available voices matching the criteria.
    */
   public static function getVoices($language = NULL, $gender=NULL, $is_local=NULL) {
-    // call hook_getvoices()
-    $voices = module_invoke_all('getvoices', $language , $gender, $is_local);
+    // call hook_voip_getvoices()
+    $voices = module_invoke_all('voip_getvoices', $language , $gender, $is_local);
     ksort($voices);
     return $voices;
   }

@@ -88,9 +88,9 @@ function voip_voipserver_info() {
 }
 
 /**
- * Implements hook_getvoices().
+ * Implements hook_voip_getvoices().
  */
-function voip_getvoices($language , $gender, $is_local) {
+function voip_voip_getvoices($language , $gender, $is_local) {
 
   if(variable_get('voip_default_server', 'log') != 'log') {
     //Return if this VoIP Server is not set as default
