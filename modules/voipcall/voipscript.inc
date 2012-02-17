@@ -129,7 +129,7 @@ class VoipScript {
         $script_names = array_merge($script_names, $new_names);
       }
     }
-    sort($script_names);
+    natcasesort($script_names);
     foreach($script_names as $k => $v) $sorted_names[$v] = $v;
     return $sorted_names;
   }
