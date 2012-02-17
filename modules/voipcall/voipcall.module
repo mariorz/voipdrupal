@@ -103,7 +103,7 @@ function voipcall_block_form() {
   $form['voipcall_inbound_call_script_name'] = array(
     '#type' => 'select',
     '#title' => t('Inbound call script name'),
-    '#description' => t('Name of the dialplan script to be used whenever the system receives a phone call.'),
+    '#description' => t('Script used for incoming phone calls'),
     '#options' => VoipScript::getScriptNames(),
     '#default_value' => variable_get('voipcall_inbound_call_script_name', 'voipcall_default_inbound_call_script'),
   );
@@ -111,7 +111,7 @@ function voipcall_block_form() {
   $form['voipcall_outbound_call_script_name'] = array(
     '#type' => 'select',
     '#title' => t('Outbound call script name'),
-    '#description' => t('Name of the default dialplan script to be used in calls made by the system.'),
+    '#description' => t('Script used for outgoing calls'),
     '#options' => VoipScript::getScriptNames(),
     '#default_value' => variable_get('voipcall_outbound_call_script_name', 'voipcall_default_outbound_call_script'),
   );
@@ -119,7 +119,7 @@ function voipcall_block_form() {
   $form['voipcall_inbound_text_script_name'] = array(
     '#type' => 'select',
     '#title' => t('Inbound text script name'),
-    '#description' => t('Name of the dialplan script to be used whenever the system receives a text message.'),
+    '#description' => t('Script used for incoming text messages'),
     '#options' => VoipScript::getScriptNames(),
     '#default_value' => variable_get('voipcall_inbound_text_script_name', 'voipcall_default_inbound_text_script'),
   );
