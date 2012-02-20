@@ -85,6 +85,7 @@ class VoipVoice {
     }
 
     $voipvoices = self::getVoices();
+    
     $voipvoice = $voipvoices[$voice_id];
     if (empty($voipvoice)) {
       //If wrong voice_id
@@ -107,9 +108,9 @@ class VoipVoice {
    * @return
    *   Array of VoipVoice instances representing all available voices matching the criteria.
    */
-  public static function getVoices($language = NULL, $gender=NULL, $is_local=NULL) {
+  public static function getVoices($language = NULL, $gender=NULL, $is_local=NULL, $only_enabled_server = FALSE) {
     // call hook_voip_getvoices()
-    $voices = module_invoke_all('voip_getvoices', $language , $gender, $is_local);
+    $voices = module_invoke_all('voip_getvoices', $language , $gender, $is_local, $only_enabled_server);
     ksort($voices);
     return $voices;
   }

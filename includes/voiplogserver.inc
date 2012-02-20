@@ -92,15 +92,15 @@ function voip_voipserver_info() {
  */
 function voip_voip_getvoices($language , $gender, $is_local) {
 
-  if(variable_get('voip_default_server', 'log') != 'log') {
+  /*if(variable_get('voip_default_server', 'log') != 'log') {
     //Return if this VoIP Server is not set as default
     return array();
-  }
+  }*/
 
-  if($is_local === TRUE) {
+  /*if($is_local === TRUE) {
     //This module doesn't declare local voices
     return array();
-  }
+  }*/
   
   $voice = new VoipVoice('log', 'man', 'en');
   $voices['log'] = $voice;

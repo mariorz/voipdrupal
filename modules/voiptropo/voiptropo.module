@@ -232,8 +232,8 @@ function json_wrap($any, $skipAssoc = false) {
 /**
  * Implements hook_voip_getvoices().
  */
-function voiptropo_voip_getvoices($language , $gender, $is_local){
-  if(variable_get('voip_default_server', 'log') != 'tropo') {
+function voiptropo_voip_getvoices($language , $gender, $is_local, $only_enabled_server){
+  if($only_enabled_server && variable_get('voip_default_server', 'log') != 'tropo') {
     //Return if this VoIP Server is not set as default
     return array();
   }

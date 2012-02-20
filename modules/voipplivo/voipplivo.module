@@ -150,9 +150,9 @@ function voipplivo_menu() {
 /**
  * Implements hook_voip_getvoices().
  */
-function voipplivo_voip_getvoices($language , $gender, $is_local) {
+function voipplivo_voip_getvoices($language , $gender, $is_local, $only_enabled_server) {
 
-  if(variable_get('voip_default_server', 'log') != 'plivo') {
+  if($only_enabled_server && variable_get('voip_default_server', 'log') != 'plivo') {
     //Return if this VoIP Server is not set as default
     return array();
   }

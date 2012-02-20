@@ -10,6 +10,7 @@ function voipcall_uninstall() {
   drupal_uninstall_schema('voipcall');
   //Delete module variables
   db_query("DELETE FROM {variable} WHERE name LIKE 'voipcall_%%'");
+  db_query("DELETE FROM {variable} WHERE name = 'voip_default_server'");
 }
 
 /**
