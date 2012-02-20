@@ -50,18 +50,18 @@ Twilio configuration:
   - Mark the "Voice" check box
 
   - Fill the "URL" field with
-    http://mysite.com/voip/twilio/callhandler/process_inbound_calls/ (for clean URLs)
-    or http://mysite.com/?q=voip/twilio/callhandler/process_inbound_calls/
+    http://mysite.com/voip/twilio/callhandler/process_inbound_calls (for clean URLs)
+    or http://mysite.com/?q=voip/twilio/callhandler/process_inbound_calls
     
   - Fill the "SMS URL" field with
-    http://mysite.com/voip/twilio/callhandler/process_inbound_text/ (for clean URLs)
-    or http://mysite.com/?q=voip/twilio/callhandler/process_inbound_text/
+    http://mysite.com/voip/twilio/callhandler/process_inbound_text (for clean URLs)
+    or http://mysite.com/?q=voip/twilio/callhandler/process_inbound_text
 
   - Click on "Advanced Features"
 
   - Fill the "StatusCallback URL" field with
-    http://mysite.com/voip/twilio/callhandler/process_hangup/ (for clean URLs)
-    or http://mysite.com/?q=voip/twilio/callhandler/process_hangup/
+    http://mysite.com/voip/twilio/callhandler/process_hangup (for clean URLs)
+    or http://mysite.com/?q=voip/twilio/callhandler/process_hangup
 
   - Make sure both "URL" and "StatusCallback URL" are set to use "POST"
 
