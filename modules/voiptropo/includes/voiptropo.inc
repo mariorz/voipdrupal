@@ -1170,6 +1170,9 @@ function _voiptropo_process_sms_response($call, $sms_status_tmp) {
       $sms_status = VoipCall::TEXT_SENT;
       break;
   }
+  $script = $call->getScript();
+  $script->setVar('send_text_status', $sms_status);
+  $call->setScript($script);
   $call->setTextStatus($sms_status);
   return $call;
 }

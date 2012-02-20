@@ -66,7 +66,8 @@ Tropo configuration:
  
   - NOTE: If you want this number to be used as the Caller Id in the calls made by your site, then 
     a) go to your site's admin/voip/call section 
-    b) Set the "Caller id number" field with the new number. ATTENTION: That field only takes numeric digits (ie. 0013523537528).
+    b) Set the "Caller id number" field with the new number. ATTENTION: That field only takes numeric digits (ie. 0013523537528). 
+     * Note that setting the caller ID to something other than a real phone number may result in calls not being able to be delivered.
 
 
 5. Associate an IM, GTalk, MSN, Twitter, or Yahoo account with your site
