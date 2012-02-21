@@ -48,8 +48,9 @@ class VoipVoice {
    * @param $voice_id
    *   String representing the voice id
    */
-  public static function setDefaultVoice($voice_id){
-    variable_set('voipcall_voice_id', $voice_id);
+  public static function setDefaultVoice($voice_id) {
+    $default_server = variable_get('voip_default_server', 'log');
+    variable_set('voipcall_'.$default_server.'_voice_id', $voice_id);
   }
     
   /**
@@ -58,8 +59,9 @@ class VoipVoice {
    * @return
    *   VoipVoice instance of default VoIP Voice.
    */
-  public static function getDefaultVoice(){
-    $voice_id = variable_get('voipcall_voice_id', 'log');
+  public static function getDefaultVoice() {
+    $default_server = variable_get('voip_default_server', 'log');
+    $voice_id = variable_get('voipcall_'.$default_server.'_voice_id', 'log');
     $voipvoice_voice = self::getVoice($voice_id);
     return $voipvoice_voice;
   }
@@ -75,16 +77,16 @@ class VoipVoice {
    */
   public static function getVoice($voice_id = NULL){
     if ($voice_id == 'man') {
-      $voice_id = variable_get('voipcall_man_voice_id', 'log');
+      return VoipVoice::getDefaultManVoice();
     }
     else if ($voice_id == 'woman') {
-      $voice_id = variable_get('voipcall_woman_voice_id', 'log');
+      return VoipVoice::getDefaultWomanVoice();
     }
     else if (empty($voice_id)) {
-      $voice_id = variable_get('voipcall_voice_id', 'log');
+      return VoipVoice::getDefaultVoice();
     }
 
-    $voipvoices = self::getVoices();
+    $voipvoices = self::getVoices(NULL, NULL, NULL, TRUE);
     
     $voipvoice = $voipvoices[$voice_id];
     if (empty($voipvoice)) {
@@ -124,8 +126,9 @@ class VoipVoice {
    * @return
    *   VoipVoice instance associated with the 'man' id
    */
-  public static function setDefaultManVoice($voice_id = NULL){
-    variable_set('voipcall_man_voice_id', $voice_id);
+  public static function setDefaultManVoice($voice_id = NULL) {
+    $default_server = variable_get('voip_default_server', 'log');
+    variable_set('voipcall_'.$default_server.'_man_voice_id', $voice_id);
   }
 
   /**
@@ -137,15 +140,17 @@ class VoipVoice {
    * @return
    *   VoipVoice instance associated with the 'woman' id
    */
-  public static function setDefaultWomanVoice($voice_id = NULL){
-    variable_set('voipcall_woman_voice_id', $voice_id);
+  public static function setDefaultWomanVoice($voice_id = NULL) {
+    $default_server = variable_get('voip_default_server', 'log');
+    variable_set('voipcall_'.$default_server.'_woman_voice_id', $voice_id);
   }
     
   /**
    * Returns the VoipVoice instance associated with the 'man' id
    */
-  public static function getDefaultManVoice(){
-    $voice_id = variable_get('voipcall_man_voice_id', self::getDefaultVoice()->getVoiceId());
+  public static function getDefaultManVoice() {
+    $default_server = variable_get('voip_default_server', 'log');
+    $voice_id = variable_get('voipcall_'.$default_server.'_man_voice_id', self::getDefaultVoice()->getVoiceId());
     $voipvoice_voice = self::getVoice($voice_id);
     return $voipvoice_voice;
   }
@@ -153,8 +158,9 @@ class VoipVoice {
   /**
    * Returns the VoipVoice instance associated with the 'woman' id
    */
-  public static function getDefaultWomanVoice(){
-    $voice_id = variable_get('voipcall_woman_voice_id', self::getDefaultVoice()->getVoiceId());
+  public static function getDefaultWomanVoice() {
+    $default_server = variable_get('voip_default_server', 'log');
+    $voice_id = variable_get('voipcall_'.$default_server.'_woman_voice_id', self::getDefaultVoice()->getVoiceId());
     $voipvoice_voice = self::getVoice($voice_id);
     return $voipvoice_voice;
   }

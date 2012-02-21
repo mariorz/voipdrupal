@@ -24,8 +24,17 @@ function voiptwilio_requirements($phase) {
   return $requirements;
 }
 
+function voiptwilio_install() {
+  //Save default voices
+  $voice_id = 'allison';
+  variable_set('voipcall_twilio_voice_id', $voice_id);
+  variable_set('voipcall_twilio_man_voice_id', $voice_id);
+  variable_set('voipcall_twilio_woman_voice_id', $voice_id);
+}
+
 function voiptwilio_uninstall() {
  /*We have to implement hook_uninstall or hook_requirements will not get called during install
    http://www.silex-consulting.com/2011/05/04/views-3-dependency-in-drupal-6/
  */
+ db_query("DELETE FROM {variable} WHERE name LIKE 'voipcall_twilio_%%'");
 }
