@@ -271,7 +271,7 @@ function v($text, $args = NULL, $as = NULL,  $voice_id=NULL) {
 /**
  * Implements hook_getvoices().
  */
-function voipcall_getvoices($language , $gender, $is_local){
+function voipcall_voip_getvoices($language , $gender, $is_local){
   if($gender == 'man') {
     $voipvoices['man'] = new VoipVoice('man', 'man', 'en');
   }
