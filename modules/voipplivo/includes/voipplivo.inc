@@ -827,6 +827,8 @@ watchdog('voipplivo', $msg, array(), WATCHDOG_INFO);
 
         case 'VoipCmdSetVoice';
           $voice = $script->evalString($cmd->getParam('voice'));
+          $voice = VoipVoice::getVoice($voice_id);
+          $voice_id = $voice->getVoiceId();
           $script->setVoice($voice);
           break;
 

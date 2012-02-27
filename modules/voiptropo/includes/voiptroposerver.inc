@@ -38,29 +38,6 @@ class VoipTropoServer extends VoipServer {
    * Public methods
    */
 
-  static function getVoicesList() {
-    $voices_available = self::_get_available_voices();
-    $list = array();
-    foreach ($voices_available as $id => $voice) {
-      $list[$id] = $voice['description'];
-    }
-    asort($list);
-    return $list;
-  }
-
-  /**
-   * Returns the Tropo id associated with the given $voice and $language
-   */
-  static function getVoiceId($voice, $language) {
-    $voices = VoipTropoServer::_get_available_voices();
-    foreach ($voices as $key => $voice_array) {
-      if ($voice_array['language'] == $language && $voice_array['voice'] == $voice) {
-        return $key;
-      }
-    }
-    return NULL;
-  }
-  
   /**
    * Returns the Tropo Voice Region id associated with the given $voice and $language
    */
@@ -74,26 +51,10 @@ class VoipTropoServer extends VoipServer {
     return NULL;
   }
 
-  /**
-   * Implementation of VoipServer() API method
-   */
-  function getDefaultLanguage() {
-    $voice = VoipVoice::getDefaultVoice();
-    return $voice->getLanguage();
-    /*$voices_available = self::_get_available_voices();
-    $voice_descriptor = $voices_available[$voice_id];
-    $voice = $voice_descriptor['language'];
-    return $voice;*/
-  }
 
   /**
    * Implementation of VoipServer() API method
    */
-  function getDefaultVoice() {
-    $voice_id = VoipVoice::getDefaultVoice()->getVoiceId();
-    return $voice_id;
-  }
-
 
   /*
    * API methods

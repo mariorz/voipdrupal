@@ -59,9 +59,78 @@ abstract class VoipServer {
     return $this->name;
   }
 
-  abstract function getDefaultLanguage();
 
-  abstract function getDefaultVoice();
+  function getDefaultVoice(){
+    $voice_id = variable_get('voipserver_'.$this->id.'_voice_id', '');
+    if (!$voice_id) {
+      // set $voice_id with the first voice in the list of voices provided by this server
+      $voices = array_values(VoipVoice::getVoices(NULL, NULL, NULL, $this->id));
+      $voice_id = $voices[0]->getVoiceId();
+      $this->setDefaultVoice($voice_id);
+    }
+    $voipvoice_voice = VoipVoice::getVoice($voice_id);
+    return $voipvoice_voice;
+  }
+  
+  function setDefaultVoice($voice_id) {
+    variable_set('voipserver_'.$this->id.'_voice_id', $voice_id);
+  }
+  
+/**
+   * This method defines which voice is to be used whenever the id is 'man'
+   *
+   * @param $voice_id
+   *   String representing voice id
+   *
+   * @return
+   *   VoipVoice instance associated with the 'man' id
+   */
+  function setDefaultManVoice($voice_id = NULL) {
+    variable_set('voipserver_'.$this->id.'_man_voice_id', $voice_id);
+  }
+
+  /**
+   * Defines which voice is to be used whenever the id is 'woman'
+   *
+   * @param $voice_id
+   *   String representing voice id
+   *
+   * @return
+   *   VoipVoice instance associated with the 'woman' id
+   */
+  function setDefaultWomanVoice($voice_id = NULL) {
+    variable_set('voipserver_'.$this->id.'_woman_voice_id', $voice_id);
+  }
+    
+  /**
+   * Returns the VoipVoice instance associated with the 'man' id
+   */
+  function getDefaultManVoice() {
+    $voice_id = variable_get('voipserver_'.$this->id.'_man_voice_id', '');
+    if (!$voice_id) {
+      // set $voice_id with the first voice in the list of voices provided by this server
+      $voices = array_values(VoipVoice::getVoices(NULL, "man", NULL, $this->id));
+      $voice_id = $voices[0]->getVoiceId();
+      $this->setDefaultManVoice($voice_id);
+    }
+    $voipvoice_voice = VoipVoice::getVoice($voice_id);
+    return $voipvoice_voice;
+  }
+    
+  /**
+   * Returns the VoipVoice instance associated with the 'woman' id
+   */
+   function getDefaultWomanVoice() {
+    $voice_id = variable_get('voipserver_'.$this->id.'_woman_voice_id', '');
+    if (!$voice_id) {
+      // set $voice_id with the first voice in the list of voices provided by this server
+      $voices = array_values(VoipVoice::getVoices(NULL, "woman", NULL, $this->id));
+      $voice_id = $voices[0]->getVoiceId();
+      $this->setDefaultWomanVoice($voice_id);
+    }
+    $voipvoice_voice = VoipVoice::getVoice($voice_id);
+    return $voipvoice_voice;
+  }
 
   function getConfigForm() {
     return $this->config_form;

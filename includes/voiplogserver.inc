@@ -35,15 +35,6 @@ class VoipLogServer extends VoipServer {
    *       because VoipServer is an abstract class.
    */
 
-  function getDefaultLanguage(){
-    return 'en';
-  }
-
-  function getDefaultVoice(){
-    return 'man';                 
-  }
-
-
   /*
    * API methods
    */
@@ -90,19 +81,19 @@ function voip_voipserver_info() {
 /**
  * Implements hook_voip_getvoices().
  */
-function voip_voip_getvoices($language , $gender, $is_local) {
+function voip_voip_getvoices($language , $gender, $is_local, $voice_provider) {
 
-  /*if(variable_get('voip_default_server', 'log') != 'log') {
-    //Return if this VoIP Server is not set as default
+  if($voice_provider && $voice_provider != 'log') {
+    //Return empty if filtering by voice provider which is not log
     return array();
-  }*/
+  }
 
   /*if($is_local === TRUE) {
     //This module doesn't declare local voices
     return array();
   }*/
   
-  $voice = new VoipVoice('log', 'man', 'en');
+  $voice = new VoipVoice('log', 'man', 'en', 'Log only');
   $voices['log'] = $voice;
  
   return $voices;

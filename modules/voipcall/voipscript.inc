@@ -219,11 +219,6 @@ class VoipScript {
    */
   function getVoice() {
     return VoipVoice::getVoice($this->voice_id)->getVoiceId();
-    /*$voice_id = $this->voice_id;
-    if(!$voice_id) {
-      $voice_id = VoipVoice::getDefaultVoice()->getVoiceId();
-    }
-    return $voice_id;*/
   }
 
 

@@ -42,40 +42,10 @@ class VoipTwilioServer extends VoipServer {
    * Public methods
    */
 
-  static function getVoicesList(){
-    $voices_available = self::_get_available_voices();
-    $list = array();
-    foreach($voices_available as $id => $voice) {
-      $list[$id] = $voice['description'];
-    }
-    asort($list);
-    return $list;
-  }
 
   /**
    * Implementation of VoipServer() API method
    */
-  function getDefaultLanguage(){
-    $voice = VoipVoice::getDefaultVoice();
-    return $voice->getLanguage();
-   /* $voices_available = self::_get_available_voices();
-    $voice_descriptor = $voices_available[$voice_id];
-    $voice = $voice_descriptor['language'];
-    return $voice;*/
-  }
-
-  /**
-   * Implementation of VoipServer() API method
-   */
-  function getDefaultVoice(){
-    $voice = VoipVoice::getDefaultVoice();
-    return $voice->getGender();
-   /* $voices_available = self::_get_available_voices();
-    $voice_descriptor = $voices_available[$voice_id];
-    $voice = $voice_descriptor['voice'];
-    return $voice;*/
-  }
-
 
   /*
    * API methods
@@ -453,21 +423,21 @@ watchdog('voiptwilio', "in hangup() with call id: $id and status: $status");
 
  static function _get_available_voices() {
     $voices = array();
-    $voices['dave'] = array('language' => 'en', 'voice' => 'man',
+    $voices['dave-twilio'] = array('language' => 'en', 'voice' => 'man',
                         'description' => t('Dave (male voice in English)'));
-    $voices['allison'] = array('language' => 'en', 'voice' => 'woman',
+    $voices['allison-twilio'] = array('language' => 'en', 'voice' => 'woman',
                         'description' => t('Allison (female voice in English)'));
-    $voices['jorge'] = array('language' => 'es', 'voice' => 'man',
+    $voices['jorge-twilio'] = array('language' => 'es', 'voice' => 'man',
                         'description' => t('Jorge (male voice in Spanish)'));
-    $voices['carmen'] = array('language' => 'es', 'voice' => 'woman',
+    $voices['carmen-twilio'] = array('language' => 'es', 'voice' => 'woman',
                         'description' => t('Carmen (female voice in Spanish)'));
-    $voices['bernard'] = array('language' => 'fr', 'voice' => 'man',
+    $voices['bernard-twilio'] = array('language' => 'fr', 'voice' => 'man',
                         'description' => t('Bernard (male voice in French)'));
-    $voices['florence'] = array('language' => 'fr', 'voice' => 'woman',
+    $voices['florence-twilio'] = array('language' => 'fr', 'voice' => 'woman',
                         'description' => t('Florence (female voice in French)'));
-    $voices['stefan'] = array('language' => 'de', 'voice' => 'man',
+    $voices['stefan-twilio'] = array('language' => 'de', 'voice' => 'man',
                         'description' => t('Stefan (male voice in German)'));
-    $voices['katrin'] = array('language' => 'de', 'voice' => 'woman',
+    $voices['katrin-twilio'] = array('language' => 'de', 'voice' => 'woman',
                         'description' => t('Katrin (female voice in German)'));
     return $voices;
   }
