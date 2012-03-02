@@ -1025,7 +1025,11 @@ class VoipPrompt {
   }
 
   function getVoice() {
-    return VoipVoice::getVoice($this->voice_id)->getVoiceId();
+    if($this->voice_id) {
+      return VoipVoice::getVoice($this->voice_id)->getVoiceId();
+    }
+    //If voice_id is not set in VoipPrompt, return NULL so the script takes VoipScript default voice.
+    return NULL;
   }
 
   function getAs() {

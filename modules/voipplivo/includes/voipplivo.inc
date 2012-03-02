@@ -1057,9 +1057,11 @@ function _voipplivo_generate_audio_response($script, $prompt, $loop=1) {
     $prompt_list = $prompt;
   }
 
+  $default_voice_id = $script->getVoice();
+  
   foreach($prompt_list as $p) {
     $text = $script->evalString($p->getText());
-    $voice_id = $p->getVoice();
+    $voice_id = $p->getVoice() ? $p->getVoice() : $default_voice_id;
     $voice = VoipVoice::getVoice($voice_id);
     $language = $voice->getLanguage();
     $as_tmp = $p->getAs() ? $script->evalString($p->getAs()) : '';
