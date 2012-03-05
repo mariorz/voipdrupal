@@ -89,10 +89,14 @@ function voipcall_block($op = 'list', $delta = 0, $edit = array()) {
       return $blocks;
   }
   elseif ($op == 'view') {
-    $block = array(
-      'subject' => t('VoIP Drupal call configuration'), 
-      'content' =>  drupal_get_form('voipcall_block_form'),
-    );
+    $block = array();
+    if (user_access('administer voipcall setup')) {
+      $block = array(
+        'subject' => t('VoIP Drupal call configuration'), 
+        'content' =>  drupal_get_form('voipcall_block_form'),
+      );
+    }
+    
 
     return $block;
   }
