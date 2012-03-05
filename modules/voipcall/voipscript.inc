@@ -146,7 +146,7 @@ class VoipScript {
     
       //$script_names = module_invoke_all('voipscript_get_script_names');
     }
-    natcasesort($script_names);
+    
     foreach ($script_names as $mid => $names) {
       foreach ($names as $script_name) {
         if($include_info) {
@@ -158,6 +158,7 @@ class VoipScript {
         }
       } 
     }
+    natcasesort($sorted_names);
     return $sorted_names;
   }
 
