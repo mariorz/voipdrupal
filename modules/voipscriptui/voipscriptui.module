@@ -151,7 +151,7 @@ function voipscriptui_scripts_page() {
   }
 
   // get voipscriptui scripts
-  $res = db_query("SELECT nid, title FROM {node} WHERE type='voipscriptui'");
+ /* $res = db_query("SELECT nid, title FROM {node} WHERE type='voipscriptui'");
   while ($script_ui = db_fetch_array($res)) {
     $row= array(
       'title' => $script_ui['title'],
@@ -163,24 +163,34 @@ function voipscriptui_scripts_page() {
       $row['clone'] = l('clone','node/add/voipscriptui', array('query' => 'clone_voipscript=' . $script_ui['nid'].'&type=node'));
     }
      $data[strtolower($script_ui['title'])] = $row;
-  }
+  }*/
 
   // get non-voipscriptui scripts
   if($view_all){
-    $scripts = VoipScript::getScriptNames();
-    foreach ($scripts as $script_name) {
-      if(! $data[strtolower($script_name)]){
+    $scripts = VoipScript::getScriptNames(NULL, TRUE);
+    foreach ($scripts as $script) {
+      switch ($script['module_id']) {
+        //Some modules have their own view and clone links
+        case 'voipscriptui':
+          $node = node_load(array('title' => $script['name']));
+          $view = l('view','node/' . $node->nid);
+          $clone = l('clone','node/add/voipscriptui', array('query' => 'clone_voipscript=' . $node->nid.'&type=node'));
+        break;
+        default:
+          $view = l('view','voip/voipscripts/view/' . $script['name']);
+          $clone = l('clone','node/add/voipscriptui', array('query' => 'clone_voipscript=' . $script['name']));
+        break;
+      }
         $row= array(
-          'title' => $script_name,
-          'code' => l('view','voip/voipscripts/view/' . $script_name),
-          'type' => 'Module',
+          'title' => $script['name'],
+          'code' => $view,
+          'type' => $script['module_name'],
         );
     
         if ($clone_all) {
-          $row['clone'] = l('clone','node/add/voipscriptui', array('query' => 'clone_voipscript=' . $script_name));
+          $row['clone'] = $clone;
         }
-        $data[strtolower($script_name)] = $row;
-      }
+        $data[strtolower($script['name'])] = $row;
     }
   }
 

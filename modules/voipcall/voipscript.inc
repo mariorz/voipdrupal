@@ -113,24 +113,51 @@ class VoipScript {
   }
 
    /**
-   * Returns the name of all the scripts available in the system
+   * Returns the scripts available in the system
+   * * @param $module_id 
+   *   A string id of the module where a given script comes from, ie. "voipscriptui", "vvd", etc. If NULL, the hook will return all the script names in the 
+   *   system.
+   * @param $include_info 
+   *   An boolean value indicating which format to return.
+   *    - if set to TRUE the method will return an array containing containing script name, module id, and module name.
+   *    - if set to FALSE the method will return an array containing script names.
    *
    * @return
    *   Array with the script names sorted alphabetically
    */
-  public static function getScriptNames() {
+  public static function getScriptNames($module_id = NULL, $include_info = FALSE) {
     $script_names = array();
     // Invoke hook_voipscript_get_script_names()
-    foreach (module_implements('voipscript_get_script_names') as $module) {
+    if ($module_id) {
+      //Invoke hook_voipscript_get_script_names only in selected module_id
+      $function = $module_id .'_'. 'voipscript_get_script_names';
+      $script_names[$module_id] = call_user_func($function);      
+    }
+    else {
+      foreach (module_implements('voipscript_get_script_names') as $module) {
       $function = $module .'_'. 'voipscript_get_script_names';
       $new_names = call_user_func($function);
       if(isset($new_names)) {
         // include new script names
-        $script_names = array_merge($script_names, $new_names);
+        //$script_names = array_merge($script_names, $new_names);
+        $script_names[$module] = $new_names;
       }
     }
+    
+      //$script_names = module_invoke_all('voipscript_get_script_names');
+    }
     natcasesort($script_names);
-    foreach($script_names as $k => $v) $sorted_names[$v] = $v;
+    foreach ($script_names as $mid => $names) {
+      foreach ($names as $script_name) {
+        if($include_info) {
+          $module_info = features_get_modules($mid);
+          $sorted_names[$script_name] = array('name' => $script_name, 'module_id' => $mid, 'module_name' => $module_info->info['name']);
+        }
+        else {
+          $sorted_names[$script_name] = $script_name;
+        }
+      } 
+    }
     return $sorted_names;
   }
 
