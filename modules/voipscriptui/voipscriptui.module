@@ -172,7 +172,8 @@ function voipscriptui_scripts_page() {
       switch ($script['module_id']) {
         //Some modules have their own view and clone links
         case 'voipscriptui':
-          $node = node_load(array('title' => $script['name']));
+          //Scripts created by VoIP Script UI
+          $node = node_load(array('title' => $script['name'], 'type' => 'voipscriptui'));
           $view = l('view','node/' . $node->nid);
           $clone = l('clone','node/add/voipscriptui', array('query' => 'clone_voipscript=' . $node->nid.'&type=node'));
         break;

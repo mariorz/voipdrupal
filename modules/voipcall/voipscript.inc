@@ -150,8 +150,9 @@ class VoipScript {
     foreach ($script_names as $mid => $names) {
       foreach ($names as $script_name) {
         if($include_info) {
-          $module_info = features_get_modules($mid);
-          $sorted_names[$script_name] = array('name' => $script_name, 'module_id' => $mid, 'module_name' => $module_info->info['name']);
+          $module_path = drupal_get_path('module', $mid) . '/' . $mid . '.info';
+          $module_info = drupal_parse_info_file($module_path);
+          $sorted_names[$script_name] = array('name' => $script_name, 'module_id' => $mid, 'module_name' => $module_info['name']);
         }
         else {
           $sorted_names[$script_name] = $script_name;
