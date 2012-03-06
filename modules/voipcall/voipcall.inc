@@ -674,15 +674,9 @@ class VoipCall {
     // update data fields
     $new_dest_number = $details->dest_number;
 
-    // uid is always updated with either the current user or content of $details
-    if(isset($details->uid)){
-      $data->uid = $details->uid;
-    }
-    else {
-      // update call uid based on current user
-      global $user;
-      $data->uid = $user->uid;
-    }
+    // update call uid based on current user
+    global $user;
+    $data->uid = $user->uid;
   
     // update voipcall-specific fields
   
