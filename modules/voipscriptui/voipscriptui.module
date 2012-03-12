@@ -64,17 +64,25 @@ function voipscriptui_nodeapi($node, $op, $a3, $a4 ) {
         form_set_error('field_voipscriptui_code', t('A script called @script_name already exists.', array('@script_name' => $node->title)));
       }
     }
-    $script_code = '$script = new VoipScript("'.$node->title.'");';
-    $script_code .= $node->field_voipscriptui_code[0]['value'];
     
-    ob_start();
-    if(eval("$script_code")===false) {
-      ob_end_clean();
-      form_set_error('field_voipscriptui_code',
-        t('PHP syntax error in script: @script',
-          array('@script' => $script_code)));
+    //Check that VoIP Script code is safe before running eval
+    $errors = voipscript_eval_validate($node->field_voipscriptui_code[0]['value']);
+    if ($errors) {
+        $illegal_calls = implode(", ", $errors);
+        form_set_error('field_voipscriptui_code', t("You don't have permission to use following PHP function: ") . $illegal_calls);
     }
-    ob_end_clean();
+    else {
+      //Run only if it passes voipscript_eval_validate
+      $script_code = '$script = new VoipScript("'.$node->title.'");';
+      $script_code .= $node->field_voipscriptui_code[0]['value'];
+    
+      ob_start();
+      if(eval("$script_code")===false) {
+        ob_end_clean();
+        form_set_error('field_voipscriptui_code', t('PHP syntax error in script: @script', array('@script' => $script_code)));
+      }
+      ob_end_clean();
+    }
   }
 }
 
@@ -150,22 +158,7 @@ function voipscriptui_scripts_page() {
     $headers[] = array('data' => t('Clone script'), 'field' => 'clone');
   }
 
-  // get voipscriptui scripts
- /* $res = db_query("SELECT nid, title FROM {node} WHERE type='voipscriptui'");
-  while ($script_ui = db_fetch_array($res)) {
-    $row= array(
-      'title' => $script_ui['title'],
-      'code' => l('view','node/' . $script_ui['nid']),
-      'type' => 'VoIP Script UI',
-    );
-    
-    if ($clone_all || $clone_ui) {
-      $row['clone'] = l('clone','node/add/voipscriptui', array('query' => 'clone_voipscript=' . $script_ui['nid'].'&type=node'));
-    }
-     $data[strtolower($script_ui['title'])] = $row;
-  }*/
-
-  // get non-voipscriptui scripts
+  // get all VoIP scripts
   if($view_all){
     $scripts = VoipScript::getScriptNames(NULL, TRUE);
     foreach ($scripts as $script) {
@@ -330,11 +323,11 @@ function _voipscriptui_reverse_parser($script_name) {
       $output.= '$var_name = "'.$var_name.'"; <br>$var_value = "'.$var_value.'"; <br>';
       $output.= '$script->addSet($var_name, $var_value);<br>';   
     break;
-    case 'VoipCmdSetLanguage';
+    /*case 'VoipCmdSetLanguage';
       $language = $script->evalString($cmd->getParam('language'));
       $output.= '$language = "'.$language.'"; <br>';
       $output.= '$script->addSetLanguage($language);<br>';  
-    break;
+    break;*/
     case 'VoipCmdSetVoice';
       $voice = $cmd->getParam('voice');
       $output.= '$voice = "'.$voice.'"; <br>';

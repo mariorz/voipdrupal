@@ -76,7 +76,7 @@ function voipcall_menu() {
  * Implementation of hook_perm()
  */
 function voipcall_perm() {
- return array('administer voipcall setup');
+ return array('administer voipcall setup', 'Use PHP input for VoIP Script (dangerous - grant with care)');
 }
 
 /**

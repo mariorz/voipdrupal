@@ -1273,3 +1273,53 @@ function _voipscript_replace_variable($var_name, $vars, $eval) {
 function _voipscript_get_element($index, $array){
   return $array[$index];
 }
+
+ /**
+   * In case the user doesn't have permission to use PHP input for VoIP Scripts then this function uses PHP's tokenizer to parse a script, 
+   * compares every function call against a list of allowed functions. 
+   * Only if the script is "clean", it returns NULL, otherwise it returns array of errors containing information about illegal functions.
+   * Any code that gets passed through eval must first be verified by this function.
+   * By default this function allows only core VoIP Script functions, but this can be extended with $allowed_functions optional parameter.
+   * 
+   * @param $source
+   *   String with the source code to be verified.
+   * @param $allowed_functions
+   *   Optional array of additional allowed functions. 
+   *
+   */
+function voipscript_eval_validate($source, $allowed_functions = array()) {
+  if (!user_access('Use PHP input for VoIP Script (dangerous - grant with care)')) {
+    //If user doesn't have permission to use PHP input, then make sure his code has only limited number of allowed functions
+    $core_functions = array('addBeep', 'addDial', 'addGetInput', 'addGosub', 'addGoto', 'addGotoIf', 'addHangup', 'addJoinConference', 'addLabel', 'addLog', 
+    'addRecord', 'addReject', 'addReturn', 'addRunIvrMenu', 'addSay', 'addSendText', 'addSet', 'addSetVoice', 'addUnset', 'addWait', 'addGetVoiceInput',
+    'VoipVoice', 'new', 'getVoice','getVoiceId', 'getGender', 'getLanguage', 'getDescription', 'isLocal', 'getPrompt', 'voipvoice_set_current_voice', 
+    'getDigits', 'getDate', 'VoipPrompt', 't', 'v', 'NULL');
+    $allowedCalls = array_merge($core_functions, $allowed_functions);        
+    $tokens = token_get_all('<?'.'php '.$source.' ?'.'>');   
+    $vcall = '';
+
+     foreach ($tokens as $token) {
+       if (is_array($token)) {
+         $id = $token[0];
+         switch ($id) {
+           case(T_VARIABLE): { $vcall .= 'v'; break; }
+           case(T_STRING): { $vcall .= 's'; }
+           case(T_REQUIRE_ONCE): case(T_REQUIRE): case(T_NEW): case(T_RETURN):
+           case(T_BREAK): case(T_CATCH): case(T_CLONE): case(T_EXIT):
+           case(T_PRINT): case(T_GLOBAL): case(T_ECHO): case(T_INCLUDE_ONCE):
+           case(T_INCLUDE): case(T_EVAL): case(T_FUNCTION): {
+             if (array_search($token[1], $allowedCalls) === false)
+                $errors[] = $token[1];
+           }           
+         }
+       }    
+       else
+         $vcall .= $token;
+       }
+     
+       if (stristr($vcall, 'v(') != '') {
+         $errors[] = array('illegal dynamic function call');
+       }
+  }
+  return $errors;
+}
