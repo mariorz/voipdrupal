@@ -109,14 +109,10 @@ class VoipCall {
    * @param $cid
    *   The id of the call row
    *
-   * @param $load_user
-   *  Boolean indicating whether the call's uid should be used to load the
-   *  global $user
-   * 
    * @return
    *   The VoipCall instance, or NULL in case of an invalid cid
    */
-  public static function load($cid, $load_user=FALSE){
+  public static function load($cid){
     $call = NULL;
     $call_data =
       db_fetch_object(db_query("SELECT * FROM {voipcall} WHERE cid=%d", $cid));
@@ -590,15 +586,11 @@ class VoipCall {
       $update = NULL;
       $data->created = time();
 
-      // set the data uid
-      global $user;
-      $data->uid = $user->uid;
-  
       // initialize the 'Call Id' field
       if(!isset($details->call_id)) {
         $data->call_id = NULL;
-      }
-  
+      } 
+
       // initialize 'Call Status' field
       if(!isset($details->status)) {
         $data->status = VoipCall::NOT_CALLED;
@@ -682,7 +674,9 @@ class VoipCall {
     // update data fields
     $new_dest_number = $details->dest_number;
 
-    if(isset($details->uid)) $data->uid = $details->uid;
+    // update call uid based on current user
+    global $user;
+    $data->uid = $user->uid;
   
     // update voipcall-specific fields
   
