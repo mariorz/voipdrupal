@@ -78,7 +78,7 @@ function voipcall_schema() {
       ),
       'script' => array(
         'type' => 'text', 
-        'size' => 'normal',
+        'size' => 'big',
       ),
       'source' => array(
         'type' => 'varchar', 
@@ -291,5 +291,14 @@ function voipcall_update_6101() {
 function voipcall_update_6102() {
   $ret = array();
   db_drop_field($ret, 'voipcall', 'text_handler');
+  return $ret;
+}
+
+/**
+ * Allow longer scripts to be stored.
+ */
+function voipcall_update_6103() {
+  $ret = array();
+  db_change_field($ret, 'voipcall', 'script', 'script', array('type' => 'text', 'size' => 'big'));
   return $ret;
 }
