@@ -1310,13 +1310,13 @@ function voipscript_eval_validate($source, $allowed_functions = array()) {
            case(T_INCLUDE): case(T_EVAL): case(T_FUNCTION): {
              if (array_search($token[1], $allowedCalls) === false)
                 $errors[] = $token[1];
-           }           
+           }
          }
-       }    
+       }
        else
          $vcall .= $token;
        }
-     
+
        if (stristr($vcall, 'v(') != '') {
          $errors[] = array('illegal dynamic function call');
        }
