@@ -1229,10 +1229,11 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
     $response_url = $menu_path . '/process_get_input/' . $cid;
     $mode='dtmf';
     $num_digits = $script->evalString($cmd->getParam('num_digits'), 1);
-    //Leave empty so that number of digits is variable:
-    /*if (empty($num_digits)) {
-      $num_digits = 1;
-    }*/
+    
+    if (empty($num_digits)) {
+      //If empty it means that number of digits is variable:
+      $num_digits = 999;
+    }
     $grxml_path="voip/tropo/grammar/numeric_star_hash/". $num_digits;
     $choices = url($grxml_path, array('absolute' => TRUE));
   }

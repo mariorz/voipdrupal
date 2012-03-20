@@ -778,13 +778,24 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
         case 'VoipCmdSendText';
           $call->setCallStatus(VoipCall::IN_PROGRESS);   
           $to = $script->evalString($cmd->getParam('to'));
-          //If "to" is empty then send message to the caller
-          if (!$to) {
-            $to = $script->evalString($script->getVar('caller_number'));
-          }
-          
           $text = $script->evalString($cmd->getParam('text'));
           $network = $script->evalString($cmd->getParam('network'));
+          //If "to" is empty then send message to the caller
+          if (!$to) {
+            if ($_REQUEST['direction'] == 'inbound') {
+              $to = $script->evalString($script->getVar('caller_number'));
+            }
+            else {
+              $to = $script->evalString($script->getVar('dest_number'));
+            }
+            if (!$to) {
+              watchdog('voiptwilio', 'Attempt to send '.$network.' to empty number', array(), WATCHDOG_ERROR);
+              $processing = TRUE;
+              break;
+            }
+          }
+          
+          
           
           if (voipscript_use_sms_framework()) {
             //Use SMS Framework to send SMS message if user enabled this option
