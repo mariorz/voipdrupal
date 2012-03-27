@@ -801,6 +801,9 @@ function _voiptropo_script_handler($call, &$tropo) {
               $say_params['as'] = $as; 
             }
             $say_params['voice'] = $voice_id;
+            //Solution for Tropo error with sprintf and url encoded strings
+            //https://www.tropo.com/bizblog/viewer?&bb-name=tropo_support&bb-q=sprintf&&bb-cid=99&bb-tid=1193463#bb
+            $text = str_replace("%","%%",$text);
             $tropo->say($text, $say_params);
           }
 
@@ -877,6 +880,9 @@ function _voiptropo_script_handler($call, &$tropo) {
               }
               
               $say_params['voice'] = $voice_id;
+              //Solution for Tropo error with sprintf and url encoded strings
+              //https://www.tropo.com/bizblog/viewer?&bb-name=tropo_support&bb-q=sprintf&&bb-cid=99&bb-tid=1193463#bb
+              $text = str_replace("%","%%",$text);
               $tropo->say($text, $say_params);
             }
           }

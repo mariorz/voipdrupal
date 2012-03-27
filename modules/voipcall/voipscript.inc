@@ -1231,9 +1231,14 @@ function voipscript_send_sms_framework($to, $text) {
  *   produce undesirable results if the variable starts with 0.
  */
 function _voipscript_expand_variables($str, $vars) {
+
+  //$str = urldecode($str);
   $eval = substr($str, 0, 1) == '^';
-  $regex = '/\%(\w+)/e';
-  $replacement = "_voipscript_replace_variable(\$1, \$vars, \$eval);" ;
+  //$regex = '/[a-z_]\w+$/i';
+  $regex = '/\%([a-z_]\w+)/e';
+  //$regex = '/\%(\w+)/e';
+  $replacement = "_voipscript_replace_variable('\$1', \$vars, \$eval);" ;
+  //$replacement = "_voipscript_replace_variable(\$1, \$vars, \$eval);" ;
   $res = preg_replace($regex, $replacement ,$str);
   if($eval) {
     ob_start();
@@ -1244,10 +1249,13 @@ function _voipscript_expand_variables($str, $vars) {
     }
     ob_end_clean();
   }
+
+  watchdog('voipscript', 'str:'.print_r($str,true). ' res:'.print_r($res,true));
   return $res;
 }
 
 function _voipscript_replace_variable($var_name, $vars, $eval) {
+watchdog('voipscript', 'var:'.print_r($var_name,true). ' vars:'.print_r($vars,true). ' eval:'.print_r($eval,true));
   if(isset($vars[$var_name])) {
     $expanded = _voipscript_expand_variables($vars[$var_name], $vars);
     if($eval) {
