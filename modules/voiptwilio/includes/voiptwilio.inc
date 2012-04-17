@@ -780,9 +780,12 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
           $to = $script->evalString($cmd->getParam('to'));
           $text = $script->evalString($cmd->getParam('text'));
           $network = $script->evalString($cmd->getParam('network'));
-          //If "to" is empty then send message to the caller
+          // If "to" is empty then send message to the person on the other
+          // side of the phone. Depending on the direction of the call, that
+          // might be either the caller or the callee.
           if (!$to) {
-            if ($_REQUEST['direction'] == 'inbound') {
+            $direction = $call->getDirection();
+            if ($direction == 'inbound') {
               $to = $script->evalString($script->getVar('caller_number'));
             }
             else {
@@ -794,11 +797,8 @@ watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
               break;
             }
           }
-          
-          
-          
           if (voipscript_use_sms_framework()) {
-            //Use SMS Framework to send SMS message if user enabled this option
+            // Use SMS Framework to send SMS message if user enabled this option
             voipscript_send_sms_framework($to, $text);
           }
           else if(strtolower($call->getCurrentChannel()) == 'offline_text'){
