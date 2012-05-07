@@ -1119,6 +1119,7 @@ class VoipPrompt {
 function voipscript_get_run_ivr_menu_script($options) {
 
   $script = new VoipScript('voipscript_run_ivr_menu');
+$script->addLog(print_r($options, true), 'options');
 
   // initialize script variables
   $script->addSet('_menu_options', VoipPrompt::encode($options['prompt']));
@@ -1129,8 +1130,9 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addSet('_keys_allowed', $keys_allowed);
 
   $script->addSet('_counter', $options['max_attempts']);
-  $script->addSet('_invalid_msg', json_encode($options['invalid_msg']));
-  $script->addSet('_no_input_msg', json_encode($options['no_input_msg']));
+  $script->addSet('_invalid_msg', VoipPrompt::encode($options['invalid_msg']));
+$script->addLog("^print_r(%_invalid_msg, true);", '_invalid_msg init');
+  $script->addSet('_no_input_msg', VoipPrompt::encode($options['no_input_msg']));
   $script->addSet('_timeout', $options['timeout']);
   
   // run the script
@@ -1165,7 +1167,7 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addLabel('no_input_received');
   $script->addSet('ivr_option_selected', 
               "^_voipscript_get_element('t', json_decode(%_input_options, TRUE))");
-  $script->addSay('^json_decode(%_no_input_msg, TRUE)');
+  $script->addSay('^VoipPrompt::decode(%_no_input_msg, TRUE)');
   $script->addGoto('play_menu_options');
   
   $script->addLabel('valid_option');
@@ -1176,7 +1178,9 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addLabel('invalid_option');
   $script->addSet('ivr_option_selected',
               "^_voipscript_get_element('i', json_decode(%_input_options, TRUE))");
-  $script->addSay("^json_decode(%_invalid_msg, TRUE)");
+$script->addLog( "%ivr_option_selected", "invalid message label");
+  $script->addSay("^VoipPrompt::decode(%_invalid_msg, TRUE)");
+$script->addLog("^VoipPrompt::decode(%_invalid_msg, TRUE)", "inv msg prompt");
   $script->addGoto('play_menu_options');
   
   $script->addLabel('go_back');
@@ -1250,7 +1254,7 @@ function _voipscript_expand_variables($str, $vars) {
     ob_end_clean();
   }
 
-  watchdog('voipscript', 'str:'.print_r($str,true). ' res:'.print_r($res,true));
+//  watchdog('voipscript', 'str:'.print_r($str,true). ' res:'.print_r($res,true));
   return $res;
 }
 
