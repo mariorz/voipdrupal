@@ -1119,7 +1119,6 @@ class VoipPrompt {
 function voipscript_get_run_ivr_menu_script($options) {
 
   $script = new VoipScript('voipscript_run_ivr_menu');
-$script->addLog(print_r($options, true), 'options');
 
   // initialize script variables
   $script->addSet('_menu_options', VoipPrompt::encode($options['prompt']));
@@ -1131,7 +1130,6 @@ $script->addLog(print_r($options, true), 'options');
 
   $script->addSet('_counter', $options['max_attempts']);
   $script->addSet('_invalid_msg', VoipPrompt::encode($options['invalid_msg']));
-$script->addLog("^print_r(%_invalid_msg, true);", '_invalid_msg init');
   $script->addSet('_no_input_msg', VoipPrompt::encode($options['no_input_msg']));
   $script->addSet('_timeout', $options['timeout']);
   
@@ -1178,9 +1176,7 @@ $script->addLog("^print_r(%_invalid_msg, true);", '_invalid_msg init');
   $script->addLabel('invalid_option');
   $script->addSet('ivr_option_selected',
               "^_voipscript_get_element('i', json_decode(%_input_options, TRUE))");
-$script->addLog( "%ivr_option_selected", "invalid message label");
   $script->addSay("^VoipPrompt::decode(%_invalid_msg, TRUE)");
-$script->addLog("^VoipPrompt::decode(%_invalid_msg, TRUE)", "inv msg prompt");
   $script->addGoto('play_menu_options');
   
   $script->addLabel('go_back');
@@ -1254,12 +1250,10 @@ function _voipscript_expand_variables($str, $vars) {
     ob_end_clean();
   }
 
-//  watchdog('voipscript', 'str:'.print_r($str,true). ' res:'.print_r($res,true));
   return $res;
 }
 
 function _voipscript_replace_variable($var_name, $vars, $eval) {
-watchdog('voipscript', 'var:'.print_r($var_name,true). ' vars:'.print_r($vars,true). ' eval:'.print_r($eval,true));
   if(isset($vars[$var_name])) {
     $expanded = _voipscript_expand_variables($vars[$var_name], $vars);
     if($eval) {
