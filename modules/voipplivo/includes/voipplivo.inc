@@ -794,20 +794,31 @@ watchdog('voipplivo', $msg, array(), WATCHDOG_INFO);
         case 'VoipCmdSendText';
           $call->setCallStatus(VoipCall::IN_PROGRESS);   
           $to = $script->evalString($cmd->getParam('to'));
-          //If "to" is empty then send message to the caller
-          if (!$to) {
-            $to = $script->evalString($script->getVar('caller_number'));
-          }
-          
           $text = $script->evalString($cmd->getParam('text'));
           $network = $script->evalString($cmd->getParam('network'));
+          // If "to" is empty then send message to the person on the other
+          // side of the phone. Depending on the direction of the call, that
+          // might be either the caller or the callee.
+          if (!$to) {
+            $direction = $call->getDirection();
+            if ($direction == 'inbound') {
+              $to = $script->evalString($script->getVar('caller_number'));
+            }
+            else {
+              $to = $script->evalString($script->getVar('dest_number'));
+            }
+            if (!$to) {
+              watchdog('voipplivo', 'Attempt to send '.$network.' to empty number', array(), WATCHDOG_ERROR);
+              $processing = TRUE;
+              break;
+            }
+          }
           
           if (voipscript_use_sms_framework()) {
             //Use SMS Framework to send SMS message if user enabled this option
             voipscript_send_sms_framework($to, $text);
           }
           else if(strtolower($call->getCurrentChannel()) == 'offline_text'){
-            //TODO: Check about this in using with Plivo? Does it make sense?
             //Use voip_text()
             $reply = TRUE;
             $call->setCurrentChannel('text');
@@ -815,7 +826,8 @@ watchdog('voipplivo', $msg, array(), WATCHDOG_INFO);
             $processing = TRUE;
           }
           else {
-            //Else: Plivo doesn't support SMS
+            watchdog('voipplivo', 'Attempt to send an SMS without SMS Framework', array(), WATCHDOG_ERROR);
+            $processing = TRUE;
           }
           break;
           

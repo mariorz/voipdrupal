@@ -1129,8 +1129,8 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addSet('_keys_allowed', $keys_allowed);
 
   $script->addSet('_counter', $options['max_attempts']);
-  $script->addSet('_invalid_msg', json_encode($options['invalid_msg']));
-  $script->addSet('_no_input_msg', json_encode($options['no_input_msg']));
+  $script->addSet('_invalid_msg', VoipPrompt::encode($options['invalid_msg']));
+  $script->addSet('_no_input_msg', VoipPrompt::encode($options['no_input_msg']));
   $script->addSet('_timeout', $options['timeout']);
   
   // run the script
@@ -1165,7 +1165,7 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addLabel('no_input_received');
   $script->addSet('ivr_option_selected', 
               "^_voipscript_get_element('t', json_decode(%_input_options, TRUE))");
-  $script->addSay('^json_decode(%_no_input_msg, TRUE)');
+  $script->addSay('^VoipPrompt::decode(%_no_input_msg, TRUE)');
   $script->addGoto('play_menu_options');
   
   $script->addLabel('valid_option');
@@ -1176,7 +1176,7 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addLabel('invalid_option');
   $script->addSet('ivr_option_selected',
               "^_voipscript_get_element('i', json_decode(%_input_options, TRUE))");
-  $script->addSay("^json_decode(%_invalid_msg, TRUE)");
+  $script->addSay("^VoipPrompt::decode(%_invalid_msg, TRUE)");
   $script->addGoto('play_menu_options');
   
   $script->addLabel('go_back');
@@ -1252,7 +1252,6 @@ function _voipscript_expand_variables($str, $vars) {
 }
 
 function _voipscript_replace_variable($var_name, $vars, $eval) {
-watchdog('voipscript', 'var:'.print_r($var_name,true). ' vars:'.print_r($vars,true). ' eval:'.print_r($eval,true));
   if(isset($vars[$var_name])) {
     $expanded = _voipscript_expand_variables($vars[$var_name], $vars);
     if($eval) {
