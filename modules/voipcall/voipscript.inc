@@ -1232,9 +1232,7 @@ function voipscript_send_sms_framework($to, $text) {
  */
 function _voipscript_expand_variables($str, $vars) {
 
-  //$str = urldecode($str);
   $eval = substr($str, 0, 1) == '^';
-  //$regex = '/[a-z_]\w+$/i';
   $regex = '/\%([a-z_]\w+)/e';
   //$regex = '/\%(\w+)/e';
   $replacement = "_voipscript_replace_variable('\$1', \$vars, \$eval);" ;
@@ -1250,7 +1248,6 @@ function _voipscript_expand_variables($str, $vars) {
     ob_end_clean();
   }
 
-  watchdog('voipscript', 'str:'.print_r($str,true). ' res:'.print_r($res,true));
   return $res;
 }
 
