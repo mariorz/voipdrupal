@@ -1,7 +1,6 @@
 core = "6.x"
 dependencies[] = "features"
 dependencies[] = "text"
-dependencies[] = "views"
 dependencies[] = "voipcall"
 description = "Provides a web-based interface for developers to create and test VoIP Drupal scripts"
 features[content][] = "voipscriptui-field_voipscriptui_code"

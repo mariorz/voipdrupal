@@ -1158,6 +1158,7 @@ function _voipplivo_transfer_file($url, $validators=array()) {
     
     //Save it to default files directory.
     $destination=file_directory_path();
+    //TODO: This is custom cck function, convert to Drupal core
     $file = field_file_save_file($filepath, $validators, $destination);
     // Delete the temporary file.
     @unlink($filepath);

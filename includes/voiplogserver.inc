@@ -87,11 +87,6 @@ function voip_voip_getvoices($language , $gender, $is_local, $voice_provider) {
     //Return empty if filtering by voice provider which is not log
     return array();
   }
-
-  /*if($is_local === TRUE) {
-    //This module doesn't declare local voices
-    return array();
-  }*/
   
   $voice = new VoipVoice('log', 'man', 'en', 'Log only');
   $voices['log'] = $voice;
