@@ -1292,6 +1292,7 @@ function _voipscript_get_element($index, $array){
    *
    */
 function voipscript_eval_validate($source, $allowed_functions = array()) {
+  $errors = array();
   if (!user_access('Use PHP input for VoIP Script (dangerous - grant with care)')) {
     //If user doesn't have permission to use PHP input, then make sure his code has only limited number of allowed functions
     $core_functions = array('addBeep', 'addDial', 'addGetInput', 'addGosub', 'addGoto', 'addGotoIf', 'addHangup', 'addJoinConference', 'addLabel', 'addLog', 
