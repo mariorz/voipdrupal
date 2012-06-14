@@ -955,7 +955,6 @@ function _voiptropo_script_handler($call, &$tropo) {
         case 'VoipCmdSetVoice';
           $voice_id = $script->evalString($cmd->getParam('voice'));
           $voice = VoipVoice::getVoice($voice_id);
-          //$voice_id = VoipTropoServer::getVoiceId($voice,$language);
           $voice_id = $voice->getVoiceId();
           $script->setVoice($voice_id);
           break;

@@ -303,10 +303,7 @@ class Tropo extends BaseClass {
 	  	$voice = isset($voice) ? $voice : $this->_voice;
 	  	$say = new Say($value, $as, $event, $voice, $allowSignals);
 		}
-        //@tamerzg: remove sprintf it was throwing error when urls where encoded.
-		$this->say = array(sprintf($say));
-//watchdog('voiptropo','say '.print_r($say,true). 'say sprintf'.print_r(sprintf($say),true));        
-        //$this->say = array($say);	
+		$this->say = array(sprintf($say));      
 	}
 	
 	/**
