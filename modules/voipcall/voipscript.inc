@@ -159,7 +159,10 @@ class VoipScript {
         }
       } 
     }
-    natcasesort($sorted_names);
+    if(!$include_info) {
+      //Natcasesort expects a single dimension array otherwise throws Array to string conversion
+      natcasesort($sorted_names);
+    }
     return $sorted_names;
   }
 
