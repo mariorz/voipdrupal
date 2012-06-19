@@ -209,7 +209,8 @@ function _voipscriptui_get_complex_param($param) {
 }
 
 function _voipscriptui_reverse_parser($script_name) {
-  $script = VoipScript::loadScript($script_name, $vars);
+  $script = VoipScript::loadScript($script_name);
+  $output = '';
   $cmd = $script->getNextCommand();
   while($cmd) {
     $cmd_id = $cmd->getId();
