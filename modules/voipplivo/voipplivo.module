@@ -43,7 +43,7 @@ function voipplivo_admin_form($configuration) {
   );
 
   $form['voipplivo_auth_token'] = array(
-    '#type' => 'textfield',
+    '#type' => 'password',
     '#title' => t('Plivo Auth Token'),
     '#description' => t("The authorization token defined in your Plivo configuration."),
     '#default_value' => ($configuration['voipplivo_auth_token']?$configuration['voipplivo_auth_token']:''),

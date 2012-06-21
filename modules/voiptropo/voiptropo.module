@@ -40,14 +40,14 @@ function voiptropo_admin_form($configuration) {
   );
 
   $form['voiptropo_voice_token'] = array(
-    '#type' => 'textfield',
+    '#type' => 'password',
     '#title' => t('Voice Outbound Token'),
     '#description' => t("The Voice Outbound Token provided in your Tropo application settings."),
     '#default_value' => ($configuration['voiptropo_voice_token']?$configuration['voiptropo_voice_token']:''),
   );
   
   $form['voiptropo_sms_token'] = array(
-    '#type' => 'textfield',
+    '#type' => 'password',
     '#title' => t('Messaging Outbound Token'),
     '#description' => t("The Messaging Outbound Token provided in your Tropo application settings."),
     '#default_value' => ($configuration['voiptropo_sms_token']?$configuration['voiptropo_sms_token']:''),

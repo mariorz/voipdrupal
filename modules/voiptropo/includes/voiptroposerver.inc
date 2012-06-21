@@ -217,7 +217,7 @@ class VoipTropoServer extends VoipServer {
     // tropo configuration
     $username = $server_config['voiptropo_account_username'];
     $password = $server_config['voiptropo_account_password'];
-    $token = $server_config['voiptropo_voice_token'];
+    //$token = $server_config['voiptropo_voice_token'];
 
     // Instantiate a new Tropo Event API
     $client=new EventAPI($username, $password);

@@ -35,7 +35,7 @@ function voiptwilio_admin_form($configuration) {
   );
 
   $form['voiptwilio_auth_token'] = array(
-    '#type' => 'textfield',
+    '#type' => 'password',
     '#title' => t('Twilio Auth Token'),
     '#description' => t("The authorization token provided in your Twilio account dashboard."),
     '#default_value' => ($configuration['voiptwilio_auth_token']?$configuration['voiptwilio_auth_token']:''),
