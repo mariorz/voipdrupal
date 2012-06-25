@@ -298,18 +298,24 @@ watchdog('voipplivo', 'new call: ' . print_r($voipcall, true));
     $auth_token = $server_config['voipplivo_auth_token'];
 
     // Instantiate a new Plivo Rest Client
-    $client = new PlivoRestClient($rest_api_url, $account_sid, $auth_token, $api_version);
+    try {
+      $client = new PlivoRestClient($rest_api_url, $account_sid, $auth_token, $api_version);
 
-    // Request a reload configuration as a way to test the server connectivity
-    voip_error_reset();
-    $vars = array();
-    $response = $client->reload_config($vars);
+      // Request a reload configuration as a way to test the server connectivity
+      voip_error_reset();
+      $vars = array();
+      $response = $client->reload_config($vars);
 
-    if($response->IsError){
-      voip_error("Plivo command Ping failed: " . $response->ErrorMessage);
+      if ($response->IsError) {
+        voip_error("Plivo command Ping failed: " . $response->ErrorMessage);
+        return FALSE;
+      }
+      return TRUE;
+    }
+    catch (Exception $e) {
+      voip_error($e->getMessage());
       return FALSE;
     }
-    return TRUE;
   }
 
   /**
