@@ -109,8 +109,9 @@ class VoipPlivoServer extends VoipServer {
       'GatewayRetries' => $gateway_retries, # Retry String for Gateways separated by comma, on how many times each gateway should be retried
       'ExtraDialString' => $extra_dial_string,
       'AnswerUrl' => $call_handler_url,
-      //TODO: Whats the purpose of hangup and ringing URLs? Is it optional?
-      //'HangupUrl' => "http://127.0.0.1:5000/hangup/",
+      //TODO: Check that hangup_url works
+      'HangupUrl' => $status_callback_url,
+      //TODO: Whats the purpose of ringing URLs? Is it optional?
       //'RingUrl' => "http://127.0.0.1:5000/ringing/"
     );
 
