@@ -454,46 +454,6 @@ class VoipCall {
     $this->call_data->hangup_reason = $reason;
   }
   
-  public function getCurrentChannel() {
-    return $this->call_data->current_channel;
-  }
-  
-  public function setCurrentChannel($channel) {
-    $this->call_data->current_channel = $channel;
-    if (empty($this->call_data->call_channel)) {
-      //Set initial channel
-      $this->call_data->call_channel = $channel;
-    }
-  }
-  
-  public function getCallChannel() {
-    return $this->call_data->call_channel;
-  }
-  
-  public function setCallChannel($channel) {
-    $this->call_data->call_channel = $channel;
-  }
-  
-  public function getCurrentNetwork() {
-    return $this->call_data->current_network;
-  }
-  
-  public function setCurrentNetwork($network) {
-    $this->call_data->current_network = $network;
-    if (empty($this->call_data->call_network)) {
-      //Set initial network
-      $this->call_data->call_network = $network;
-    }
-  }
-  
-  public function getCallNetwork() {
-    return $this->call_data->call_network;
-  }
-  
-  public function setCallNetwork($network) {
-    $this->call_data->call_network = $network;
-  }
-
   public function getHangupReasonDescription(){
     $description = NULL;
     $reason = $this->getHangupReason();
@@ -538,6 +498,46 @@ class VoipCall {
       }
     }
     return $description;
+  }
+
+  public function getCurrentChannel() {
+    return $this->call_data->current_channel;
+  }
+  
+  public function setCurrentChannel($channel) {
+    $this->call_data->current_channel = $channel;
+    if (empty($this->call_data->call_channel)) {
+      //Set initial channel
+      $this->call_data->call_channel = $channel;
+    }
+  }
+  
+  public function getCallChannel() {
+    return $this->call_data->call_channel;
+  }
+  
+  public function setCallChannel($channel) {
+    $this->call_data->call_channel = $channel;
+  }
+  
+  public function getCurrentNetwork() {
+    return $this->call_data->current_network;
+  }
+  
+  public function setCurrentNetwork($network) {
+    $this->call_data->current_network = $network;
+    if (empty($this->call_data->call_network)) {
+      //Set initial network
+      $this->call_data->call_network = $network;
+    }
+  }
+  
+  public function getCallNetwork() {
+    return $this->call_data->call_network;
+  }
+  
+  public function setCallNetwork($network) {
+    $this->call_data->call_network = $network;
   }
 
   public function getCheckMachine(){
@@ -851,6 +851,12 @@ class VoipCall {
 
     $script->setVar('hangup_reason',
         $call_data->hangup_reason);
+
+    $script->setVar('current_channel',
+        $call_data->current_channel);
+
+    $script->setVar('current_network',
+        $call_data->current_network);
 
     $script->setVar('check_machine',
         $call_data->check_machine);
