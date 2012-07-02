@@ -320,11 +320,8 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
 
       case 'process_send_sms':
       case 'process_sms_callback':
-watchdog('debug', 'about to process response');
         $call = _voiptwilio_process_sms_response($call, $_REQUEST);
-watchdog('debug', 'processed call: ' . print_r($call, true));
         if(strtolower($call->getCurrentChannel()) == 'text') {
-watchdog('debug', 'about to save call');
           // update sms status
           $call->save();
           // since 'process_sms_callback' is asynchronous, go back
