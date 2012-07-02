@@ -580,7 +580,6 @@ class VoipCall {
     // if this is a new call data being created
     if(is_null($details->cid)){
   // TODO Why does this get called so many times when a call goes out? 
-  // TODO Why doesn't this save new data every time a call blast goes out, e.g. unchecking blast sent ?
   
       $data = new stdClass();
       $update = NULL;
@@ -590,6 +589,11 @@ class VoipCall {
       if(!isset($details->call_id)) {
         $data->call_id = NULL;
       } 
+
+      // initialize 'Caller Number' field
+      if(!isset($details->caller_number)) {
+        $data->caller_number = variable_get('voipcall_cid_number', NULL);
+      }
 
       // initialize 'Call Status' field
       if(!isset($details->status)) {

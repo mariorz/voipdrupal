@@ -72,7 +72,7 @@ class VoipTwilioServer extends VoipServer {
     $voipcall->setSource('drupal');
     $voipcall->setDirection(VoipCall::OUTBOUND);
     
-    // save the call in order to get generate an cid
+    // save the call in order to generate a cid
     $voipcall->save();
 
     // Instantiate a new Twilio Rest Client
@@ -165,8 +165,6 @@ class VoipTwilioServer extends VoipServer {
       $voipcall->setCallId($call_id);
       $voipcall = voiptwilio_update_call_status($voipcall, $twilio_call_status);
       $voipcall->save();
-
-watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
     }
 
     return $rc;
@@ -179,27 +177,51 @@ watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
     $rc = FALSE;
     voip_error_reset();
     
-    //Determine from/to numbers
+    // determine from/to numbers
     if ($reply) {
       $to = $voipcall->getCallerNumber();
-      $from = ($voipcall->getDestNumber())
-                       ? $voipcall->getDestNumber()
-                       : variable_get('voipcall_cid_number', NULL);
+      $from = $voipcall->getDestNumber();
+      if(!isset($from)) {
+        $voipcall->report_error('voiptwilio', "Attempt to send a text message reply with no caller number.");
+        return FALSE;
+      }
     }
     else {
       $to = $voipcall->getDestNumber();
       $from = ($voipcall->getCallerNumber())
-                       ? $voipcall->getCallerNumber()
-                       : variable_get('voipcall_cid_number', NULL);
+                ? $voipcall->getCallerNumber()
+                : variable_get('voipcall_cid_number', NULL);
     }
     
-// TODO: make sure the voipscript sms functions update session table properly to enable sms dialogs
+    // update call variables
+    $voipcall->setSource('drupal');
+    $voipcall->setDirection(VoipCall::OUTBOUND);
+    $voipcall->setCurrentChannel('text');
+    $voipcall->setCurrentNetwork('sms');
+    
+    // save the call to generate a cid
+    $voipcall->save();
+
+    // (re)start the session associated with the call
+    $voip_session = VoipSession::getSessionByNumber($from, $to);
+    if($voip_session) {
+      $voip_session->resetTimer();
+    }
+    else {
+      $voip_session = new VoipSession();
+      $voip_session->setOriginNumber($from);
+      $voip_session->setDestinationNumber($to);
+    }
+    $voip_session->setCid($voipcall->getCid());
+    $voip_session->save();
+
+    // send the sms
     if (voipscript_use_sms_framework()) {
       //Use SMS Framework to send SMS message if user enabled this option
       voipscript_send_sms_framework($to, $text);
       return TRUE;        
     }
-    //Else use VoIP Drupal:
+    // else use VoIP Drupal
     if (!$server_config) {
       $server_config = $this->getConfig();
     }
@@ -208,13 +230,6 @@ watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
     $api_version = '2010-04-01';
     $account_sid = $server_config['voiptwilio_account_sid'];
     $auth_token = $server_config['voiptwilio_auth_token'];
-
-    // Update call variables
-    $voipcall->setSource('drupal');
-    $voipcall->setDirection(VoipCall::OUTBOUND);
-    
-    // save the call
-    $voipcall->save();
 
     // Instantiate a new Twilio Rest Client
     $client = new TwilioRestClient($account_sid, $auth_token);
@@ -288,8 +303,6 @@ watchdog('voiptwilio', 'new call: ' . print_r($voipcall, true));
       $voipcall->setCallId($call_id);
       $voipcall = voiptwilio_update_call_status($voipcall, $twilio_call_status);
       $voipcall->save();
-
-      watchdog('voiptwilio', 'new text: ' . print_r($voipcall, true));
     }
 
     return $rc;
