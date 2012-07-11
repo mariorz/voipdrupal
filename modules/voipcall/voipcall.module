@@ -314,20 +314,13 @@ function voipcall_admin_form_submit($form, &$form_state) {
   // store values
   variable_set('voipcall_cid_name', $form_state['values']['voipcall_cid_name']);
   
-// Todo: how to handle numbers prefixed by '+'?
-  $number = $form_state['values']['voipcall_cid_number'];
-/**
-  $number = str_replace('+', '00', $form_state['values']['voipcall_cid_number']);
-  $number = preg_replace('[\D]', '', $number);
-**/
+  $special_chars = array(' ', '-', '(', ')'); 
+  $number = str_replace($special_chars, '', $form_state['values']['voipcall_cid_number']); 
   variable_set('voipcall_cid_number', $number);
   
-  $text_number = $form_state['values']['voipcall_text_number'];
-/**
-  $text_number = str_replace('+', '00', $form_state['values']['voipcall_text_number']);
-  $text_number = preg_replace('[\D]', '', $text_number);
-**/
+  $text_number = str_replace($special_chars, '', $form_state['values']['voipcall_text_number']); 
   variable_set('voipcall_text_number', $text_number);
+
   variable_set('voipcall_inbound_call_script_name', $form_state['values']['voipcall_inbound_call_script_name']);
   variable_set('voipcall_outbound_call_script_name', $form_state['values']['voipcall_outbound_call_script_name']);
   variable_set('voipcall_use_sms_framework', $form_state['values']['voipcall_use_sms_framework']);
