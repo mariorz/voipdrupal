@@ -80,7 +80,7 @@ class VoipTropoServer extends VoipServer {
     $voipcall->setSource('drupal');
     $voipcall->setDirection(VoipCall::OUTBOUND);
     
-    // save the call in order to get generate an cid
+    // save the call in order to generate a cid
     $voipcall->save();
 
     // Instantiate a new tropo Rest Client
@@ -125,8 +125,8 @@ class VoipTropoServer extends VoipServer {
       return FALSE;
     }
     // Else: 
+// TODO: do we really need to save the call here?
     $voipcall->save();
-    watchdog('voiptropo', 'new call: ' . print_r($voipcall, TRUE));
     return TRUE;
   }
 
@@ -136,22 +136,53 @@ class VoipTropoServer extends VoipServer {
   function send_text($text, $voipcall, $reply=FALSE, $server_config=NULL) {
     voip_error_reset();
     
-    //Determine from/to numbers
+    // determine from/to numbers
     if ($reply) {
       $to = $voipcall->getCallerNumber();
       $from = $voipcall->getDestNumber();
+      if(!isset($from)) {
+        $voipcall->report_error('voiptropo', "Attempt to send a text message reply with no caller number.");
+        return FALSE;
+      }
     }
     else {
       $to = $voipcall->getDestNumber();
-      $from = $voipcall->getCallerNumber();
+      $from = ($voipcall->getCallerNumber())
+                ? $voipcall->getCallerNumber()
+                : variable_get('voipcall_cid_number', NULL);
+
     }
     
-    if (voipscript_use_sms_framework()) {
-      //Use SMS Framework to send SMS message if user enabled this option
-      voipscript_send_sms_framework($to, $text);
-      return TRUE;        
+    // update call variables
+    $voipcall->setSource('drupal');
+    $voipcall->setDirection(VoipCall::OUTBOUND);
+    $voipcall->setCurrentChannel('text');
+    $voipcall->setCurrentNetwork('sms');
+
+    // save the call to generate a cid
+    $voipcall->save();
+
+    // (re)start the session associated with the call
+    $voip_session = VoipSession::getSessionByNumber($from, $to);
+    if($voip_session) {
+      $voip_session->resetTimer();
     }
-    //Else use VoIP Drupal:
+    else {
+      $voip_session = new VoipSession();
+      $voip_session->setOriginNumber($from);
+      $voip_session->setDestinationNumber($to);
+    }
+    $voip_session->setCid($voipcall->getCid());
+    $voip_session->save();
+dsm(print_r($voip_session, true), 'voip_session');
+
+    // send the sms
+    if (voipscript_use_sms_framework()) {
+      // use SMS Framework to send SMS message if user enabled this option
+      voipscript_send_sms_framework($to, $text);
+      return TRUE;
+    }
+    // else use VoIP Drupal:
     if (!$server_config) {
       $server_config = $this->getConfig();
     }
@@ -161,15 +192,7 @@ class VoipTropoServer extends VoipServer {
     $password = $server_config['voiptropo_account_password'];
     $token = $server_config['voiptropo_sms_token'];
 
-    // Update call variables
-    $voipcall->setSource('drupal');
-    $voipcall->setDirection(VoipCall::OUTBOUND);
-
-    // save the call
-    $voipcall->save();
-    $cid = $voipcall->getCid();
-    
-     // Instantiate a new tropo Rest Client
+    // Instantiate a new tropo Rest Client
     $client = new SessionAPI();
     
     $vars = array(
@@ -194,8 +217,8 @@ class VoipTropoServer extends VoipServer {
       return FALSE;
     }
     // Else: 
+// TODO: do we really need the following save()?
     $voipcall->save();
-    watchdog('voiptropo', 'new text: ' . print_r($voipcall, TRUE));
     return TRUE;
   }
   

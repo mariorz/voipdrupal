@@ -26,14 +26,27 @@
  *   - process_send_sms, to handle responses to 'send sms' script commands
  *   - process_sms_callback, to handle final responses to 'send sms'.
  *
- * @param string $cid with the id of the call
+ * @param string $cid with the id of the call associated with the response
  *
  * @return void
  */
 function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_name='') {
+
+  //TODO: validate $_REQUEST['AccountSid'] to avoid hack attempts
+  /*$account_username = $server_config['voiptropo_account_username'];
+    $incoming_sid = $_REQUEST['AccountSid'];
+    if ($account_sid != $incoming_sid) {
+    $msg = '_voip_tropo_call_handler called with invalid AccountSid: @sid';
+    $params = array('@sid' => $incoming_sid);
+    watchdog('voiptropo', $msg, $params, WATCHDOG_WARNING);
+    return FALSE;  // TODO: should we return an error response to the server?
+    }
+   */
+
   $server = VoipServer::getServer('tropo');
   $server_config = $server->getConfig();
 
+  // determine tropo_action and cid based on the incoming session object
   if ($tropo_action != 'save_record') {
     //save_record doesn't have json
     try {
@@ -55,9 +68,9 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
       if (empty($cid)) {
         $cid = $session->getParameters('cid');
       }
-      $msg = "in voiptropo_call_handler() with tropo_action: $tropo_action, cid: $cid and Session ". print_r($json, TRUE);
-      $vars = array();
-      watchdog('voiptropo', $msg, $vars, WATCHDOG_INFO);
+$msg = "in voiptropo_call_handler() with tropo_action: $tropo_action, cid: $cid and Session ". print_r($json, TRUE);
+$vars = array();
+watchdog('voiptropo_test', $msg, $vars, WATCHDOG_INFO);
     }
     catch (TropoException $e) {
       try{
@@ -70,77 +83,92 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
       }
     }
   }
-  //Determine channel and network
-  $channel = strtolower($json->session->to->channel);
-  $network = strtolower($json->session->to->network);
- 
- 
- if ($tropo_action == 'process_outbound_calls') {
-   $from = $session->getParameters('caller_number');
-   $to = $session->getParameters('dest_number');   
- }
- else {
-   $from = $json->session->from->id;
-   $to = $json->session->to->id;  
- }
 
-  if (!$cid) {
-    $voip_session = VoipSession::getSessionByNumber($from, $to);
-    if ($voip_session) {
-      $cid = $voip_session->getCid();
-      // load the variables already associated with the call, if any
-      $call = VoipCall::load($cid);
-      $voip_session->resetTimer();
-      $voip_session->save();
-    }
-    else {
-      $call = new VoipCall();
-      $voip_session = new VoipSession();
-      $voip_session->setOriginNumber($from);
-      $voip_session->setDestinationNumber($to);
-      $voip_session->save();
-      }
+  // Determine channel and network
+  if ($tropo_action == 'process_outbound_calls') {
+    $channel = 'voice';
+    $network = 'voip';
+  }
+  else if ($tropo_action == 'process_outbound_text') {
+    $channel = 'text';
+    $network = 'sms';
   }
   else {
-    $voip_session = VoipSession::getSessionByCid($cid);
-    if ($voip_session) {
-      $voip_session->resetTimer();
-      $voip_session->save();
-    }
-    else if ($from && $to) {
-      $voip_session = VoipSession::getSessionByNumber($from, $to);
-      if ($voip_session) {
-        $cid = $voip_session->getCid();
-        // load the variables already associated with the call, if any
-        $call = VoipCall::load($cid);
-        $voip_session->resetTimer();
-        $voip_session->save();
-      }
-      else {
-        $voip_session = new VoipSession();
-        $voip_session->setOriginNumber($from);
-        $voip_session->setDestinationNumber($to);
-        $voip_session->save();
-      }
-    }
-    //Else?
+    // handle process_inbound_calls and other actions
+    $channel = strtolower($json->session->to->channel);
+    $network = strtolower($json->session->to->network);
   }
+ 
+  // Determine call origin and destination
+  if (($tropo_action == 'process_outbound_calls')
+     || ($tropo_action == 'process_outbound_text')) {
+    $from = $session->getParameters('caller_number');
+    $to = $session->getParameters('dest_number');   
+  }
+  else {
+    $from = $json->session->from->id;
+    $to = $json->session->to->id;  
+  }
+  // prefix the numbers with a "+" to follow the standard formatting
+  if(strpos($from, '+') === FALSE) {
+    if(ctype_digit($from))
+      $from = '+'. $from;
+  }
+  if(strpos($to, '+') === FALSE) {
+    if(ctype_digit($to))
+      $to = '+' . $to;
+  }
+ 
+  
+$msg = "tropo_action: $tropo_action, channel: $channel, network: $network, from: $from, to: $to";
+$vars = array();
+watchdog('voiptropo_test', $msg, $vars, WATCHDOG_INFO);
+
+  // 'process_hangup' for incoming calls does not come with a $cid
+//TODO: is this true for Tropo, or just for Twilio? How does Tropo process hangups?
+  if ($tropo_action == 'process_hangup') {
+// TODO: move the following code up to the section where we're determining cid
+    if (!$cid) {
+      $call_id=$session->getId(); 
+      $cid = VoipCall::getCidFromCallId($call_id);
+    }
+  }
+
+watchdog('voiptropo_test', "cid: $cid", array());
+  // load VoIP Drupal session and cid based on request parameters
+  if ($cid) {
+    $voip_session = VoipSession::getSessionByCid($cid);
+watchdog('voiptropo_test', "session from cid: " . print_r($voip_session,true));
+  }
+  else {
+    $voip_session = VoipSession::getSessionByNumber($from, $to);
+    if($voip_session) {
+      $cid = $voip_session->getCid();
+     }
+watchdog('voiptropo_test', "session from numbers: " . print_r($voip_session,true));
+  }
+  if(!$voip_session) {
+    $voip_session = new VoipSession();
+    $voip_session->setOriginNumber($from);
+    $voip_session->setDestinationNumber($to);
+watchdog('voiptropo_test', "new session: " . print_r($voip_session,true));
+  }
+
+  // load the already existing call object, if any
+  if($cid) { 
+    $call = VoipCall::load($cid);
+  }
+  else {
+    $call = new VoipCall();
+  }
+watchdog('voiptropo_test', "call 1: " . print_r($call,true));
+
   /*
      if($tropo_action=='process_voice_analysis'){
      watchdog('voiptropo_analysis', 'RES:'.print_r($result, TRUE), $vars, WATCHDOG_INFO);
      }
    */
-  //TODO: validate $_REQUEST['AccountSid'] to avoid hack attempts
-  /*$account_username = $server_config['voiptropo_account_username'];
-    $incoming_sid = $_REQUEST['AccountSid'];
-    if ($account_sid != $incoming_sid) {
-    $msg = '_voip_tropo_call_handler called with invalid AccountSid: @sid';
-    $params = array('@sid' => $incoming_sid);
-    watchdog('voiptropo', $msg, $params, WATCHDOG_WARNING);
-    return FALSE;  // TODO: should we return an error response to the server?
-    }
-   */
-  // handle incoming call requests
+  // handle incoming call requests (both text and voice)
   if ($tropo_action == 'process_inbound_calls') {    
     $call_id=$session->getId(); 
     $call->setCallId($call_id);
@@ -150,23 +178,14 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
     $call->setAnsweredBy(VoipCall::ANSWERED_DRUPAL);
     $call->setCallStatus(VoipCall::RINGING);
     $call->setStartTime(time());
+    $call->setCallerNumber($from);
+    $call->setDestNumber($to);
     $call->setCurrentChannel($channel);
     $call->setCurrentNetwork($network);
-    $call->save();
   }
   else {
     // handle ongoing calls
 
-    // 'process_hangup' for incoming calls does not come with a $cid
-    if ($tropo_action == 'process_hangup') {
-      if (!$cid) {
-        $call_id=$session->getId(); 
-        $cid = VoipCall::getCidFromCallId($call_id);
-      }
-    }
-
-    // load the variables already associated with the call, if any
-    $call = VoipCall::load($cid);
     // handle first response to an outbound call
     if ($tropo_action == 'process_outbound_calls' || $tropo_action == 'process_outbound_text') {
       // store tropo call id for all outbound calls
@@ -174,7 +193,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
       $call->setCallId($call_id);
       
       /*if ($tropo_action == 'process_outbound_calls') {
-        //TODO:
+        //TODO: answering machine detection
         //$answered_by = $_REQUEST['AnsweredBy'];
         if ($answered_by) {
           $tmp = ($answered_by == 'human') ? VoipCall::ANSWERED_HUMAN : VoipCall::ANSWERED_MACHINE; 
@@ -184,25 +203,6 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
     }
   }
 
-  // load global $user based on call user
-  global $user;
-  $stored_user = $user;
-  $call->loadGlobalUser();
-  watchdog('voiptropo', 'Logged user %uid in.', array('%uid' => $user->uid));
-
-  //Set text-related variables in the call object 
-  if (in_array($channel, array('offline_text','text'))) {
-    $inbound_text_contents = $session->getInitialText();
-    $call->setTextVariables($inbound_text_contents, $from, $to, $network);
-  }
-  
-  // get the cid of the call data
-  $cid = $call->getCid();
-  if ($voip_session && !$voip_session->getCid()) {
-    $voip_session->setCid($cid);
-    $voip_session->save();
-  }
-    
   // update common call variables
   if(!$call->getCurrentChannel())
     $call->setCurrentChannel($channel);
@@ -233,8 +233,20 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
     $call->SetCallStatus(VoipCall::IN_PROGRESS);
   }
 
-  $is_hangup = $call->isHangup();
+  // save the call and initialize its script before setting internal variables
+  $call->save();
+watchdog('voiptropo_test', "call 2: " . print_r($call,true));
+
+  // update script variables
+
+  // set text channel variables
+  if (in_array($channel, array('offline_text','text'))) {
+    $inbound_text_contents = $session->getInitialText();
+    $call->setTextVariables($inbound_text_contents, $from, $to, $network);
+  }
+  
   // process responses to requests previously-issued by the call script
+  $is_hangup = $call->isHangup();
   if (!$is_hangup) {
     switch ($tropo_action) {
       default:
@@ -251,6 +263,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
           // start counting the call duration
           $call->setStartTime();
         }
+// TODO: do we really need to save the call here? (LB)
         $call = $call->save();
         break;
       case 'process_inbound_calls':
@@ -280,6 +293,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
           $duration = isset($json->result->sessionDuration ) ? $json->result->sessionDuration : NULL;
         }
         $call->setDuration($duration);
+// TODO: do we really need to save the call here? (LB)
         $call->save();
         return;
         break;  
@@ -305,6 +319,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
         $script->setVar('recording_digits', NULL);
         $script->setVar('recording_fid', $file->fid);
         $call->setScript($script);
+// TODO: do we really need to save the call here? (LB)
         // update the voipcall with the new values
         $call = $call->save();
         return;
@@ -320,9 +335,10 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
         }
         $script->setVar('recording_digits', $digits);
         $call->setScript($script);
+// TODO: do we really need to save the call here? (LB)
         // update the voipcall with the new values
         $call = $call->save();
-      break;	  
+        break;	  
       case 'process_empty_recording':
         $script = $call->getScript();
         $script->setVar('recording_path', '');
@@ -332,7 +348,6 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
         $script->setVar('recording_fid', NULL);
         $call->setScript($script);
         break;
-
       case 'process_send_sms':
       case 'process_sms_callback':
         $call = _voiptropo_process_sms_response($call, $dial_response_name);
@@ -340,6 +355,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
     }
   }
 
+watchdog('voiptropo_test', "call 3: " . print_r($call,true));
   if ($is_hangup) {
     // determine call duration
     $end_time = $call->setEndTime();
@@ -354,10 +370,29 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
     $call->setDuration($duration);
   }
 
-  // update the voipcall with the new values
+  // load global $user based on call user
+  global $user;
+  $stored_user = $user;
+  $call->loadGlobalUser();
+watchdog('voiptropo', 'Logged user %uid in.', array('%uid' => $user->uid));
+
+  // update the voipcall with its new values
   $call = $call->save();
-  $menu_path = 'voip/tropo/callhandler';
+watchdog('voiptropo_test', "call 4: " . print_r($call,true));
+
+  // update the call session object
+  $cid = $call->getCid();
+  if(!$voip_session->getCid()){
+    $voip_session->setCid($cid);
+  }
+  $voip_session->resetTimer();
+  $voip_session->save();
+
   $tropo = new Tropo();
+
+  // process commands associated with new sessions
+if(($tropo_action == 'process_outbound_calls') || ($tropo_action == 'process_outbound_text')) {
+  $menu_path = 'voip/tropo/callhandler';
 
   if ($tropo_action == 'process_outbound_calls') {
     //Make outbound call
@@ -409,8 +444,13 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
     );
 
     $tropo->message($text, $params);
+watchdog('voiptropo_test', "sms sent: " . print_r($tropo, true));
   }
+  $tropo->renderJSON();
+return;
+}
   
+  // special processing for incoming text messages
   if ($tropo_action == 'process_inbound_calls' && in_array($call->getCurrentChannel(), array('offline_text','text'))) {
     $script = $call->getScript();
     $text_handler = $script->getVar('text_handler');
@@ -424,6 +464,8 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
     }
   }
  
+  // get ready to process the call script
+
   // process the call script
   $rc = _voiptropo_script_handler($call, $tropo);
   
@@ -441,7 +483,7 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
   // Process shouldn't go further, so just for good practice.
   if(! empty($stored_user)) {
     $user = $stored_user;
-    watchdog('voiptropo', 'Reverted to logged in user %uid', array('%uid' => $user->uid));
+watchdog('voiptropo', 'Reverted to logged in user %uid', array('%uid' => $user->uid));
   }
 
   return;  // NOTE: this function MUST NOT return any value.  If it does, the
@@ -465,6 +507,7 @@ function _voiptropo_script_handler($call, &$tropo) {
   $script = $call->getScript();
   // check if call is in a hangup state
   $hangup = $call->isHangup();
+watchdog('voiptropo_test', "hangup: $hangup");
   if ($hangup) {
     $hangup_script_name = $call->getHangupScriptName();
     // Stop processing if no hangup script defined
@@ -483,6 +526,7 @@ function _voiptropo_script_handler($call, &$tropo) {
     }
   }
   
+watchdog('voiptropo_test', "p1");
   $processing = TRUE;
   $response = '';
 
@@ -490,7 +534,7 @@ function _voiptropo_script_handler($call, &$tropo) {
   $language= $script->getLanguage();
   $voice = $script->getVoice();
   $tropo->setVoice($voice);
-
+watchdog('voiptropo_test', "about to process script");
   while ($processing) {
 
     $cmd = $script->getNextCommand();
@@ -648,6 +692,7 @@ function _voiptropo_script_handler($call, &$tropo) {
           $hangup_mode = $script->evalString($cmd->getParam('hangup_mode'));
           
           switch ($hangup_mode) {
+// TODO: remove references to Twilio in the cases below. What's the Tropo equivalent?
             case 'resume':
               if ($call->getCurrentChannel() != 'text') {
                 // send the hangup request and stop processing script commands
@@ -984,6 +1029,7 @@ function _voiptropo_script_handler($call, &$tropo) {
     }
   }
 
+watchdog('voiptropo_test', "about to leave script");
   // save script for next iteration
   $call->setScript($script);
   $call->save();
@@ -1273,6 +1319,7 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
   );
   $tropo->ask($ask_text, $params);
   $tropo->on(array("event" => "continue", "next" => $action)); 
+// TODO: which events are triggered upon timeout?
 }
 
 function _voiptropo_parse_numbers($str) {

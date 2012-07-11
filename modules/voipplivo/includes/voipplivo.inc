@@ -1027,6 +1027,7 @@ function _voipplivo_process_dial_response($call, $request){
       $text_status = VoipCall::TEXT_SENT;
       break;
   }
+  $call->setTextStatus($text_status);
   $script = $call->getScript();
   $script->setVar('send_text_status', $text_status);
   $call->setScript($script);
