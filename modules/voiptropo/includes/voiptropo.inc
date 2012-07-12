@@ -32,6 +32,8 @@
  */
 function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_name='') {
 
+$msg = "in voiptropo_call_handler() with tropo_action: $tropo_action, cid: $cid, event: $dial_response_name";
+watchdog('voiptropo_test', $msg);
   //TODO: validate $_REQUEST['AccountSid'] to avoid hack attempts
   /*$account_username = $server_config['voiptropo_account_username'];
     $incoming_sid = $_REQUEST['AccountSid'];
@@ -68,14 +70,12 @@ function _voiptropo_call_handler($tropo_action='', $cid=NULL, $dial_response_nam
       if (empty($cid)) {
         $cid = $session->getParameters('cid');
       }
-$msg = "in voiptropo_call_handler() with tropo_action: $tropo_action, cid: $cid and Session ". print_r($json, TRUE);
-$vars = array();
-watchdog('voiptropo_test', $msg, $vars, WATCHDOG_INFO);
     }
     catch (TropoException $e) {
       try{
         $result = new Result();
-        //watchdog('voiptropo', 'Result ' . print_r($result, TRUE) , $vars, WATCHDOG_INFO);
+watchdog('voiptropo_test', 'Result ' . print_r($result, TRUE) , $vars, WATCHDOG_INFO);
+
       }
       catch (TropoException $e) {
         watchdog('voiptropo', 'error in _voip_tropo_call_handler, Tropo reported: '. $e->getMessage(), array(), WATCHDOG_ERROR);
@@ -83,6 +83,9 @@ watchdog('voiptropo_test', $msg, $vars, WATCHDOG_INFO);
       }
     }
   }
+$msg = "Tropo session: ". print_r($json, TRUE);
+$vars = array();
+watchdog('voiptropo_test', $msg, $vars, WATCHDOG_INFO);
 
   // Determine channel and network
   if ($tropo_action == 'process_outbound_calls') {
@@ -110,15 +113,8 @@ watchdog('voiptropo_test', $msg, $vars, WATCHDOG_INFO);
     $to = $json->session->to->id;  
   }
   // prefix the numbers with a "+" to follow the standard formatting
-  if(strpos($from, '+') === FALSE) {
-    if(ctype_digit($from))
-      $from = '+'. $from;
-  }
-  if(strpos($to, '+') === FALSE) {
-    if(ctype_digit($to))
-      $to = '+' . $to;
-  }
- 
+  $from = voipcall_normalize_phone_number($from);
+  $to = voipcall_normalize_phone_number($to);
   
 $msg = "tropo_action: $tropo_action, channel: $channel, network: $network, from: $from, to: $to";
 $vars = array();
@@ -389,10 +385,10 @@ watchdog('voiptropo_test', "call 4: " . print_r($call,true));
   $voip_session->save();
 
   $tropo = new Tropo();
+  $menu_path = 'voip/tropo/callhandler';
 
   // process commands associated with new sessions
 if(($tropo_action == 'process_outbound_calls') || ($tropo_action == 'process_outbound_text')) {
-  $menu_path = 'voip/tropo/callhandler';
 
   if ($tropo_action == 'process_outbound_calls') {
     //Make outbound call
@@ -1194,6 +1190,7 @@ function _voiptropo_process_dial_response($call, $request, $dial_response_name) 
  * Process the response to a 'sms send' script command
  */
 function _voiptropo_process_sms_response($call, $sms_status_tmp) {
+watchdog('voiptropo_test', "proc_sms: status: $sms_status_tmp");
   $cid = $call->getCid();
 
   switch ($sms_status_tmp) {

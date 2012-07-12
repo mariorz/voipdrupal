@@ -263,9 +263,16 @@ function voipcall_admin_form() {
 
   $form['voipcall_default_session_time'] = array(
     '#type' => 'textfield',
-    '#title' => t('Default Session Duration'),
+    '#title' => t('Default session duration'),
     '#description' => t('Default session duration time in seconds.'),
     '#default_value' => variable_get('voipcall_default_session_time', 0),
+  );
+
+  $form['voipcall_phone_prefix'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Phone prefix'),
+    '#description' => t('Prefix to be checked for in phone numbers that do not start with the "+" sign. Usually comprised about the country and perhaps the area codes associated with the region the system is being used.'),
+    '#default_value' => variable_get('voipcall_phone_prefix', '1'),
   );
 
   $form['submit'] = array(
@@ -314,11 +321,10 @@ function voipcall_admin_form_submit($form, &$form_state) {
   // store values
   variable_set('voipcall_cid_name', $form_state['values']['voipcall_cid_name']);
   
-  $special_chars = array(' ', '-', '(', ')'); 
-  $number = str_replace($special_chars, '', $form_state['values']['voipcall_cid_number']); 
+  $number = voipcall_normalize_phone_number($form_state['values']['voipcall_cid_number']); 
   variable_set('voipcall_cid_number', $number);
   
-  $text_number = str_replace($special_chars, '', $form_state['values']['voipcall_text_number']); 
+  $text_number = voipcall_normalize_phone_number($form_state['values']['voipcall_text_number']); 
   variable_set('voipcall_text_number', $text_number);
 
   variable_set('voipcall_inbound_call_script_name', $form_state['values']['voipcall_inbound_call_script_name']);
@@ -326,6 +332,7 @@ function voipcall_admin_form_submit($form, &$form_state) {
   variable_set('voipcall_use_sms_framework', $form_state['values']['voipcall_use_sms_framework']);
   variable_set('voipcall_inbound_text_script_name', $form_state['values']['voipcall_inbound_text_script_name']);
   variable_set('voipcall_default_session_time', $form_state['values']['voipcall_default_session_time']);
+  variable_set('voipcall_phone_prefix', $form_state['values']['voipcall_phone_prefix']);
   drupal_set_message(t('The default call settings have been saved.'));
 
   $form_state['redirect'] = 'admin/voip';
@@ -358,6 +365,40 @@ function voipcall_get_default_outbound_call_script_name() {
 function voipcall_get_default_inbound_text_script_name() {
   $script_name = variable_get('voipcall_inbound_text_script_name', 'voipcall_default_inbound_text_script');
   return $script_name;
+}
+
+/**
+ * Normalize the phone number to fit the +CCCXXXYYYY (E.164) format used by
+ * most voip servers
+ *
+ * Examples for prefix == 1:
+ *   +551196664471 => +551196664471
+ *   +55 (11) 9666.4471 => +551196664471
+ *   16174890199 => +16174890199
+ *   6174890199 => +16174890199
+ *   sip//:jim@sip.com => sip//:jim@sip.com
+ */
+function voipcall_normalize_phone_number($number) {
+  $chars = array(' ', '-', '.', '(', ')');
+  $prefix = variable_get('voipcall_phone_prefix', '1');
+  if(strncmp($number, '+', 1)) {
+    $n = str_replace($chars, '', $number);
+    if(ctype_digit($n)) {
+      if(!strncmp($n, $prefix, strlen($prefix))){
+        $rc = '+' . $n;
+      }
+      else {
+        $rc = '+' . $prefix . $n;
+      }
+    }
+    else {
+      $rc = $number;
+    }
+  }
+  else {
+    $rc = str_replace($chars, '', $number);
+  }
+  return $rc;
 }
 
 /**
