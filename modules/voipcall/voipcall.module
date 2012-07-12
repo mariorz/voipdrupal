@@ -368,49 +368,6 @@ function voipcall_get_default_inbound_text_script_name() {
 }
 
 /**
- * Normalize the phone number to fit the +CCCXXXYYYY (E.164) format used by
- * most voip servers
- *
- * Examples for prefix == 1:
- *   +551196664471 => +551196664471
- *   +55 (11) 9666.4471 => +551196664471
- *   16174890199 => +16174890199
- *   6174890199 => +16174890199
- *   sip//:jim@sip.com => sip//:jim@sip.com
- */
-function voipcall_normalize_phone_number($number) {
-  $chars = array(' ', '-', '.', '(', ')');
-  $prefix = variable_get('voipcall_phone_prefix', '1');
-  if(strncmp($number, '+', 1)) {
-    $n = str_replace($chars, '', $number);
-    if(ctype_digit($n)) {
-      if(!strncmp($n, $prefix, strlen($prefix))){
-        $rc = '+' . $n;
-      }
-      else {
-        $rc = '+' . $prefix . $n;
-      }
-    }
-    else {
-      $rc = $number;
-    }
-  }
-  else {
-    $rc = str_replace($chars, '', $number);
-  }
-  return $rc;
-}
-
-/**
- * Return the name of the default script to be used with outgoing text messages
- */
- /*
-function voipcall_get_default_outbound_text_script_name() {
-  $script_name = variable_get('voipcall_outbound_text_script_name', 'voipcall_default_outbound_text_script');
-  return $script_name;
-}
-*/
-/**
  * Implementation of hook_voipscript_get_script_names()
  */
 function voipcall_voipscript_get_script_names() {
@@ -564,3 +521,39 @@ function voipcall_session_delete($sid) {
 function voipcall_cron() {
   VoipSession::deleteExpiredSessions();
 }
+
+
+/**
+ * Normalize the phone number to fit the +CCCXXXYYYY (E.164) format used by
+ * most voip servers
+ *
+ * Examples for prefix == 1:
+ *   +551196664471 => +551196664471
+ *   +55 (11) 9666.4471 => +551196664471
+ *   16174890199 => +16174890199
+ *   6174890199 => +16174890199
+ *   sip//:jim@sip.com => sip//:jim@sip.com
+ */
+function voipcall_normalize_phone_number($number) {
+  $chars = array(' ', '-', '.', '(', ')');
+  $prefix = variable_get('voipcall_phone_prefix', '1');
+  if(strncmp($number, '+', 1)) {
+    $n = str_replace($chars, '', $number);
+    if(ctype_digit($n)) {
+      if(!strncmp($n, $prefix, strlen($prefix))){
+        $rc = '+' . $n;
+      }
+      else {
+        $rc = '+' . $prefix . $n;
+      }
+    }
+    else {
+      $rc = $number;
+    }
+  }
+  else {
+    $rc = str_replace($chars, '', $number);
+  }
+  return $rc;
+}
+
