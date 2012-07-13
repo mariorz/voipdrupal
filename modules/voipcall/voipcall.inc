@@ -49,6 +49,7 @@ class VoipCall {
   const BUSY='busy';
   const INVALID='invalid_number';
   const CANCELED='canceled'; // canceled by the system while queued or ringing
+  const REJECTED='rejected';
 
   /**
    * 'direction' field values

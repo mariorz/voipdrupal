@@ -415,6 +415,10 @@ watchdog('voipplivo', $msg, array(), WATCHDOG_INFO);
         $call->report_error('voipplivo', $msg, $params);
         return FALSE;
       }
+      else {
+        // make sure the call does not reload the hangup script once again
+        $call->setCallStatus(VoipCall::IN_PROGRESS);
+      }
     }
   }
 

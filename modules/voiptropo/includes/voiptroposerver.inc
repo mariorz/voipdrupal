@@ -71,26 +71,47 @@ class VoipTropoServer extends VoipServer {
       $server_config = $this->getConfig();
     }
 
-    // tropo configuration
-    $username = $server_config['voiptropo_account_username'];
-    $password = $server_config['voiptropo_account_password'];
-    $token = $server_config['voiptropo_voice_token'];
-
-    // Update call variables
-    $voipcall->setSource('drupal');
-    $voipcall->setDirection(VoipCall::OUTBOUND);
-    
-    // save the call in order to generate a cid
-    $voipcall->save();
-
-    // Instantiate a new tropo Rest Client
-    $client = new SessionAPI();
     $caller_number = ($voipcall->getCallerNumber())
                        ? $voipcall->getCallerNumber()
                        : variable_get('voipcall_cid_number', NULL);
     $voipcall->setCallerNumber($caller_number);                   
     $dest_number = $voipcall->getDestNumber();
    
+    // prefix the numbers with a "+" to follow the standard formatting
+    $caller_number = voipcall_normalize_phone_number($caller_number);
+    $dest_number = voipcall_normalize_phone_number($dest_number);
+
+    // update call variables
+    $voipcall->setSource('drupal');
+    $voipcall->setDirection(VoipCall::OUTBOUND);
+    $voipcall->setCurrentChannel('voice');
+    $voipcall->setCurrentNetwork('voip');
+
+    // save the call to generate a cid
+    $voipcall->save();
+
+    // (re)start the session associated with the call
+    $voip_session = VoipSession::getSessionByNumber($caller_number, $dest_number);
+    if($voip_session) {
+      $voip_session->resetTimer();
+    }
+    else {
+      $voip_session = new VoipSession();
+      $voip_session->setOriginNumber($caller_number);
+      $voip_session->setDestinationNumber($dest_number);
+    }
+    // overwrite the cid of the previous call associated w/ session
+    $voip_session->setCid($voipcall->getCid());
+    $voip_session->save();
+dsm(print_r($voip_session, true), 'voip_session');
+
+    // tropo configuration
+    $username = $server_config['voiptropo_account_username'];
+    $password = $server_config['voiptropo_account_password'];
+    $token = $server_config['voiptropo_voice_token'];
+
+    // Instantiate a new tropo Rest Client
+    $client = new SessionAPI();
     //$menu_path = 'voip/tropo/callhandler';
     $cid = $voipcall->getCid();
   
@@ -152,6 +173,9 @@ class VoipTropoServer extends VoipServer {
                 : variable_get('voipcall_cid_number', NULL);
 
     }
+    // prefix the numbers with a "+" to follow the standard formatting
+    $from = voipcall_normalize_phone_number($from);
+    $to = voipcall_normalize_phone_number($to);
     
     // update call variables
     $voipcall->setSource('drupal');

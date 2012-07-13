@@ -159,6 +159,12 @@ watchdog('voiptropo_test', "new session: " . print_r($voip_session,true));
   }
 watchdog('voiptropo_test', "call 1: " . print_r($call,true));
 
+  // load global $user based on call user
+  global $user;
+  $stored_user = $user;
+  $call->loadGlobalUser();
+watchdog('voiptropo', 'Logged user %uid in.', array('%uid' => $user->uid));
+
   /*
      if($tropo_action=='process_voice_analysis'){
      watchdog('voiptropo_analysis', 'RES:'.print_r($result, TRUE), $vars, WATCHDOG_INFO);
@@ -180,9 +186,7 @@ watchdog('voiptropo_test', "call 1: " . print_r($call,true));
     $call->setCurrentNetwork($network);
   }
   else {
-    // handle ongoing calls
-
-    // handle first response to an outbound call
+    // handle outbound call requests
     if ($tropo_action == 'process_outbound_calls' || $tropo_action == 'process_outbound_text') {
       // store tropo call id for all outbound calls
       $call_id=$session->getId(); 
@@ -278,10 +282,10 @@ watchdog('voiptropo_test', "call 2: " . print_r($call,true));
         break;
       case 'process_callstatus':
         voiptropo_update_call_status($call, $dial_response_name, $json);
-        // determine call duration
+        // update call duration
         $end_time = $call->setEndTime();
         $start_time = $call->getStartTime();
-        if ($start_time) {
+        if ($end_time) {
           $duration  = $end_time - $start_time;
         }
         else {
@@ -291,7 +295,6 @@ watchdog('voiptropo_test', "call 2: " . print_r($call,true));
         $call->setDuration($duration);
 // TODO: do we really need to save the call here? (LB)
         $call->save();
-        return;
         break;  
       case 'process_get_input':
         $script = $call->getScript();
@@ -352,6 +355,8 @@ watchdog('voiptropo_test', "call 2: " . print_r($call,true));
   }
 
 watchdog('voiptropo_test', "call 3: " . print_r($call,true));
+  // Update call times if new status is hang up
+  $is_hangup = $call->isHangup();
   if ($is_hangup) {
     // determine call duration
     $end_time = $call->setEndTime();
@@ -360,17 +365,11 @@ watchdog('voiptropo_test', "call 3: " . print_r($call,true));
       $duration  = $end_time - $start_time;
     }
     else {
-      //TODO: get call duration from tropo
+      // get call duration from tropo
       $duration = isset($json->result->actions->duration ) ? $json->result->actions->duration : NULL;
     }
     $call->setDuration($duration);
   }
-
-  // load global $user based on call user
-  global $user;
-  $stored_user = $user;
-  $call->loadGlobalUser();
-watchdog('voiptropo', 'Logged user %uid in.', array('%uid' => $user->uid));
 
   // update the voipcall with its new values
   $call = $call->save();
@@ -382,12 +381,13 @@ watchdog('voiptropo_test', "call 4: " . print_r($call,true));
     $voip_session->setCid($cid);
   }
   $voip_session->resetTimer();
+watchdog('voiptropo_test', "session about to be saved: " . print_r($voip_session, true));
   $voip_session->save();
 
   $tropo = new Tropo();
   $menu_path = 'voip/tropo/callhandler';
 
-  // process commands associated with new sessions
+  // process commands associated with outbound requests
 if(($tropo_action == 'process_outbound_calls') || ($tropo_action == 'process_outbound_text')) {
 
   if ($tropo_action == 'process_outbound_calls') {
@@ -397,12 +397,13 @@ if(($tropo_action == 'process_outbound_calls') || ($tropo_action == 'process_out
         'from' => $call->getCallerNumber(),
         'allowSignals' => 'hangup',
         );
+watchdog('voiptropo_test', "about to call $dest_number");
     $tropo->call($dest_number, $params);
 
     //Add events for outbound dial.
     $response_url = $menu_path . '/process_hangup/' . $cid ;
     $action = url($response_url, array('absolute' => TRUE));
-    //$tropo->on(array("event" => "hangup", "next" => $action));
+    $tropo->on(array("event" => "hangup", "next" => $action));
 
     $response_url = $menu_path . '/process_callstatus/' . $cid;
     $action = url($response_url . '/error', array('absolute' => TRUE));
@@ -411,6 +412,9 @@ if(($tropo_action == 'process_outbound_calls') || ($tropo_action == 'process_out
     $action = url($response_url . '/incomplete', array('absolute' => TRUE));
     $tropo->on(array("event" => "incomplete", "next" => $action));
 
+    $response_url = $menu_path . '/process_callstatus/' . $cid . '/in-progress' ;
+    $action = url($response_url, array('absolute' => TRUE));
+    $tropo->on(array("event" => "continue", "next" => $action));
 
     // $response_url = $menu_path . '/process_recorded_test/' . $cid;
     //$action = url($response_url, array('absolute' => TRUE));
@@ -465,11 +469,18 @@ return;
   // process the call script
   $rc = _voiptropo_script_handler($call, $tropo);
   
-  //Add final event
+  // add common event triggers
   if ($tropo_action != 'process_callstatus' && $channel != 'text') {
     $response_url = $menu_path . '/process_callstatus/' . $cid . '/continue' ;
     $action = url($response_url, array('absolute' => TRUE));
     $tropo->on(array("event" => "continue", "next" => $action));
+
+/***
+TODO: move following code to respective commands to avoid overwriting specific behaviors
+    $response_url = $menu_path . '/process_hangup/' . $cid ;
+    $action = url($response_url, array('absolute' => TRUE));
+    $tropo->on(array("event" => "hangup", "next" => $action));
+***/
   }
 
   // send response back to tropo
@@ -519,6 +530,10 @@ watchdog('voiptropo_test', "hangup: $hangup");
         $call->report_error('voiptropo', $msg, $params);
         return FALSE;
       }
+      else {
+        // make sure the call does not reload the hangup script once again
+        $call->setCallStatus(VoipCall::IN_PROGRESS);
+      }
     }
   }
   
@@ -549,7 +564,9 @@ watchdog('voiptropo_test', "about to process script");
         $msg = 'Script @name ended without a "hangup" command.';
         $params = array('@name' => $script->getName());
         watchdog('voiptropo', $msg, $params, WATCHDOG_WARNING);
+        $call->SetCallStatus(VoipCall::COMPLETED);
         $call->setHangupReason(VoipCall::HANGUP_SCRIPT_END);
+        $call->setEndTime();
       }
       //for text channel don't do anything
     }
@@ -609,6 +626,10 @@ watchdog('voiptropo_test', "about to process script");
             $response_url = $menu_path . '/process_dial/' . $cid . '/incomplete';
             $action = url($response_url, array('absolute' => TRUE));
             $tropo->on(array("event" => "incomplete", "next" => $action));
+
+            $response_url = $menu_path . '/process_hangup/' . $cid ;
+            $action = url($response_url, array('absolute' => TRUE));
+            $tropo->on(array("event" => "hangup", "next" => $action));
           }
          
           $rc = TRUE;
@@ -683,23 +704,22 @@ watchdog('voiptropo_test', "about to process script");
           break;
 
         case 'VoipCmdHangup':
-          $call->setCallStatus(VoipCall::IN_PROGRESS);
+          $call->SetCallStatus(VoipCall::COMPLETED);
           $call->setHangupReason(VoipCall::HANGUP_SCRIPT_COMMAND);
+          $start = $call->getStartTime();
+          $end = $call->setEndTime();
+          $duration = $end - $start;
+          $call->setDuration($duration);
           $hangup_mode = $script->evalString($cmd->getParam('hangup_mode'));
           
           switch ($hangup_mode) {
-// TODO: remove references to Twilio in the cases below. What's the Tropo equivalent?
             case 'resume':
-              if ($call->getCurrentChannel() != 'text') {
-                // send the hangup request and stop processing script commands
-                // Note: this will trigger a response from Twilio with $twilio_action = process_hangup and CallStatus = completed
-                $response .= '<Hangup/>';
-              }
-            break;
+              // don't do anything
+              break;
             case 'reset':
               //Reset script
               $script->resetIndex();
-            break;
+              break;
             case 'end_session':
               //Kill the session if any
               $cid = $call->getCid();
@@ -707,20 +727,12 @@ watchdog('voiptropo_test', "about to process script");
               if ($session) {
                 $session->destroy();
               }
-              
-              if ($call->getCurrentChannel() != 'text') {
-                // send the hangup request and stop processing script commands
-                // Note: this will trigger a response from Twilio with $twilio_action = process_hangup and CallStatus = completed
-                $response .= '<Hangup/>';
-              }
             break;
           }
-          
           if ($call->getCurrentChannel() != 'text') {
             // send the hangup request and stop processing script commands
             $tropo->hangup();
           }
-          
           $processing = FALSE;
           break;
 
@@ -760,6 +772,10 @@ watchdog('voiptropo_test', "about to process script");
 
           $tropo->conference($room, $params);
           $tropo->on(array("event" => "continue", "next" => $action));
+
+          $response_url = $menu_path . '/process_hangup/' . $cid ;
+          $action = url($response_url, array('absolute' => TRUE));
+          $tropo->on(array("event" => "hangup", "next" => $action));
 
           $rc = TRUE;
           $processing = FALSE;
@@ -848,7 +864,6 @@ watchdog('voiptropo_test', "about to process script");
             $tropo->say($text, $say_params);
           }
 
-
           $tropo->record($params);
           //What next:
           $tropo->on(array("event" => "continue", "next" => $success_action));
@@ -866,6 +881,11 @@ watchdog('voiptropo_test', "about to process script");
           $call->setHangupReason(VoipCall::HANGUP_REJECTED);
           //TODO: Is there reason param in Tropo?
           $tropo->reject();
+          $call->SetCallStatus(VoipCall::REJECTED);
+          $start = $call->getStartTime();
+          $end = $call->setEndTime();
+          $duration = $end - $start;
+          $call->setDuration($duration);
           $rc = TRUE;
           $processing = FALSE;
           break;
@@ -905,6 +925,11 @@ watchdog('voiptropo_test', "about to process script");
           $default_language = $script->getLanguage();
           $default_voice = $script->getVoice();
 
+          $menu_path = 'voip/tropo/callhandler';
+          $cid = $call->getCid();
+          $response_url = $menu_path . '/process_hangup/' . $cid ;
+          $action = url($response_url, array('absolute' => TRUE));
+
           for ($i=0;$i<$loop;$i++) {              
             foreach ($prompt as $p) {
               $text = $script->evalString($p->getText());
@@ -925,6 +950,8 @@ watchdog('voiptropo_test', "about to process script");
               //https://www.tropo.com/bizblog/viewer?&bb-name=tropo_support&bb-q=sprintf&&bb-cid=99&bb-tid=1193463#bb
               $text = str_replace("%","%%",$text);
               $tropo->say($text, $say_params);
+
+              $tropo->on(array("event" => "hangup", "next" => $action));
             }
           }
           break;
@@ -975,8 +1002,10 @@ watchdog('voiptropo_test', "about to process script");
             //Register events:
             //$tropo->on(array("event" => "continue", "next" =>  $callback_continue));
             $tropo->on(array("event" => "error", "next" =>  $callback_error));
-            //$tropo->on(array("event" => "hangup", "next" =>  $callback_hangup));
             $tropo->on(array("event" => "incomplete", "next" =>  $callback_incomplete));
+            $response_url = $menu_path . '/process_hangup/' . $cid ;
+            $action = url($response_url, array('absolute' => TRUE));
+            $tropo->on(array("event" => "hangup", "next" => $action));
           }
           $rc = TRUE;
           $processing = TRUE;
@@ -1017,9 +1046,12 @@ watchdog('voiptropo_test', "about to process script");
           }
           $tropo->say($periods);
           $tropo->on(array("event" => "continue", "next" =>  $redirect_url));
+
+          $response_url = $menu_path . '/process_hangup/' . $cid ;
+          $action = url($response_url, array('absolute' => TRUE));
+          $tropo->on(array("event" => "hangup", "next" => $action));
           $processing = FALSE;
           break;  
-        
       }
       // go to next command
     }
@@ -1285,7 +1317,6 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
     $grxml_path="voip/tropo/grammar/numeric_star_hash/". $num_digits;
     $choices = url($grxml_path, array('absolute' => TRUE));
   }
-  $action = url($response_url, array('absolute' => TRUE));
   $attempts = 1;
   $timeout = (float)$timeout;
   $prompt = _voiptropo_prompt_validate($script, $cmd->getParam('prompt'));
@@ -1315,8 +1346,17 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
     'recognizer' => $recognizer,
   );
   $tropo->ask($ask_text, $params);
+
+  // event triggers
+  $action = url($response_url, array('absolute' => TRUE));
   $tropo->on(array("event" => "continue", "next" => $action)); 
-// TODO: which events are triggered upon timeout?
+
+  $action = url($response_url . '/incomplete', array('absolute' => TRUE));
+  $tropo->on(array("event" => "incomplete", "next" => $action));
+
+  $response_url = $menu_path . '/process_hangup/' . $cid ;
+  $action = url($response_url, array('absolute' => TRUE));
+  $tropo->on(array("event" => "hangup", "next" => $action));
 }
 
 function _voiptropo_parse_numbers($str) {
