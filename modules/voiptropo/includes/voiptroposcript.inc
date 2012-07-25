@@ -6,6 +6,8 @@
  * Implementation of the VoipTropoScript class
  */
 
+module_load_include('inc', 'voipcall', 'voipscript');
+
 
 class VoipTropoScript extends VoipScript {
   
