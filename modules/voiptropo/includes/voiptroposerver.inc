@@ -327,6 +327,7 @@ dsm(print_r($voip_session, true), 'voip_session');
    //close connection
    curl_close($ch);
   }
+
   /**
    * Implementation of the VoipServer ping() API method
    */
@@ -341,6 +342,7 @@ dsm(print_r($voip_session, true), 'voip_session');
       $provisioning=new ProvisioningAPI($username, $password);
       // Request a list of applications as a way to test the server connectivity
       $response = $provisioning->viewApplications();
+      // TODO: test the actual tokens
     }
     catch (Exception $e) {
       voip_error("Tropo command Ping failed: " . $e->getMessage());

@@ -77,6 +77,13 @@ function voiptwilio_admin_form($configuration) {
  */
 function voiptwilio_admin_form_validate($form, &$form_state) {
 
+  // preserve the value of the password fields
+  $old_settings = variable_get('voip_twilio_settings', '');
+  $field = 'voiptwilio_auth_token';
+  if (!$form_state['values'][$field]) {
+    $form_state['values'][$field] = $old_settings[$field];
+  }
+
   // Send a test request to validate the configuration of the Twilio server
   $values = $form_state['values'];
   $result = VoipTwilioServer::ping($values);

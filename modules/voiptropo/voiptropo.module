@@ -89,16 +89,17 @@ function voiptropo_admin_form($configuration) {
  * Validates the submission of the configuration form.
  */
 function voiptropo_admin_form_validate($form, &$form_state) {
-
-  if (!$form_state['values']['voiptropo_account_password']) {
-    $old_settings=variable_get('voip_tropo_settings', '');
-    $form_state['values']['voiptropo_account_password'] = $old_settings['voiptropo_account_password'];
+  // preserve existing password fields from the form
+  $old_settings = variable_get('voip_tropo_settings', '');
+  $fields = array('voiptropo_account_password', 'voiptropo_voice_token', 'voiptropo_sms_token');
+  foreach($fields as $field){
+    if (!$form_state['values'][$field]) {
+      $form_state['values'][$field] = $old_settings[$field];
+    }
   }
   // Send a test request to validate the configuration of the Tropo server
   $values = $form_state['values'];
-
   $result = VoipTropoServer::ping($values);
-
   if (voip_error()) {
     form_set_error('', voip_error_message());
   }

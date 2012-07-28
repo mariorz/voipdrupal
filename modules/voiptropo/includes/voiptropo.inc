@@ -1061,7 +1061,7 @@ watchdog('voiptropo_test', "about to process script");
     }
   }
 
-watchdog('voiptropo_test', "about to leave script");
+watchdog('voiptropo_test', "about to leave script " . $script->getName());
   // save script for next iteration
   $call->setScript($script);
   $call->save();
