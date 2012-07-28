@@ -351,6 +351,14 @@ class VoipCall {
     return $description;
   }
 
+  public function getProcessingHangup(){
+    return $this->call_data->processing_hangup;
+  }
+
+  public function setProcessingHangup($processing_hangup){
+    $this->call_data->processing_hangup = $processing_hangup;
+  }
+
   public function getAnsweredBy(){
     return $this->call_data->answered_by;
   }
@@ -663,6 +671,11 @@ class VoipCall {
         $data->hangup_reason = NULL;
       }
   
+      // initialize 'Processing Hangup'' field
+      if(!isset($details->processing_hangup)) {
+        $data->processing_hangup = FALSE;
+      }
+  
       // initialize 'Check Machine' field
       if(!isset($details->check_machine)) {
         $data->check_machine = FALSE;
@@ -774,6 +787,10 @@ class VoipCall {
     if(isset($new_hangup_reason))
       $data->hangup_reason =  $new_hangup_reason;
   
+    $processing_hangup = $details->processing_hangup;
+    if(isset($processing_hangup))
+      $data->processing_hangup =  $processing_hangup;
+  
     $new_check = $details->check_machine;
     if(isset($new_check))
       $data->check_machine =  $new_check;
@@ -852,6 +869,9 @@ class VoipCall {
 
     $script->setVar('hangup_reason',
         $call_data->hangup_reason);
+
+    $script->setVar('processing_hangup',
+        $call_data->processing_hangup);
 
     $script->setVar('current_channel',
         $call_data->current_channel);

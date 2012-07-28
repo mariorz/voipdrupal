@@ -104,6 +104,10 @@ function voipcall_schema() {
         'type' => 'varchar', 
         'length' => 255, 
       ),
+      'processing_hangup' => array(
+        'type' => 'int', 
+        'default' => 0,
+      ),
       'check_machine' => array(
         'type' => 'int', 
         'default' => 0,
@@ -300,5 +304,19 @@ function voipcall_update_6102() {
 function voipcall_update_6103() {
   $ret = array();
   db_change_field($ret, 'voipcall', 'script', 'script', array('type' => 'text', 'size' => 'big'));
+  return $ret;
+}
+
+/**
+ * Add processing_hangup flag
+ */
+function voipcall_update_6104() {
+  $ret = array();
+  db_add_field($ret, 'voipcall', 'processing_hangup',
+    array(
+      'type' => 'int',
+      'default' => 0,
+    )
+  );
   return $ret;
 }

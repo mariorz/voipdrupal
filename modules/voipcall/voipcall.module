@@ -440,7 +440,8 @@ function voipcall_call_log() {
   array('data' => t('caller number'), 'field' => 'caller_name'),
   array('data' => t('dest name'), 'field' => 'dest_name'),
   array('data' => t('dest number'), 'field' => 'dest_number'),
-  array('data' => t('other'), 'field' => 'other'),
+//  array('data' => t('other'), 'field' => 'other'),
+  array('data' => t('other')),
   '');
   $sql = "SELECT cid, start_time, uid, caller_name, caller_number,dest_name,dest_number FROM {voipcall}".tablesort_sql($headers);
   $limit = 50;

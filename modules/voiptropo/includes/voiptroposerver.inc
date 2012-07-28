@@ -109,7 +109,6 @@ dsm(print_r($voip_session, true), 'voip_session');
     $username = $server_config['voiptropo_account_username'];
     $password = $server_config['voiptropo_account_password'];
     $token = $server_config['voiptropo_voice_token'];
-$token = $server_config['143f6417ffe49a44927b7b6a59ea9ca029a81294d29afe24243110c2dfdce2f9ccda25355e991b98280f488b'];
 
     // Instantiate a new tropo Rest Client
     $client = new SessionAPI();
