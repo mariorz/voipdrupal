@@ -77,6 +77,7 @@ class VoipTropoServer extends VoipServer {
     $voipcall->setCallerNumber($caller_number);                   
     $dest_number = $voipcall->getDestNumber();
    
+// TODO: move normalize_phone_num to inside default call config save, voipcall_save and session->save
     // prefix the numbers with a "+" to follow the standard formatting
     $caller_number = voipcall_normalize_phone_number($caller_number);
     $dest_number = voipcall_normalize_phone_number($dest_number);
