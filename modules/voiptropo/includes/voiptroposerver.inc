@@ -126,15 +126,8 @@ dsm(print_r($voip_session, true), 'voip_session');
       'cid' => $cid,
     );
 
-    //TODO: TZ:What is this?
-    // Handle answering machine options
-    /*if($voipcall->getCheckMachine() == TRUE) {
-    // TODO: do we need to implement tropo's 'hangup on machine' option here?
-      // Note: adding any value in here -- even 'Continue' -- adds a 5 sec delay
-      //       to the call. To prevent that, 'IfMachine' has to be NULL
-      $vars['IfMachine'] = 'Continue'; 
-    }
-    */
+    // TODO: Handle answering machine detection
+
     try {
       $response = $client->createSession($token, $vars);
     }
