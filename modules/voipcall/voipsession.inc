@@ -19,43 +19,22 @@ class VoipSession {
    * @return
    *   Session object.
    */
-    public static function getSessionByNumber($origin_number, $destination_number) {
-      $session = VoipSession::getSessionByInboundNumber($origin_number, $destination_number);
-      if (!$session) {
-        $session = VoipSession::getSessionByOutboundNumber($origin_number, $destination_number);
-      }
-      return $session;
-    }
+   public static function getSessionByNumber($origin_number, $destination_number) {
+     $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE (origin_number='%s' AND destination_number='%s') OR (origin_number='%s' AND destination_number='%s')", $origin_number, $destination_number, $destination_number, $origin_number));
     
-    public static function getSessionByInboundNumber($origin_number, $destination_number) {
-      $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number='%s' AND destination_number='%s'", $origin_number, $destination_number));
-      if ($session_data->expiring_at < time()) {
-        //Delete this session, its expired
-        db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid);
-        return FALSE;
-      }
-      if ($session_data) {
-        $session = new self($session_data);
-        return $session;
-      }
+     if ($session_data->expiring_at < time()) {
+       //Delete this session, its expired
+       db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid);
+       return FALSE;
+     }
+
+     if ($session_data) {
+       $session = new self($session_data);
+       return $session;
+     }
       
-      return FALSE;
-    }
-    
-    public static function getSessionByOutboundNumber($origin_number, $destination_number) {
-      $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE origin_number='%s' AND destination_number='%s'", $destination_number, $origin_number));
-      if ($session_data->expiring_at < time()) {
-        //Delete this session, its expired
-        db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid);
-        return FALSE;
-      }
-      if ($session_data) {
-        $session = new self($session_data);
-        return $session;
-      }
-      
-      return FALSE;
-    }
+     return FALSE;
+   }
     
    /**
    * Returns Session object associated with the matching VoIP Call
