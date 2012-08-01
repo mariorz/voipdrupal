@@ -792,7 +792,12 @@ watchdog('debug', "call_status: $call_status, result state: " . $result->getStat
       // For Tropo, this state does not necessarily mean that the call has
       // completed sucessfully. Even calls with invalid numbers return 
       // 'DISCONNECTED'
-      $call->setCallStatus(VoipCall::COMPLETED);
+      if($call_status == 'incomplete') {
+        $call->setCallStatus(VoipCall::NO_ANSWER);
+      }
+      else {
+        $call->setCallStatus(VoipCall::COMPLETED);
+      }
       break;
     case 'FAILED':
       $msg = 'Tropo server error for call cid: @cid. Request result: @result';
