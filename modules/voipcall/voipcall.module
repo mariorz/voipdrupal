@@ -271,7 +271,7 @@ function voipcall_admin_form() {
   $form['voipcall_phone_prefix'] = array(
     '#type' => 'textfield',
     '#title' => t('Phone prefix'),
-    '#description' => t('Prefix to be checked for in phone numbers that do not start with the "+" sign. Usually comprised about the country and perhaps the area codes associated with the region the system is being used.'),
+    '#description' => t('Prefixe to be checked for in phone numbers that do not start with "sip:" or the "+" sign. Prefixes usually include the country and sometimes the area codes associated with the geographic location the system is being used. Multiple prefixes should be provided as comma-separated lists.'),
     '#default_value' => variable_get('voipcall_phone_prefix', '1'),
   );
 
@@ -525,34 +525,47 @@ function voipcall_cron() {
 
 /**
  * Normalize the phone number to fit the +CCCXXXYYYY (E.164) format used by
- * most voip servers
+ * most voip servers. This function also handles SIP addresses.
  *
- * Examples for prefix == 1:
- *   +551196664471 => +551196664471
- *   +55 (11) 9666.4471 => +551196664471
+ * Examples for prefix == (1, 55):
  *   16174890199 => +16174890199
  *   6174890199 => +16174890199
- *   sip//:jim@sip.com => sip//:jim@sip.com
+ *   +551196664471 => +551196664471
+ *   +55 (11) 9666.4471 => +551196664471
+ *   55 (11) 9666.4471 => +551196664471
+ *   sip:jim@sip.com => sip:jim@sip.com
  */
 function voipcall_normalize_phone_number($number) {
   $chars = array(' ', '-', '.', '(', ')');
-  $prefix = variable_get('voipcall_phone_prefix', '1');
-  if(strncmp($number, '+', 1)) {
+  if(!strncmp($number, '+', 1)){
+    // remove special characters
+    $rc = str_replace($chars, '', $number);
+  }
+  else if(!strncasecmp($number, 'sip:', 4)) {
+    $rc = $number;
+  }
+  else {
     $n = str_replace($chars, '', $number);
     if(ctype_digit($n)) {
-      if(!strncmp($n, $prefix, strlen($prefix))){
-        $rc = '+' . $n;
+      $found = FALSE;
+      $prefix_string = variable_get('voipcall_phone_prefix', '1');
+      $prefix_string = str_replace(' ', '', $prefix_string);
+      $prefix_list = explode(',', $prefix_string);
+      $default_prefix = $prefix_list[0];
+      foreach($prefix_list as $prefix) {
+        if(!strncmp($n, $prefix, strlen($prefix))){
+          $rc = '+' . $n;
+          $found = TRUE;
+          break;
+        }
       }
-      else {
-        $rc = '+' . $prefix . $n;
+      if(!$found){
+        $rc = '+' . $default_prefix . $n;
       }
     }
     else {
-      $rc = $number;
+      $rc = $number; // Note: this number might contain characters
     }
-  }
-  else {
-    $rc = str_replace($chars, '', $number);
   }
   return $rc;
 }
