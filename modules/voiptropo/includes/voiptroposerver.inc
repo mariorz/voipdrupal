@@ -90,6 +90,7 @@ class VoipTropoServer extends VoipServer {
 
     // save the call to generate a cid
     $voipcall->save();
+    $cid = $voipcall->getCid();
 
     // (re)start the session associated with the call
     $voip_session = VoipSession::getSessionByNumber($caller_number, $dest_number);
@@ -102,7 +103,7 @@ class VoipTropoServer extends VoipServer {
       $voip_session->setDestinationNumber($dest_number);
     }
     // overwrite the cid of the previous call associated w/ session
-    $voip_session->setCid($voipcall->getCid());
+    $voip_session->setCid($cid);
     $voip_session->save();
 dsm(print_r($voip_session, true), 'voip_session');
 
@@ -176,6 +177,7 @@ dsm(print_r($voip_session, true), 'voip_session');
 
     // save the call to generate a cid
     $voipcall->save();
+    $cid = $voipcall->getCid();
 
     // (re)start the session associated with the call
     $voip_session = VoipSession::getSessionByNumber($from, $to);
@@ -187,7 +189,7 @@ dsm(print_r($voip_session, true), 'voip_session');
       $voip_session->setOriginNumber($from);
       $voip_session->setDestinationNumber($to);
     }
-    $voip_session->setCid($voipcall->getCid());
+    $voip_session->setCid($cid);
     $voip_session->save();
 dsm(print_r($voip_session, true), 'voip_session');
 

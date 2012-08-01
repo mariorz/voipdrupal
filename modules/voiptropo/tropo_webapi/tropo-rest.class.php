@@ -35,6 +35,8 @@ class SessionAPI extends RestBase {
 		    }	
 		}
 		
+dsm("query_string: $querystring");
+
 	    curl_setopt($this->ch, CURLOPT_URL, self::SessionURL.$token.$querystring);
 		curl_setopt($this->ch, CURLOPT_RETURNTRANSFER, 1);
 	    $result = curl_exec($this->ch);
