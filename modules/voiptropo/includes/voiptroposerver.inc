@@ -77,11 +77,6 @@ class VoipTropoServer extends VoipServer {
     $voipcall->setCallerNumber($caller_number);                   
     $dest_number = $voipcall->getDestNumber();
    
-// TODO: move normalize_phone_num to inside default call config save, voipcall_save and session->save
-    // prefix the numbers with a "+" to follow the standard formatting
-    $caller_number = voipcall_normalize_phone_number($caller_number);
-    $dest_number = voipcall_normalize_phone_number($dest_number);
-
     // update call variables
     $voipcall->setSource('drupal');
     $voipcall->setDirection(VoipCall::OUTBOUND);
@@ -165,9 +160,6 @@ dsm(print_r($voip_session, true), 'voip_session');
                 : variable_get('voipcall_cid_number', NULL);
 
     }
-    // prefix the numbers with a "+" to follow the standard formatting
-    $from = voipcall_normalize_phone_number($from);
-    $to = voipcall_normalize_phone_number($to);
     
     // update call variables
     $voipcall->setSource('drupal');

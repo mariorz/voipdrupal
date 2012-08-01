@@ -93,7 +93,7 @@ class VoipSession {
     }
     
     public function setOriginNumber($origin_number){
-      $this->session_data->origin_number = $origin_number;
+      $this->session_data->origin_number = voipcall_normalize_phone_number($origin_number);
     }
     
     public function getDestinationNumber(){
@@ -101,7 +101,7 @@ class VoipSession {
     }
     
     public function setDestinationNumber($destination_number){
-      $this->session_data->destination_number = $destination_number;
+      $this->session_data->destination_number = voipcall_normalize_phone_number($destination_number);
     }
     
      public function setExpirationTime($expiration_time=NULL){

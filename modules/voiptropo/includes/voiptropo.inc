@@ -1081,10 +1081,6 @@ function _voiptropo_handle_new_calls($tropo_action, $session) {
     $tmp = $session->getTo();
     $to = $tmp['id'];
   }
-  // prefix the numbers with a "+" to follow the standard formatting
-// TODO: move this functionality elsewhere
-  $from = voipcall_normalize_phone_number($from);
-  $to = voipcall_normalize_phone_number($to);
 
 $msg = "tropo_action: $tropo_action, channel: $channel, network: $network, from: $from, to: $to";
 $vars = array();

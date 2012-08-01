@@ -267,7 +267,7 @@ class VoipCall {
   }
 
   public function setDestNumber($number){
-    $this->call_data->dest_number = $number;
+    $this->call_data->dest_number = voipcall_normalize_phone_number($number);
   }
 
   public function getDestName(){
@@ -283,7 +283,7 @@ class VoipCall {
   }
 
   public function setCallerNumber($number){
-    $this->call_data->caller_number = $number;
+    $this->call_data->caller_number = voipcall_normalize_phone_number($number);
   }
 
   public function getCallerName(){
