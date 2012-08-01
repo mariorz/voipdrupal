@@ -789,6 +789,9 @@ watchdog('debug', "call_status: $call_status, result state: " . $result->getStat
       $call->setCallStatus(VoipCall::REJECTED);
       break;
     case 'DISCONNECTED':
+      // For Tropo, this state does not necessarily mean that the call has
+      // completed sucessfully. Even calls with invalid numbers return 
+      // 'DISCONNECTED'
       $call->setCallStatus(VoipCall::COMPLETED);
       break;
     case 'FAILED':
@@ -1196,13 +1199,15 @@ watchdog('voiptropo_test', "about to call $dest_number");
       $action = url($response_url, array('absolute' => TRUE));
       $tropo->on(array("event" => "hangup", "next" => $action));
   
-      $response_url = $menu_path . '/process_callstatus/' . $cid . '/incomplete' ;
-      $action = url($response_url, array('absolute' => TRUE));
+      $response_url = $menu_path . '/process_callstatus/' . $cid;
+      $action = url($response_url . '/incomplete', array('absolute' => TRUE));
       $tropo->on(array("event" => "incomplete", "next" => $action));
 
-      $response_url = $menu_path . '/process_callstatus/' . $cid . '/in-progress' ;
-      $action = url($response_url, array('absolute' => TRUE));
+      $action = url($response_url . '/in-progress', array('absolute' => TRUE));
       $tropo->on(array("event" => "continue", "next" => $action));
+
+      $action = url($response_url . '/error', array('absolute' => TRUE));
+      $tropo->on(array("event" => "error", "next" => $action));
 
       // $response_url = $menu_path . '/process_recorded_test/' . $cid;
       //$action = url($response_url, array('absolute' => TRUE));
