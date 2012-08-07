@@ -1263,8 +1263,15 @@ function _voiptropo_handle_ongoing_calls($result, $tropo_action, $cid, $event_ty
   // 'process_hangup' for incoming calls does not come with a $cid
   if ($tropo_action == 'process_hangup') {
     if (!$cid) {
-// TODO: how to handle this situation? with $result + session? But what if events have already been set up fog hangup?
 watchdog('debug', "ATTENTION: process_hangup w/ no cid!!");
+      // determine the cid based on the Call Id (Tropo session id)
+      $call_id = $result->getSessionId();
+      $cid = VoipCall::getCidFromCallId($call_id);
+      if(!$cid) {
+        $params = array('@action' => $tropo_action, '@cid' => $cid, '@type' => $event_type, '@result' => print_r($result, TRUE));
+        watchdog('voiptropo', 'error in _voiptropo_handle_ongoing_calls for action: @action, cid: @cid, event type: @type, and result: @result', $params, WATCHDOG_ERROR);
+      return FALSE;
+      }
     }
   }
 
