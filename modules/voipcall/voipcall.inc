@@ -825,6 +825,9 @@ class VoipCall {
 
     // add call variables to script variables
   
+    $script->setVar('cid',
+      $call_data->cid);
+  
     // Note: 'uid' should only be accessed from global $user
     // $script->setVar('uid', $call_data->uid);
   
