@@ -19,6 +19,7 @@ function voipscriptsamples_voipscript_load_script($script_name, $params=NULL) {
  * Implementation of hook_voipscript_get_script_names()
  */
 function voipscriptsamples_voipscript_get_script_names() {
+  $script_names[] = 'voipscript_callback';
   $script_names[] = 'voipscript_dial_test';
   $script_names[] = 'voipscript_gosub_test_a';
   $script_names[] = 'voipscript_gosub_test_b';
@@ -37,11 +38,29 @@ function voipscriptsamples_voipscript_get_script_names() {
 }
 
 
-
 /*
  * Sample scripts that highlight VoIP Drupal capabilities
  */
 function _voipscriptsamples_load_sample_scripts($script_name) {
+  // Main callback script. Should include either a reject or a hangup command.
+  if($script_name == 'voipscript_callback') {
+    $script = new VoipScript('voipscript_callback');
+    // user script to be executed on hangup
+    $callback_script_name = 'voipscript_main_menu';
+    $script->addSet('callback_script_name', $callback_script_name);
+    $script->addSet('voipscript_callback_result', "^voipscript_set_callback(%cid)");
+    $script->addSay('About to hang up the current script to execute its associated callback function. The system should be calling you in about 10 seconds after the hang up.');
+    $script->addBeep();
+    // $script->addReject();
+    $script->addHangup();
+  }
+
+  // callback script to be executed upon hangup
+  if($script_name == 'voipscript_exec_callback_script') {
+    $script = new VoipScript('voipscript_exec_callback_script');
+    $script->addSet('voipscript_callback_result', '^_voipscript_exec_callback(%caller_number, %callback_script_name)');
+  }
+
   if($script_name == 'voipscript_dial_test') {
     $script = _voipscriptsamples_get_dial_test_script();
   }
@@ -70,12 +89,13 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     $script->addSay(t('Welcome to the Voip Drupal Hotline.'));
 
     $script->addLabel('main_menu');
-    $options_menu = t('Main menu. To join or create a conference call, press 1. To hear the weather report for your area, press 2. To send a test SMS, press 3. To record a message, press 4. To hang up, press the pound key.');
+    $options_menu = t('Main menu. To join or create a conference call, press 1. To hear the weather report for your area, press 2. To send a test SMS, press 3. To record a message, press 4. To receive a callback call, press 5. To hang up, press the pound key.');
     $input_options = array(
       '1' => 'conference',
       '2' => 'weather report',
       '3' => 'sms',
       '4' => 'record',
+      '5' => 'callback',
       '#' => 'hang up',
       'i' => 'hang up',
       't' => 'hang up'
@@ -98,6 +118,10 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
 
     $script->addLabel('record');
     $script->addGosub('voipscript_record');
+    $script->addGoto('hang up');
+
+    $script->addLabel('callback');
+    $script->addGosub('voipscript_callback');
     $script->addGoto('hang up');
 
     $script->addLabel('hang up');
@@ -456,3 +480,26 @@ function voipscriptsamples_text_handler_demo($message, $caller_number, $dest_num
   $call->setScript($script);
   $call->save();
 }
+
+/**
+ * Callback-related functions
+*/
+function voipscript_set_callback($cid) {
+  $call = VoipCall::load($cid);
+  $call->setHangupScriptName('voipscript_exec_callback_script');
+  $call->save();
+}
+
+function _voipscript_exec_callback($caller_number, $callback_script_name) {
+  // wait a little for the caller to hang up
+  sleep(10);
+  // create the new call
+  $call = new VoipCall();
+  $call->setDestNumber($caller_number);
+  $callback_script = VoipScript::loadScript($callback_script_name);
+  $call->setScript($callback_script);
+  $call->save();
+  // Execute the callback
+  voip_dial($call);
+}
+
