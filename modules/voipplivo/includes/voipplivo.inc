@@ -75,50 +75,33 @@ watchdog('voipplivo', $msg, $vars, WATCHDOG_INFO);
  /*if($_REQUEST['HangupCause'] == 'NORMAL_CLEARING') {
     return;
   }*/
-  if (!$cid) {
-    $voip_session = VoipSession::getSessionByNumber($from, $to);
-//watchdog('voipplivo', "Session without cid, from: $from, to: $to, url:$plivo_action and SESSION: " . print_r($voip_session, TRUE));
-    if ($voip_session) {
-      $cid = $voip_session->getCid();
-      // load the variables already associated with the call, if any
-      $call = VoipCall::load($cid);
-      //watchdog('voipplivo', "Session Loaded cid: $cid call url:$plivo_action " . print_r($call, TRUE));
-
-      $voip_session->resetTimer();
-      $voip_session->save();
-    }
-    else {
-      $call = new VoipCall();
-      $voip_session = new VoipSession();
-      $voip_session->setOriginNumber($from);
-      $voip_session->setDestinationNumber($to);
-      $voip_session->save();
-      }
+  if(($plivo_action == 'process_hangup') && (!$cid)) {
+    $call_id = $_REQUEST['CallSid'];
+    $cid = VoipCall::getCidFromCallId($call_id);
+  }
+  
+  if ($cid) {
+    $voip_session = VoipSession::getSessionByCid($cid);
   }
   else {
-    $voip_session = VoipSession::getSessionByCid($cid);
-    //watchdog('voipplivo', "Session with cid $cid from: $from, to: $to, url:$plivo_action and SESSION: " . print_r($voip_session, TRUE));
+    $voip_session = VoipSession::getSessionByNumber($from, $to);
+    if($voip_session) {
+      $cid = $voip_session->getCid();
+    }
+  }
+  if(!$voip_session) {
+    $voip_session = new VoipSession();
+    $voip_session->setOriginNumber($from);
+    $voip_session->setDestinationNumber($to);
+  }
 
-    if ($voip_session) {
-      $voip_session->resetTimer();
-      $voip_session->save();
-    }
-    else if ($from && $to && $plivo_action!='process_hangup'){
-      $voip_session = VoipSession::getSessionByNumber($from, $to);
-      if ($voip_session) {
-        $cid = $voip_session->getCid();
-        // load the variables already associated with the call, if any
-        $call = VoipCall::load($cid);
-        $voip_session->resetTimer();
-        $voip_session->save();
-      }
-      else {
-        $voip_session = new VoipSession();
-        $voip_session->setOriginNumber($from);
-        $voip_session->setDestinationNumber($to);
-        $voip_session->save();
-      }
-    }
+  // load the already existing call object, if any
+  if($cid) { 
+    $call = VoipCall::load($cid);
+  }
+  else {
+    //watchdog('debug', '1 : new call object');
+    $call = new VoipCall();
   }
   
   // handle incoming call and text requests
@@ -134,12 +117,14 @@ watchdog('voipplivo', $msg, $vars, WATCHDOG_INFO);
     $call->setAnsweredBy(VoipCall::ANSWERED_DRUPAL);
     $call->setCallStatus(VoipCall::RINGING);
     $call->setStartTime(time());
+	$call->setCallerNumber($from);
+    $call->setDestNumber($to);
     $call->setCurrentChannel($channel);
     $call->setCurrentNetwork($network);
     // save the call
-    $call->save();
+    //$call->save();
     // get the cid of the call
-    $cid = $call->getCid();
+    //$cid = $call->getCid();
   }
   /*else if ($plivo_action == 'process_inbound_text') {
     $call_sid = $_REQUEST['SmsSid']; // unique identifier of the text, 34 char
@@ -242,6 +227,9 @@ watchdog('voipplivo', $msg, $vars, WATCHDOG_INFO);
     watchdog('voipplivo', 'Check if Plivo statuses are same as Twilio '.print_r($plivo_call_status, true));
     $call = voipplivo_update_call_status($call, $plivo_call_status);
  // }
+ 
+   // save the call and initialize its script before setting internal variables
+  $call->save();
 
   // update script variables with call location, if available
  /* if(isset($_REQUEST['FromCity'])){
@@ -337,7 +325,6 @@ watchdog('voipplivo', $msg, $vars, WATCHDOG_INFO);
   }
 
   if($is_hangup) {
-  
     // determine call duration
     $end_time = $call->setEndTime();
     $start_time = $call->getStartTime();
@@ -355,6 +342,22 @@ watchdog('voipplivo', $msg, $vars, WATCHDOG_INFO);
 
   // update the voipcall with the new values
   $call = $call->save();
+  
+  // update the call session object
+  $cid = $call->getCid();
+  if(!$voip_session->getCid()){
+    $voip_session->setCid($cid);
+  }
+  $voip_session->resetTimer();
+  $voip_session->save();
+
+  // get ready to process the call script
+
+  // load global $user based on call user
+  global $user;
+  $stored_user = $user;
+  $call->loadGlobalUser();
+  watchdog('voiptwilio', 'Logged user %uid in.', array('%uid' => $user->uid));
 
   /*if ($plivo_action == 'process_inbound_text') {
     $script = $call->getScript();
