@@ -120,6 +120,13 @@ function voipplivo_admin_form($configuration) {
  */
 function voipplivo_admin_form_validate($form, &$form_state) {
 
+  // preserve the value of the password fields
+  $old_settings = variable_get('voip_plivo_settings', '');
+  $field = 'voipplivo_auth_token';
+  if (!$form_state['values'][$field]) {
+    $form_state['values'][$field] = $old_settings[$field];
+  }
+  
   // Send a test request to validate the configuration of the Plivo server
   $values = $form_state['values'];
   $result = VoipPlivoServer::ping($values);

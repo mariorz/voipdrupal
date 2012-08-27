@@ -957,6 +957,7 @@ function _voiptropo_get_input($type, $call, $cmd,  $script, &$tropo){
   }
   $attempts = 1;
   $timeout = (float)$timeout;
+  
   $prompt = _voiptropo_prompt_validate($script, $cmd->getParam('prompt'));
   $ask_text = '<speak>';
     foreach ($prompt as $p) {
