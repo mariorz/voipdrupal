@@ -961,7 +961,7 @@ function voiptwilio_update_call_status($call, $twilio_call_status='in-progress')
     case 'canceled':
       $call->setCallStatus(VoipCall::CANCELED);
       $call->setHangupReason(VoipCall::HANGUP_API_REQUEST);
-      break;
+      break;	
   }
   return $call;
 }

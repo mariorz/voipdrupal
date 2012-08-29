@@ -37,8 +37,8 @@ $msg = "in voiptropo_call_handler() with tropo_action: $tropo_action, cid: $cid,
 watchdog('voiptropo', $msg);
 
   // TODO: How to validate requests to make sure they are from Tropo?
-  $server = VoipServer::getServer('tropo');
-  $server_config = $server->getConfig();
+  //$server = VoipServer::getServer('tropo');
+  //$server_config = $server->getConfig();
 
   // process the special case of save_record, which does not have a json
   // object associated with it
@@ -68,7 +68,6 @@ watchdog('voiptropo', $msg);
         $tropo_action = 'process_inbound_calls';
       }
       $cid = $session->getParameters('cid');
-
       // process call requests
       $call = _voiptropo_handle_new_calls($tropo_action, $session);
     }
@@ -871,7 +870,7 @@ function _voiptropo_process_sms_response($call, $sms_status_tmp) {
       return NULL;
       break;
     case 'error':
-      $msg = 'SMS sendind failed for call cid: @cid. Make sure your tropo number is sms-enabled.';
+      $msg = 'SMS sending failed for call cid: @cid. Make sure your tropo number is sms-enabled.';
       $params = array('@cid' => $cid);
       watchdog('voiptropo', $msg, $params, WATCHDOG_WARNING);
       $sms_status = VoipCall::TEXT_FAILED;
@@ -1077,6 +1076,7 @@ function _voiptropo_handle_new_calls($tropo_action, $session) {
 
   // determine the cid and voip_session
   $cid = $session->getParameters('cid');
+
   // load VoIP Drupal session and cid based on request parameters
   if ($cid) {
     $voip_session = VoipSession::getSessionByCid($cid);
@@ -1135,17 +1135,17 @@ function _voiptropo_handle_new_calls($tropo_action, $session) {
   // update common call variables
   $call->setCurrentChannel($channel);
   $call->setCurrentNetwork($network);
-
   // set text channel variables
   if (in_array($channel, array('offline_text','text'))) {
     $call->SetCallStatus(VoipCall::IN_PROGRESS);
     $inbound_text_contents = $session->getInitialText();
+	//Must save call before calling setTextVariables()
+	$call = $call->save();
     $call->setTextVariables($inbound_text_contents, $from, $to, $network);
   }
   else {
     $call->setCallStatus(VoipCall::RINGING);
   }
-
   // update the call object and, if needed, generate a new cid
   $call = $call->save();
 
@@ -1373,7 +1373,7 @@ watchdog('voiptropo', 'Logged user %uid in.', array('%uid' => $user->uid));
   // update call duration
   // get call duration from tropo
   $duration = $result->getSessionDuration();
-  if (!duration) {
+  if (!$duration) {
     $end_time = $call->setEndTime();
     $start_time = $call->getStartTime();
     if ($start_time) {
