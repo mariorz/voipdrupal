@@ -100,7 +100,6 @@ class VoipTropoServer extends VoipServer {
     // overwrite the cid of the previous call associated w/ session
     $voip_session->setCid($cid);
     $voip_session->save();
-dsm(print_r($voip_session, true), 'voip_session');
 
     // tropo configuration
     $username = $server_config['voiptropo_account_username'];
@@ -183,7 +182,6 @@ dsm(print_r($voip_session, true), 'voip_session');
     }
     $voip_session->setCid($cid);
     $voip_session->save();
-dsm(print_r($voip_session, true), 'voip_session');
 
     // send the sms
     if (voipscript_use_sms_framework()) {
