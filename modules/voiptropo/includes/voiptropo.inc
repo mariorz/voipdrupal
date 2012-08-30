@@ -207,6 +207,7 @@ function _voiptropo_script_handler($call, &$tropo) {
             }
             //$call = new VoipCall();
             $call->setDestNumber($number);
+			$call->setCallerNumber(variable_get('voipcall_cid_number',''));
             $call->setScript($script);
             $call->save();
             voip_dial($call);
@@ -607,9 +608,8 @@ function _voiptropo_script_handler($call, &$tropo) {
             $cid = $call->getCid();
 
             $callback_url = $menu_path . '/process_sms_callback/' . $cid;
-            $callback_continue = url($callback_url . '/continue', array('absolute' => TRUE));
-          
-            $tropo->on(array("event" => "continue", "next" =>  $callback_continue));
+            //$callback_continue = url($callback_url . '/continue', array('absolute' => TRUE));
+            //$tropo->on(array("event" => "continue", "next" =>  $callback_continue));
 
             $callback_error = url($callback_url . '/error', array('absolute' => TRUE));
             $tropo->on(array("event" => "error", "next" =>  $callback_error));
@@ -617,10 +617,10 @@ function _voiptropo_script_handler($call, &$tropo) {
             $callback_incomplete = url($callback_url . '/incomplete', array('absolute' => TRUE));
             $tropo->on(array("event" => "incomplete", "next" =>  $callback_incomplete));
 
-            $callback_hangup = url($callback_url . '/hangup', array('absolute' => TRUE)); 
-            $response_url = $menu_path . '/process_hangup/' . $cid ;
-            $action = url($response_url, array('absolute' => TRUE));
-            $tropo->on(array("event" => "hangup", "next" => $action));
+            //$callback_hangup = url($callback_url . '/hangup', array('absolute' => TRUE)); 
+            //$response_url = $menu_path . '/process_hangup/' . $cid ;
+            //$action = url($response_url, array('absolute' => TRUE));
+            //$tropo->on(array("event" => "hangup", "next" => $action));
           }
           $rc = TRUE;
           $processing = TRUE;
@@ -1175,6 +1175,7 @@ function _voiptropo_handle_new_calls($tropo_action, $session) {
       //Add events for outbound dial.
       $response_url = $menu_path . '/process_hangup/' . $cid ;
       $action = url($response_url, array('absolute' => TRUE));
+	  //TODO: Check about this
       $tropo->on(array("event" => "hangup", "next" => $action));
   
       $response_url = $menu_path . '/process_callstatus/' . $cid;
@@ -1237,6 +1238,7 @@ function _voiptropo_handle_new_calls($tropo_action, $session) {
     }
 
     // send the request to Tropo
+	//TODO: This shouldn't be called twice
     $tropo->renderJSON();
   }
 

@@ -569,7 +569,6 @@ class Tropo extends BaseClass {
 	public function renderJSON() {
 		header('Content-type: application/json');
 		echo $this;
-watchdog('voiptropo', 'JSON: ' . print_r($this, true));
 	}
 	
 	/**
