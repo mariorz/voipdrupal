@@ -74,7 +74,7 @@ watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
     $to = $_REQUEST['Called'];
   }
 
-watchdog('debug', '0');
+//watchdog('debug', '0');
   // load session and cid based on request parameters
 
   // 'process_hangup' for incoming calls does not come with a $cid
@@ -103,13 +103,13 @@ watchdog('debug', '0');
     $call = VoipCall::load($cid);
   }
   else {
-watchdog('debug', '1 : new call object');
+//watchdog('debug', '1 : new call object');
     $call = new VoipCall();
   }
   
   // handle incoming call and text requests
   if($twilio_action == 'process_inbound_calls') {
-watchdog('debug', '2: incoming call');
+//watchdog('debug', '2: incoming call');
 
     $call_sid = $_REQUEST['CallSid']; // unique identifier of the call, 34 char
     $call->setCallId($call_sid);
@@ -125,10 +125,10 @@ watchdog('debug', '2: incoming call');
     $call->setDestNumber($to);
     $call->setCurrentChannel($channel);
     $call->setCurrentNetwork($network);
-watchdog('debug', "3 :: cid: $cid, to: $to, from: $from, call: " . print_r($call, true));
+//watchdog('debug', "3 :: cid: $cid, to: $to, from: $from, call: " . print_r($call, true));
   }
   else if ($twilio_action == 'process_inbound_text') {
-watchdog('debug', '4: incoming text');
+//watchdog('debug', '4: incoming text');
     $call_sid = $_REQUEST['SmsSid']; // unique identifier of the text, 34 char
     $call->setCallId($call_sid);
     $call->setSource('twilio');
@@ -141,7 +141,7 @@ watchdog('debug', '4: incoming text');
     $call->setDestNumber($to);
     $call->setCurrentChannel($channel);
     $call->setCurrentNetwork($network);
-watchdog('debug', "5 :: cid: $cid, to: $to, from: $from, call: " . print_r($call, true));
+//watchdog('debug', "5 :: cid: $cid, to: $to, from: $from, call: " . print_r($call, true));
   }
   else {
     // handle ongoing calls

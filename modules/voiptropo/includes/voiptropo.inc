@@ -1266,7 +1266,7 @@ function _voiptropo_handle_ongoing_calls($result, $tropo_action, $cid, $event_ty
   // 'process_hangup' for incoming calls does not come with a $cid
   if ($tropo_action == 'process_hangup') {
     if (!$cid) {
-watchdog('debug', "ATTENTION: process_hangup w/ no cid!!");
+//watchdog('debug', "ATTENTION: process_hangup w/ no cid!!");
       // determine the cid based on the Call Id (Tropo session id)
       $call_id = $result->getSessionId();
       $cid = VoipCall::getCidFromCallId($call_id);
