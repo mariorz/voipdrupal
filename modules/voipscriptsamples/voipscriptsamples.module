@@ -258,7 +258,7 @@ function _voipscriptsamples_get_dial_test_script() {
   $num_digits = 10;
   $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
 
-  $script->addGotoIf('no input received', "^%input_digits == ''");
+  $script->addGotoIf('no input received', "^%input_digits == 'no_input'");
 
   $args = array('@digits' => '%input_digits');
   $text = t('You typed @digits. ', $args);
@@ -313,7 +313,7 @@ function _voipscriptsamples_get_join_conference_script() {
   $num_digits = 3;
   $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
 
-  $script->addGotoIf('no input received', "^%input_digits == ''");
+  $script->addGotoIf('no input received', "^%input_digits == 'no_input'");
 
   $args = array('@digits' => '%input_digits');
   $script->addSay(t('You typed @digits. ', $args));
@@ -430,7 +430,7 @@ function _voipscriptsamples_get_send_sms() {
   $num_digits = 10;
   $script->addGetInput($prompt, $num_digits, $end_key, $timeout);
 
-  $script->addGotoIf('no input received', "^%input_digits == ''");
+  $script->addGotoIf('no input received', "^%input_digits == 'no_input'");
 
   $args = array('@digits' => '%input_digits');
   $text = t('You typed @digits.', $args);
