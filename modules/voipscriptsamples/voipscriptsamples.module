@@ -1,16 +1,19 @@
 <?php
 /**
  * @file Provides sample scripts that demonstrate the capabilities of the VoIP Drupal platform
- */ 
+ */
 
-foreach (array('voipscriptsamples_weather.inc', 'voipscriptsamples_sms_group.inc') as $file) {
+foreach (array(
+           'voipscriptsamples_weather.inc',
+           'voipscriptsamples_sms_group.inc'
+         ) as $file) {
   require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . $file);
 }
 
 /**
  * Implementation of hook_voipscript_load_script()
  */
-function voipscriptsamples_voipscript_load_script($script_name, $params=NULL) {
+function voipscriptsamples_voipscript_load_script($script_name, $params = NULL) {
   $script = _voipscriptsamples_load_sample_scripts($script_name);
   return $script;
 }
@@ -43,7 +46,7 @@ function voipscriptsamples_voipscript_get_script_names() {
  */
 function _voipscriptsamples_load_sample_scripts($script_name) {
   // Main callback script. Should include either a reject or a hangup command.
-  if($script_name == 'voipscript_callback') {
+  if ($script_name == 'voipscript_callback') {
     $script = new VoipScript('voipscript_callback');
     // user script to be executed on hangup
     $callback_script_name = 'voipscript_main_menu';
@@ -56,16 +59,16 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
   }
 
   // callback script to be executed upon hangup
-  if($script_name == 'voipscript_exec_callback_script') {
+  if ($script_name == 'voipscript_exec_callback_script') {
     $script = new VoipScript('voipscript_exec_callback_script');
     $script->addSet('voipscript_callback_result', '^_voipscript_exec_callback(%caller_number, %callback_script_name)');
   }
 
-  if($script_name == 'voipscript_dial_test') {
+  if ($script_name == 'voipscript_dial_test') {
     $script = _voipscriptsamples_get_dial_test_script();
   }
 
-  if($script_name == 'voipscript_gosub_test_a') {
+  if ($script_name == 'voipscript_gosub_test_a') {
     $script = new VoipScript('voipscript_gosub_test_a');
     $script->addSay(t('script a'));
     $script->addGosub('voipscript_gosub_test_b');
@@ -74,17 +77,17 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     $script->addHangup();
   }
 
-  if($script_name == 'voipscript_gosub_test_b') {
+  if ($script_name == 'voipscript_gosub_test_b') {
     $script = new VoipScript('voipscript_gosub_test_b');
     $script->addSay(t('script b'));
     $script->addReturn();
   }
 
-  if($script_name == 'voipscript_join_conference') {
+  if ($script_name == 'voipscript_join_conference') {
     $script = _voipscriptsamples_get_join_conference_script();
   }
 
-  if($script_name == 'voipscript_main_menu') {
+  if ($script_name == 'voipscript_main_menu') {
     $script = new VoipScript('voipscript_main_menu');
     $script->addSay(t('Welcome to the Voip Drupal Hotline.'));
 
@@ -103,11 +106,11 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     $invalid_msg = t('Invalid option selected.');
     $script->addRunIvrMenu($options_menu, $input_options, $invalid_msg);
     $script->addGoto('%ivr_option_selected');
-    
+
     $script->addLabel('conference');
     $script->addGosub('voipscript_join_conference');
     $script->addGoto('hang up');
-    
+
     $script->addLabel('weather report');
     $script->addGosub('voipscript_weather_report');
     $script->addGoto('hang up');
@@ -129,11 +132,11 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     $script->addHangup();
   }
 
-  if($script_name == 'voipscript_record') {
+  if ($script_name == 'voipscript_record') {
     $script = _voipscriptsamples_get_record_script();
   }
 
-  if($script_name == 'voipscript_say_demo') {
+  if ($script_name == 'voipscript_say_demo') {
     $script = new VoipScript('voipscript_say_demo');
     $p1 = new VoipPrompt(t('Reading string as number: 12345'), 'man');
     $say = array($p1);
@@ -146,19 +149,19 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     $p3 = new VoipPrompt(VoipVoice::getDate('1.1.2012'));
     $say = array($p3);
     $script->addSay($say);
-    
+
     $script->addHangup();
   }
 
-  if($script_name == 'voipscript_send_sms') {
+  if ($script_name == 'voipscript_send_sms') {
     $script = _voipscriptsamples_get_send_sms();
-  } 
+  }
 
-  if($script_name == 'voipscript_small_office_ivr') {
+  if ($script_name == 'voipscript_small_office_ivr') {
     $script = new VoipScript('voipscript_small_office_ivr');
-    
+
     $script->addSay(t('Welcome to our office hot line. '));
-    
+
     $script->addLabel('office_menu');
     $options_menu = t('For sales, dial 1. For customer support, dial 2. For hours of operation, dial 3. To hang up, dial the star key. ');
     $input_options = array(
@@ -172,25 +175,25 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     $invalid_msg = t('Invalid option selected.');
     $script->addRunIvrMenu($options_menu, $input_options, $invalid_msg);
     $script->addGoto('%ivr_option_selected');
-    
+
     $script->addLabel('sales');
     $script->addSay('Sales department');
     $script->addGoto('hang up');
-    
+
     $script->addLabel('customer support');
     $script->addSay(t('Customer support department'));
     $script->addGoto('hang up');
-    
+
     $script->addLabel('hours');
     $script->addSay(t('Our office is open Monday to Friday from 9am to 5pm.'));
     $script->addGoto('office_menu');
-    
+
     $script->addLabel('hang up');
     $script->addSay(t('Thanks so much for calling our office. Bye bye.'));
     $script->addHangup();
   }
 
-  if($script_name == 'voipscript_sms_call_sender') {
+  if ($script_name == 'voipscript_sms_call_sender') {
     $script = new VoipScript('voipscript_sms_call_sender');
     $script->addSendText(t('We are calling you.'));
     $script->addDial();
@@ -198,32 +201,32 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     $script->addHangup();
   }
 
-  if($script_name == 'voipscript_sms_dialog') {
+  if ($script_name == 'voipscript_sms_dialog') {
     $script = new VoipScript('voipscript_sms_dialog');
     $script->addSet('msg', '^strtolower(%inbound_text_contents)');
     $script->addGotoIf('hi received', "^%msg == 'hi'");
     $script->addGotoIf('end', "^%inbound_text_contents == ''");
-    
+
     $script->addSendText("nice meeting you, %inbound_text_contents");
     $script->addGoto('end');
-    
+
     $script->addLabel('hi received');
     $script->addSendText(t('hi, what is your name?'));
-   
+
     $script->addLabel('end');
     $script->addHangup('reset');
   }
 
-  if($script_name == 'voipscript_sms_group') {
+  if ($script_name == 'voipscript_sms_group') {
     $script = _voipscriptsamples_sms_group();
   }
 
-  if($script_name == 'voipscript_voice_with_sms_input') {
+  if ($script_name == 'voipscript_voice_with_sms_input') {
     $script = new VoipScript('voipscript_voice_with_sms_input');
     $script->addSay(t('Please send us a SMS with your address.'));
-    $script->addSet('text_handler','voipscriptsamples_text_handler_demo');
+    $script->addSet('text_handler', 'voipscriptsamples_text_handler_demo');
     $script->addGoto('waitcmd');
-    
+
     $script->addLabel('wait');
     $script->addSay(t('No message received. Try again.'));
 
@@ -234,10 +237,10 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     $script->addHangup();
   }
 
-  if($script_name == 'voipscript_weather_report') {
+  if ($script_name == 'voipscript_weather_report') {
     $script = _voipscriptsamples_get_weather_report();
   }
-  
+
   return $script;
 }
 
@@ -259,9 +262,9 @@ function _voipscriptsamples_get_dial_test_script() {
 
   $args = array('@digits' => '%input_digits');
   $text = t('You typed @digits. ', $args);
-  $prompt  = new VoipPrompt($text, NULL, 'digits');
+  $prompt = new VoipPrompt($text, NULL, 'digits');
   $script->addSay($prompt);
-  $script->addSet('dial_number','%input_digits');
+  $script->addSet('dial_number', '%input_digits');
 
   $script->addLabel('accept menu');
   $prompt = t("To accept this number, press 1.  To type it once again, press 2. To hangup, press the pound key.");
@@ -280,7 +283,7 @@ function _voipscriptsamples_get_dial_test_script() {
   $script->addGoto('accept menu');
 
   $script->addLabel('dial');
-  $script->addSay(t('Dialing...')); 
+  $script->addSay(t('Dialing...'));
   $script->addDial('%dial_number');
   $args = array('@status' => '%dial_status');
   $script->addSay(t('The dial command returned: @status', $args));
@@ -314,7 +317,7 @@ function _voipscriptsamples_get_join_conference_script() {
 
   $args = array('@digits' => '%input_digits');
   $script->addSay(t('You typed @digits. ', $args));
-  $script->addSet('room_number','%input_digits');
+  $script->addSet('room_number', '%input_digits');
 
   $script->addLabel('accept menu');
   $prompt = t("To accept this number, press 1.  To type it once again, press 2. To hangup, press the pound key.");
@@ -350,7 +353,6 @@ function _voipscriptsamples_get_join_conference_script() {
 
   return $script;
 }
-
 
 
 /**
@@ -408,8 +410,8 @@ function _voipscriptsamples_get_record_script() {
  * Callback function associated with the script voipscript_record.  It is called
  * whenever that script records a new entry from the user.
  */
-function _voipscriptsamples_record_callback($call_id, $recording_url, $recording_duration=NULL) {
-watchdog('voipscriptsamples', "in _voipscriptsamples_record_callback($call_id, $recording_url, $recording_duration)");
+function _voipscriptsamples_record_callback($call_id, $recording_url, $recording_duration = NULL) {
+  watchdog('voipscriptsamples', "in _voipscriptsamples_record_callback($call_id, $recording_url, $recording_duration)");
 
   return 'Success';
 }
@@ -432,9 +434,9 @@ function _voipscriptsamples_get_send_sms() {
 
   $args = array('@digits' => '%input_digits');
   $text = t('You typed @digits.', $args);
-  $prompt  = new VoipPrompt($text, NULL, 'digits');
+  $prompt = new VoipPrompt($text, NULL, 'digits');
   $script->addSay($prompt);
-  $script->addSet('sms_number','%input_digits');
+  $script->addSet('sms_number', '%input_digits');
 
   $script->addLabel('accept menu');
   $prompt = t("To accept this number, press 1.  To type it once again, press 2. To hangup, press the pound key.");
@@ -473,7 +475,7 @@ function _voipscriptsamples_get_send_sms() {
 
 function voipscriptsamples_text_handler_demo($message, $caller_number, $dest_number, &$call, $network) {
   watchdog('voipscriptsamples', "In voipscriptsamples_text_handler_demo with $message, $caller_number, $dest_number, $network");
-  
+
   //When done with processing, set "text_handler_executed" variable to TRUE.
   $script = $call->getScript();
   $script->setVar('user_address', '%inbound_text_contents');
@@ -483,7 +485,7 @@ function voipscriptsamples_text_handler_demo($message, $caller_number, $dest_num
 
 /**
  * Callback-related functions
-*/
+ */
 function voipscript_set_callback($cid) {
   $call = VoipCall::load($cid);
   $call->setHangupScriptName('voipscript_exec_callback_script');

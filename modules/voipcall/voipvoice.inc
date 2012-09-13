@@ -1,14 +1,14 @@
-<?php 
+<?php
 /**
  * @file
  * Implementation of VoIP Voice class
  */
 
 class VoipVoice {
-  
+
   /**
    * @variable $voice_id
-   *   String with the type of voice to be used for the prompt. 
+   *   String with the type of voice to be used for the prompt.
    */
   private $voice_id;
 
@@ -18,26 +18,26 @@ class VoipVoice {
    *   man, woman, neutral
    */
   private $gender;
-    
+
   /**
    * @variable $language.
-   *   String with the language entonation to be used for the prompt. 
+   *   String with the language entonation to be used for the prompt.
    */
   private $language;
-  
+
   /**
    * @variable $description.
-   *   String with the description of the voice. 
+   *   String with the description of the voice.
    */
   private $description;
-    
+
   /**
    * @variable $is_local
-   *   Boolean indicating whether this voice is generated on the local Drupal 
+   *   Boolean indicating whether this voice is generated on the local Drupal
    *   server or by the remote VoIP server.
    */
   private $is_local;
-   
+
   /**
    * Constructor
    */
@@ -48,7 +48,7 @@ class VoipVoice {
     $this->description = $description;
     $this->is_local = $is_local;
   }
-    
+
   /**
    * Get the VoIP Voice instance associated with the given id
    *
@@ -58,30 +58,34 @@ class VoipVoice {
    * @return
    *   VoipVoice instance associated with $voice_id
    */
-  public static function getVoice($voice_id = NULL){
+  public static function getVoice($voice_id = NULL) {
     $server = VoipServer::getDefaultServer();
-  	if ($voice_id == 'man') {
+    if ($voice_id == 'man') {
       return $server->getDefaultManVoice();
     }
-    else if ($voice_id == 'woman') {
-      return $server->getDefaultWomanVoice();
-    }
-    else if (empty($voice_id)) {
-      return $server->getDefaultVoice();
+    else {
+      if ($voice_id == 'woman') {
+        return $server->getDefaultWomanVoice();
+      }
+      else {
+        if (empty($voice_id)) {
+          return $server->getDefaultVoice();
+        }
+      }
     }
 
     $voipvoices = self::getVoices(NULL, NULL, NULL, NULL);
-    
+
     $voipvoice = $voipvoices[$voice_id];
     if (empty($voipvoice)) {
       //If wrong voice_id
-      watchdog('voipcall', 'VoipVoice::getVoice called with non-existing id: '. $voice_id, NULL, WATCHDOG_ERROR);
+      watchdog('voipcall', 'VoipVoice::getVoice called with non-existing id: ' . $voice_id, NULL, WATCHDOG_ERROR);
       //Load default voice instead
       $voipvoice = $server->getDefaultVoice();
     }
     return $voipvoice;
   }
-    
+
   /**
    * Get the VoIP Voices that match the specified parameters
    *
@@ -94,36 +98,35 @@ class VoipVoice {
    * @return
    *   Array of VoipVoice instances representing all available voices matching the criteria.
    */
-   //todo: update docs
-  public static function getVoices($language = NULL, $gender=NULL, $is_local=NULL, $voice_provider = NULL) {
+  //todo: update docs
+  public static function getVoices($language = NULL, $gender = NULL, $is_local = NULL, $voice_provider = NULL) {
     // call hook_voip_getvoices()
-    $voices = module_invoke_all('voip_getvoices', $language , $gender, $is_local, $voice_provider);
+    $voices = module_invoke_all('voip_getvoices', $language, $gender, $is_local, $voice_provider);
     ksort($voices);
     return $voices;
   }
-    
-  
-    
-  function getVoiceId(){
+
+
+  function getVoiceId() {
     return $this->voice_id;
   }
-    
-  function getGender(){
+
+  function getGender() {
     return $this->gender;
   }
-    
-  function getLanguage(){
+
+  function getLanguage() {
     return $this->language;
   }
-  
-  function getDescription(){
+
+  function getDescription() {
     return $this->description;
   }
-    
+
   function isLocal() {
     return $this->is_local;
   }
-    
+
   /**
    * Returns numbers in digit format: '123' will become '1 2 3'
    *
@@ -135,10 +138,10 @@ class VoipVoice {
    */
   public static function getDigits($number) {
     $number_array = str_split($number);
-    $number_with_space = implode(" ",$number_array);
+    $number_with_space = implode(" ", $number_array);
     return $number_with_space;
   }
-    
+
   /**
    * Returns time in date format
    *
@@ -150,14 +153,14 @@ class VoipVoice {
    *   String representing the date
    */
   public static function getDate($time) {
-    $timestamp = strtotime($time);  //Will convert string to timestamp
+    $timestamp = strtotime($time); //Will convert string to timestamp
     if (!$timestamp) {
       //If the $time param was timestamp, then strtotime() will return FALSE.
       $timestamp = $time;
     }
-    return date("F j, Y",$timestamp); 
+    return date("F j, Y", $timestamp);
   }
-    
+
   /**
    * Returns a voice prompt ready to be processed by a VoIP server
    *
@@ -179,16 +182,16 @@ class VoipVoice {
    *   VoipPrompt instance combining text to be read by VoIP
    *   servers.
    */
-  function getPrompt($text, $args = NULL, $as = NULL) { 
+  function getPrompt($text, $args = NULL, $as = NULL) {
     $prompt_text = t($text, $args, $this->getLanguage());
-    return new VoipPrompt($prompt_text, $this->getVoiceId(), $as); 
+    return new VoipPrompt($prompt_text, $this->getVoiceId(), $as);
   }
 }
 
 /**
  * Helper functions
  */
- 
+
 /**
  * Stores the current voice of the system
  */
@@ -200,29 +203,29 @@ function voipvoice_set_current_voice($voice_id) {
 /**
  * Wrapper around VoiceVoice's getPrompt() method
  */
-function v($text, $args = NULL, $as = NULL,  $voice_id=NULL) {
- if ($voice_id) {
-   $voipvoice_current_voice = VoipVoice::getVoice($voice_id);
- }
- else {
-   //Use voice set in voipvoice_set_current_voice()
-   global $voipvoice_current_voice;
-   if(!$voipvoice_current_voice) {
-    //initialize with default
-    $server = VoipServer::getDefaultServer();
-    $voipvoice_current_voice = $server->getDefaultVoice();
-   }
- }
+function v($text, $args = NULL, $as = NULL, $voice_id = NULL) {
+  if ($voice_id) {
+    $voipvoice_current_voice = VoipVoice::getVoice($voice_id);
+  }
+  else {
+    //Use voice set in voipvoice_set_current_voice()
+    global $voipvoice_current_voice;
+    if (!$voipvoice_current_voice) {
+      //initialize with default
+      $server = VoipServer::getDefaultServer();
+      $voipvoice_current_voice = $server->getDefaultVoice();
+    }
+  }
 
- $prompt = $voipvoice_current_voice->getPrompt($text, $args, $as);
- return $prompt;
+  $prompt = $voipvoice_current_voice->getPrompt($text, $args, $as);
+  return $prompt;
 }
 
 /*
 * Helper function to retrieve VoipVoice instances as list array.
 */
 function voipcall_get_voices_as_list($voices) {
-  foreach($voices as $voice) {
+  foreach ($voices as $voice) {
     $list[$voice->getVoiceId()] = $voice->getDescription();
   }
   return $list;
@@ -231,21 +234,23 @@ function voipcall_get_voices_as_list($voices) {
 /**
  * Implements hook_getvoices().
  */
-function voipcall_voip_getvoices($language , $gender, $is_local, $voice_provider){
-  if($voice_provider) {
+function voipcall_voip_getvoices($language, $gender, $is_local, $voice_provider) {
+  if ($voice_provider) {
     //This module is not voice provider
     return array();
   }
-  if($gender == 'man') {
+  if ($gender == 'man') {
     $voipvoices['man'] = new VoipVoice('man', 'man', 'en', 'default man voice');
-  }
-  else if($gender == 'woman') {
-    $voipvoices['woman'] = new VoipVoice('woman', 'woman', 'en', 'default woman voice');
   }
   else {
-    $voipvoices['man'] = new VoipVoice('man', 'man', 'en', 'default man voice');
-    $voipvoices['woman'] = new VoipVoice('woman', 'woman', 'en', 'default woman voice');
+    if ($gender == 'woman') {
+      $voipvoices['woman'] = new VoipVoice('woman', 'woman', 'en', 'default woman voice');
+    }
+    else {
+      $voipvoices['man'] = new VoipVoice('man', 'man', 'en', 'default man voice');
+      $voipvoices['woman'] = new VoipVoice('woman', 'woman', 'en', 'default woman voice');
+    }
   }
- 
+
   return $voipvoices;
 }

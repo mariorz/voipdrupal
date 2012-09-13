@@ -3,7 +3,7 @@
  * Implementation of hook_install().
  */
 function voipcall_install() {
-   drupal_install_schema('voipcall');
+  drupal_install_schema('voipcall');
 }
 
 function voipcall_uninstall() {
@@ -17,14 +17,14 @@ function voipcall_uninstall() {
  * Implementation of hook_schema().
  */
 function voipcall_schema() {
- 
+
   /**
    * voipcall_recording table
-   * 
+   *
    */
   $schema['voipcall'] = array(
     'fields' => array(
-       'cid' => array(
+      'cid' => array(
         'description' => t('CID'),
         'type' => 'serial',
         'unsigned' => TRUE,
@@ -37,146 +37,146 @@ function voipcall_schema() {
         'not null' => TRUE,
       ),
       'call_id' => array(
-        'type' => 'text',  
-        'size' => 'small',     
+        'type' => 'text',
+        'size' => 'small',
       ),
       'caller_name' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'caller_number' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'dest_name' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'dest_number' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'duration' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'max_session_duration' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'end_time' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'error_message' => array(
-        'type' => 'text', 
+        'type' => 'text',
         'size' => 'small',
       ),
       'hangup_script' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'script' => array(
-        'type' => 'text', 
+        'type' => 'text',
         'size' => 'big',
       ),
       'source' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'start_time' => array(
-        'type' => 'int', 
+        'type' => 'int',
         'default' => 0,
       ),
       'status' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'answered_by' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'direction' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'hangup_reason' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'processing_hangup' => array(
-        'type' => 'int', 
+        'type' => 'int',
         'default' => 0,
       ),
       'check_machine' => array(
-        'type' => 'int', 
+        'type' => 'int',
         'default' => 0,
       ),
       'current_channel' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'call_channel' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'current_network' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'call_network' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'text_status' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'created' => array(
-        'type' => 'int', 
+        'type' => 'int',
         'default' => 0,
       ),
       'changed' => array(
-        'type' => 'int', 
+        'type' => 'int',
         'default' => 0,
       ),
-    ), 
+    ),
     'primary key' => array('cid'),
   );
-  
+
   /**
    * voipsession table
    */
   $schema['voipsession'] = array(
     'fields' => array(
-       'sid' => array(
+      'sid' => array(
         'description' => t('SID'),
         'type' => 'serial',
         'unsigned' => TRUE,
         'not null' => TRUE,
-      ), 
+      ),
       'call_id' => array(
-        'type' => 'text',  
-        'size' => 'small',     
+        'type' => 'text',
+        'size' => 'small',
         'not null' => FALSE
       ),
       'origin_number' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'destination_number' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
+        'type' => 'varchar',
+        'length' => 255,
       ),
       'expiration_time' => array(
-        'type' => 'int', 
+        'type' => 'int',
         'default' => 300,
       ),
       'expiring_at' => array(
-        'type' => 'int', 
+        'type' => 'int',
         'default' => 0,
       ),
-    ), 
+    ),
     'primary key' => array('sid'),
   );
 
@@ -203,7 +203,7 @@ function voipcall_update_6100() {
       'default' => '',
     )
   );
-  
+
   db_add_field($ret, 'voipcall', 'current_network',
     array(
       'type' => 'varchar',
@@ -220,7 +220,7 @@ function voipcall_update_6100() {
       'default' => '',
     )
   );
-  
+
   db_add_field($ret, 'voipcall', 'inbound_text_script_name',
     array(
       'type' => 'varchar',
@@ -229,7 +229,7 @@ function voipcall_update_6100() {
       'default' => '',
     )
   );
-  
+
   db_add_field($ret, 'voipcall', 'max_session_duration',
     array(
       'type' => 'varchar',
@@ -238,56 +238,56 @@ function voipcall_update_6100() {
       'default' => '',
     )
   );
-  
+
   db_drop_field($ret, 'voipcall', 'text_script');
   db_drop_field($ret, 'voipcall', 'process_response');
-  
+
   if (!db_table_exists('voipsession')) {
     $schema['voipsession'] = array(
-    'fields' => array(
-       'sid' => array(
-        'description' => t('SID'),
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-      ), 
-      'call_id' => array(
-        'type' => 'text',  
-        'size' => 'small',     
-        'default' => ''
+      'fields' => array(
+        'sid' => array(
+          'description' => t('SID'),
+          'type' => 'serial',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'call_id' => array(
+          'type' => 'text',
+          'size' => 'small',
+          'default' => ''
+        ),
+        'origin_number' => array(
+          'type' => 'varchar',
+          'length' => 255,
+        ),
+        'destination_number' => array(
+          'type' => 'varchar',
+          'length' => 255,
+        ),
+        'expiration_time' => array(
+          'type' => 'int',
+          'default' => 300,
+        ),
+        'expiring_at' => array(
+          'type' => 'int',
+          'default' => 0,
+        ),
       ),
-      'origin_number' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
-      ),
-      'destination_number' => array(
-        'type' => 'varchar', 
-        'length' => 255, 
-      ),
-      'expiration_time' => array(
-        'type' => 'int', 
-        'default' => 300,
-      ),
-      'expiring_at' => array(
-        'type' => 'int', 
-        'default' => 0,
-      ),
-    ), 
-    'primary key' => array('sid'),
-  );
+      'primary key' => array('sid'),
+    );
     db_create_table($ret, 'voipsession', $schema['voipsession']);
   }
-  
+
   return $ret;
 }
 
 function voipcall_update_6101() {
   $ret = array();
   db_change_field($ret, 'voipcall', 'inbound_text_script_name', 'text_handler', array(
-      'type' => 'varchar',
-      'length' => 255,
-      'not null' => TRUE,
-      'default' => '',
+    'type' => 'varchar',
+    'length' => 255,
+    'not null' => TRUE,
+    'default' => '',
   ));
   return $ret;
 }
@@ -303,7 +303,10 @@ function voipcall_update_6102() {
  */
 function voipcall_update_6103() {
   $ret = array();
-  db_change_field($ret, 'voipcall', 'script', 'script', array('type' => 'text', 'size' => 'big'));
+  db_change_field($ret, 'voipcall', 'script', 'script', array(
+    'type' => 'text',
+    'size' => 'big'
+  ));
   return $ret;
 }
 
