@@ -76,9 +76,6 @@ function _voipscriptsamples_get_weather_report() {
  * Return string with weather report for given zip code
  */
 function _voipscriptsamples_get_forecast($zip) {
-
-  watchdog('forecast', "zip: $zip");
-
   $forecast = NULL;
 
   $woeid = _voipscriptsamples_getWoeidFromZip($zip);

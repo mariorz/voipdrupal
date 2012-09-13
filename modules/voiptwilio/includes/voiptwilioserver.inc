@@ -318,9 +318,11 @@ class VoipTwilioServer extends VoipServer {
    * Implementation of the VoipServer hangup() API method
    */
   function hangup($voipcall, $server_config = NULL) {
-    $id = $voipcall->getCallId();
-    $status = $voipcall->getCallStatus();
-    watchdog('voiptwilio', "in hangup() with call id: $id and status: $status");
+    if (voip_debug()) {
+      $id = $voipcall->getCallId();
+      $status = $voipcall->getCallStatus();
+      watchdog('voiptwilio', "in hangup() with call id: $id and status: $status");
+    }
 
     $rc = FALSE;
     voip_error_reset();

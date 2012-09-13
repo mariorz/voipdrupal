@@ -32,10 +32,10 @@
  * @return void
  */
 function _voiptropo_call_handler($tropo_action = '', $cid = NULL, $event_type = '') {
-
-  $msg = "in voiptropo_call_handler() with tropo_action: $tropo_action, cid: $cid, event: $event_type";
-  watchdog('voiptropo', $msg);
-
+  if (voip_debug()) {
+    $msg = "in voiptropo_call_handler() with tropo_action: $tropo_action, cid: $cid, event: $event_type";
+    watchdog('voiptropo', $msg);
+  }
   // TODO: How to validate requests to make sure they are from Tropo?
   //$server = VoipServer::getServer('tropo');
   //$server_config = $server->getConfig();
@@ -112,8 +112,10 @@ function _voiptropo_call_handler($tropo_action = '', $cid = NULL, $event_type = 
  * @return boolean.  TRUE on success or FALSE on failure.  Check voip_error() for processing failure.
  */
 function _voiptropo_script_handler($call, &$tropo) {
-  $msg = 'Entering script_handler with voipcall: ' . print_r($call, TRUE);
-  watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
+  if (voip_debug()) {
+    $msg = 'Entering script_handler with voipcall: ' . print_r($call, TRUE);
+    watchdog('voiptropo', $msg, array(), WATCHDOG_INFO);
+  }
 
   $rc = TRUE;
 
@@ -552,7 +554,6 @@ function _voiptropo_script_handler($call, &$tropo) {
               $text = $script->evalString($p->getText());
               $text = _voiptropo_strip_special_chars($text);
               $voice_id = $p->getVoice() ? $p->getVoice() : $default_voice;
-//watchdog("debug", "Say: voice: $voice_id, language: $language, text: $text");
               $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
               $say_params = array();
               if ($as == 'digits') {
@@ -1327,8 +1328,9 @@ function _voiptropo_handle_ongoing_calls($result, $tropo_action, $cid, $event_ty
   global $user;
   $stored_user = $user;
   $call->loadGlobalUser();
-  watchdog('voiptropo', 'Logged user %uid in.', array('%uid' => $user->uid));
-
+  if (voip_debug()) {
+    watchdog('voiptropo', 'Logged user %uid in.', array('%uid' => $user->uid));
+  }
   // initialize common variables
   if ($tropo_action == 'process_sms_callback') {
     $call->SetCallStatus(VoipCall::IN_PROGRESS);

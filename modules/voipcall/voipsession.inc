@@ -195,7 +195,9 @@ class VoipSession {
     if ($sid) {
       db_query("DELETE FROM {voipsession} WHERE sid=%d", $sid);
     }
-    watchdog('voipsession', "Destroying session $sid");
+    if (voip_debug()) {
+      watchdog('voipsession', "Destroying session $sid");
+    }
     $this->session_data = NULL;
   }
 }

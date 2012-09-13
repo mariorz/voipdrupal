@@ -38,10 +38,11 @@ foreach (array('twilio.php') as $file) {
  * @return void
  */
 function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
-
-  $msg = "in voiptwilio_call_handler() with twilio_action: $twilio_action, cid: $cid, and _REQUEST: " . print_r($_REQUEST, TRUE);
-  $vars = array();
-  watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
+  if (voip_debug()) {
+    $msg = "in voiptwilio_call_handler() with twilio_action: $twilio_action, cid: $cid, and _REQUEST: " . print_r($_REQUEST, TRUE);
+    $vars = array();
+    watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
+  }
   // validate $_REQUEST['AccountSid'] to avoid hack attempts
   $server = VoipServer::getServer('twilio');
   $server_config = $server->getConfig();
@@ -338,7 +339,9 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
   global $user;
   $stored_user = $user;
   $call->loadGlobalUser();
-  watchdog('voiptwilio', 'Logged user %uid in.', array('%uid' => $user->uid));
+  if (voip_debug()) {
+    watchdog('voiptwilio', 'Logged user %uid in.', array('%uid' => $user->uid));
+  }
 
   if ($twilio_action == 'process_inbound_text') {
     $script = $call->getScript();
@@ -368,7 +371,9 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
   // Process shouldn't go further, so just for good practice.
   if (!empty($stored_user)) {
     $user = $stored_user;
-    watchdog('voiptwilio', 'Reverted to logged in user %uid', array('%uid' => $user->uid));
+    if (voip_debug()) {
+      watchdog('voiptwilio', 'Reverted to logged in user %uid', array('%uid' => $user->uid));
+    }
   }
 
   return; // NOTE: this function MUST NOT return any value.  If it does, the
@@ -383,8 +388,10 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
  * @return boolean.  TRUE on success or FALSE on failure.  Check voip_error() for processing failure.
  */
 function _voiptwilio_script_handler($call) {
-  $msg = 'Entering script_handler with voipcall: ' . print_r($call, TRUE);
-  watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
+  if (voip_debug()) {
+    $msg = 'Entering script_handler with voipcall: ' . print_r($call, TRUE);
+    watchdog('voiptwilio', $msg, array(), WATCHDOG_INFO);
+  }
 
   $rc = TRUE;
 
@@ -935,7 +942,6 @@ function _voiptwilio_send_response($response) {
   $output .= '</Response>';
 
   drupal_set_header('Content-Type: text/xml; charset=utf-8');
-//TODO: watchdog('response', htmlspecialchars($output));
   print $output;
 
   return TRUE;

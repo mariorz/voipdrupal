@@ -39,10 +39,11 @@ foreach (array('plivo.php') as $file) {
  */
 function _voipplivo_call_handler($plivo_action, $cid = NULL) {
 
-  $msg = "in voipplivo_call_handler() with plivo_action: $plivo_action, cid: $cid, and _REQUEST: " . print_r($_REQUEST, TRUE);
-  $vars = array();
-  watchdog('voipplivo', $msg, $vars, WATCHDOG_INFO);
-
+  if (voip_debug()) {
+    $msg = "in voipplivo_call_handler() with plivo_action: $plivo_action, cid: $cid, and _REQUEST: " . print_r($_REQUEST, TRUE);
+    $vars = array();
+    watchdog('voipplivo', $msg, $vars, WATCHDOG_INFO);
+  }
   // validate $_REQUEST to avoid hack attempts
   if (!_voipplivo_validate_request()) {
     $msg = '_voip_plivo_call_handler called with invalid AccountSid: @sid';
@@ -174,8 +175,9 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
   global $user;
   $stored_user = $user;
   $call->loadGlobalUser();
-  watchdog('voipplivo', 'Logged user %uid in.', array('%uid' => $user->uid));
-
+  if (voip_debug()) {
+    watchdog('voipplivo', 'Logged user %uid in.', array('%uid' => $user->uid));
+  }
   //Left because offline_text
   if (in_array($channel, array('offline_text', 'text'))) {
     $call = $call->save();
@@ -230,7 +232,7 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
   }
   else{*/
   //TODO: Check if Plivo statuses are same as Twilio?
-  watchdog('voipplivo', 'Check if Plivo statuses are same as Twilio ' . print_r($plivo_call_status, TRUE));
+  //watchdog('voipplivo', 'Check if Plivo statuses are same as Twilio ' . print_r($plivo_call_status, TRUE));
   $call = voipplivo_update_call_status($call, $plivo_call_status);
   // }
 
@@ -255,8 +257,6 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
 
   $is_hangup = $call->isHangup();
 
-//watchdog('voipplivo', "plivo status: $plivo_call_status, updated call status: " . $call->getCallStatus() . ", is_hangup: $is_hangup");
-
   // process responses to requests previously-issued by the call script
   if (!$is_hangup) {
     switch ($plivo_action) {
@@ -279,7 +279,7 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
         //       and, therefore, should be processed in the same way
       case 'process_dial':
         //TODO: Test request parameters
-        watchdog('voipplivo', "Dial response: " . print_r($_REQUEST, TRUE));
+        //watchdog('voipplivo', "Dial response: " . print_r($_REQUEST, TRUE));
         $call = _voipplivo_process_dial_response($call, $_REQUEST);
         break;
       case 'process_get_input':
@@ -293,12 +293,12 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
       case 'process_record_mp3':
         $script = $call->getScript();
         $plivo_record_url = $_REQUEST['RecordFile'];
-        //TODO: is only local path supported?
-        watchdog('voipplivo', "Record response: " . print_r($_REQUEST, TRUE));
+        //TODO: is only local path supported? Yes
+        //watchdog('voipplivo', "Record response: " . print_r($_REQUEST, TRUE));
         //Transfer the file to local server
         $file = _voipplivo_transfer_file($plivo_record_url);
         $script->setVar('recording_path', file_create_url($file['filepath']));
-        //TODO: For now we set this to same recording_path because public url is not available in Plivo
+        //For now we set this to same recording_path because public url is not available in Plivo
         $script->setVar('recording_public_url', file_create_url($file['filepath']));
         $script->setVar('recording_duration', $_REQUEST['RecordingDuration']);
         $script->setVar('recording_digits', $_REQUEST['Digits']);
@@ -363,8 +363,9 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
   global $user;
   $stored_user = $user;
   $call->loadGlobalUser();
-  watchdog('voiptwilio', 'Logged user %uid in.', array('%uid' => $user->uid));
-
+  if (voip_debug()) {
+    watchdog('voiptwilio', 'Logged user %uid in.', array('%uid' => $user->uid));
+  }
   /*if ($plivo_action == 'process_inbound_text') {
     $script = $call->getScript();
     $text_handler = $script->getVar('text_handler');
@@ -384,7 +385,9 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
   // Process shouldn't go further, so just for good practice.
   if (!empty($stored_user)) {
     $user = $stored_user;
-    watchdog('voipplivo', 'Reverted to logged in user %uid', array('%uid' => $user->uid));
+    if (voip_debug()) {
+      watchdog('voipplivo', 'Reverted to logged in user %uid', array('%uid' => $user->uid));
+    }
   }
 
   return; // NOTE: this function MUST NOT return any value.  If it does, the
@@ -399,9 +402,10 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
  * @return boolean.  TRUE on success or FALSE on failure.  Check voip_error() for processing failure.
  */
 function _voipplivo_script_handler($call) {
-  $msg = 'Entering script_handler with voipcall: ' . print_r($call, TRUE);
-  watchdog('voipplivo', $msg, array(), WATCHDOG_INFO);
-
+  if (voip_debug()) {
+    $msg = 'Entering script_handler with voipcall: ' . print_r($call, TRUE);
+    watchdog('voipplivo', $msg, array(), WATCHDOG_INFO);
+  }
   $rc = TRUE;
 
   // get the script object associated with the call
@@ -915,9 +919,7 @@ function _voipplivo_send_response($response) {
   $output .= '</Response>';
 
   drupal_set_header('Content-Type: text/xml; charset=utf-8');
-  watchdog('response', 'Response ' . print_r($output, TRUE));
   print $output;
-
   return TRUE;
 }
 
