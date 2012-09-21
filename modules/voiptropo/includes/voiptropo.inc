@@ -90,6 +90,7 @@ function _voiptropo_call_handler($tropo_action = '', $cid = NULL, $event_type = 
     $rc = _voiptropo_script_handler($call, $tropo);
 
     // add common event triggers
+    $channel = $call->getCallChannel();
     if ($tropo_action != 'process_callstatus' && $channel != 'text') {
       $cid = $call->getCid();
       $response_url = $menu_path . '/process_callstatus/' . $cid . '/error';
@@ -236,6 +237,7 @@ function _voiptropo_script_handler($call, &$tropo) {
             $tropo->transfer($number, $params);
 
             //Add events
+			//TODO: Check about this continue event
             $response_url = $menu_path . '/process_dial/' . $cid . '/continue';
             $action = url($response_url, array('absolute' => TRUE));
             $tropo->on(array("event" => "continue", "next" => $action));
@@ -248,6 +250,7 @@ function _voiptropo_script_handler($call, &$tropo) {
             $action = url($response_url, array('absolute' => TRUE));
             $tropo->on(array("event" => "incomplete", "next" => $action));
 
+			//TODO: Check about this hangup event
             $response_url = $menu_path . '/process_hangup/' . $cid;
             $action = url($response_url, array('absolute' => TRUE));
             $tropo->on(array("event" => "hangup", "next" => $action));
@@ -325,7 +328,7 @@ function _voiptropo_script_handler($call, &$tropo) {
           break;
 
         case 'VoipCmdHangup':
-          $call->SetCallStatus(VoipCall::COMPLETED);
+          $call->setCallStatus(VoipCall::COMPLETED);
           $call->setHangupReason(VoipCall::HANGUP_SCRIPT_COMMAND);
           $start = $call->getStartTime();
           $end = $call->setEndTime();
@@ -776,7 +779,7 @@ function voiptropo_update_call_status($call, $result, $call_status) {
         '@result' => print_r($result, TRUE)
       );
       // $call->report_error('voiptropo', $msg, $params);
-      watchdog('voiptropo', $msg, $paramsi, WATCHDOG_WARNING);
+      watchdog('voiptropo', $msg, $params, WATCHDOG_WARNING);
       $found = FALSE;
       break;
     case 'RINGING':
@@ -970,6 +973,7 @@ function _voiptropo_get_input($type, $call, $cmd, $script, &$tropo) {
     }
     $grxml_path = "voip/tropo/grammar/numeric_star_hash/" . $num_digits;
     $choices = url($grxml_path, array('absolute' => TRUE));
+	$recognizer = NULL;
   }
   $attempts = 1;
   $timeout = (float) $timeout;

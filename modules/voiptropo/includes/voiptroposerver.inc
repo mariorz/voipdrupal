@@ -109,7 +109,7 @@ class VoipTropoServer extends VoipServer {
     // Instantiate a new tropo Rest Client
     $client = new SessionAPI();
     //$menu_path = 'voip/tropo/callhandler';
-    $cid = $voipcall->getCid();
+    //$cid = $voipcall->getCid();
 
     $vars = array(
       'action' => 'create',
