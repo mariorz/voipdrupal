@@ -22,7 +22,7 @@ class VoipSession {
   public static function getSessionByNumber($origin_number, $destination_number) {
     $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE (origin_number='%s' AND destination_number='%s') OR (origin_number='%s' AND destination_number='%s')", $origin_number, $destination_number, $destination_number, $origin_number));
 
-    if ($session_data->expiring_at < time()) {
+    if ($session_data && $session_data->expiring_at < time()) {
       //Delete this session, its expired
       db_query("DELETE FROM {voipsession} WHERE sid=%d", $session_data->sid);
       return FALSE;
@@ -81,7 +81,8 @@ class VoipSession {
   }
 
   public function getCid() {
-    return $this->session_data->call_id;
+    //Avoid Undefined property warning
+    return isset($this->session_data->call_id) ? $this->session_data->call_id : NULL;
   }
 
   public function setCid($cid) {

@@ -672,6 +672,11 @@ class VoipCall {
       if (!isset($details->hangup_reason)) {
         $data->hangup_reason = NULL;
       }
+	  
+	  // initialize 'Error message' field
+      if (!isset($details->error_message)) {
+        $data->error_message = NULL;
+      }
 
       // initialize 'Processing Hangup'' field
       if (!isset($details->processing_hangup)) {
