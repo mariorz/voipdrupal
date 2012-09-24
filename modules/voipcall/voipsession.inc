@@ -20,7 +20,9 @@ class VoipSession {
    *   Session object.
    */
   public static function getSessionByNumber($origin_number, $destination_number) {
-    $session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE (origin_number='%s' AND destination_number='%s') OR (origin_number='%s' AND destination_number='%s')", $origin_number, $destination_number, $destination_number, $origin_number));
+    $origin_number = voipcall_normalize_phone_number($origin_number);
+	$destination_number = voipcall_normalize_phone_number($destination_number);
+	$session_data = db_fetch_object(db_query("SELECT * FROM {voipsession} WHERE (origin_number='%s' AND destination_number='%s') OR (origin_number='%s' AND destination_number='%s')", $origin_number, $destination_number, $destination_number, $origin_number));
 
     if ($session_data && $session_data->expiring_at < time()) {
       //Delete this session, its expired

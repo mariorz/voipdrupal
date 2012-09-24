@@ -74,31 +74,33 @@ class VoipTropoServer extends VoipServer {
     $caller_number = ($voipcall->getCallerNumber())
       ? $voipcall->getCallerNumber()
       : variable_get('voipcall_cid_number', NULL);
-    $voipcall->setCallerNumber($caller_number);
+    
     $dest_number = $voipcall->getDestNumber();
-
-    // update call variables
-    $voipcall->setSource('drupal');
-    $voipcall->setDirection(VoipCall::OUTBOUND);
-    $voipcall->setCurrentChannel('voice');
-    $voipcall->setCurrentNetwork('voip');
-
-    // save the call to generate a cid
-    $voipcall->save();
-    $cid = $voipcall->getCid();
 
     // (re)start the session associated with the call
     $voip_session = VoipSession::getSessionByNumber($caller_number, $dest_number);
     if ($voip_session) {
       $voip_session->resetTimer();
+	  //we must preserve cid
+	  $cid = $voip_session->getCid();
+	  //no need to save the call since we are retrieving existing cid
     }
     else {
       $voip_session = new VoipSession();
       $voip_session->setOriginNumber($caller_number);
       $voip_session->setDestinationNumber($dest_number);
+	  
+	  // update call variables
+	  $voipcall->setCallerNumber($caller_number);
+      $voipcall->setSource('drupal');
+      $voipcall->setDirection(VoipCall::OUTBOUND);
+      $voipcall->setCurrentChannel('voice');
+      $voipcall->setCurrentNetwork('voip');
+	  $voipcall->save();
+      $cid = $voipcall->getCid();
+	  $voip_session->setCid($cid);
     }
-    // overwrite the cid of the previous call associated w/ session
-    $voip_session->setCid($cid);
+
     $voip_session->save();
 
     // tropo configuration
@@ -108,8 +110,6 @@ class VoipTropoServer extends VoipServer {
 
     // Instantiate a new tropo Rest Client
     $client = new SessionAPI();
-    //$menu_path = 'voip/tropo/callhandler';
-    //$cid = $voipcall->getCid();
 
     $vars = array(
       'action' => 'create',
@@ -131,8 +131,6 @@ class VoipTropoServer extends VoipServer {
       return FALSE;
     }
     // Else:
-// TODO: do we really need to save the call here?
-    $voipcall->save();
     return TRUE;
   }
 
@@ -159,27 +157,28 @@ class VoipTropoServer extends VoipServer {
 
     }
 
-    // update call variables
-    $voipcall->setSource('drupal');
-    $voipcall->setDirection(VoipCall::OUTBOUND);
-    $voipcall->setCurrentChannel('text');
-    $voipcall->setCurrentNetwork('sms');
-
-    // save the call to generate a cid
-    $voipcall->save();
-    $cid = $voipcall->getCid();
-
     // (re)start the session associated with the call
     $voip_session = VoipSession::getSessionByNumber($from, $to);
     if ($voip_session) {
       $voip_session->resetTimer();
+	   //we must preserve cid
+	  $cid = $voip_session->getCid();
+	  //no need to save the call since we are retrieving existing cid
     }
     else {
       $voip_session = new VoipSession();
       $voip_session->setOriginNumber($from);
       $voip_session->setDestinationNumber($to);
+	  
+	   // update call variables
+      $voipcall->setSource('drupal');
+      $voipcall->setDirection(VoipCall::OUTBOUND);
+      $voipcall->setCurrentChannel('text');
+      $voipcall->setCurrentNetwork('sms');
+	  $voipcall->save();
+      $cid = $voipcall->getCid();
+	  $voip_session->setCid($cid);
     }
-    $voip_session->setCid($cid);
     $voip_session->save();
 
     // send the sms
@@ -220,8 +219,6 @@ class VoipTropoServer extends VoipServer {
       return FALSE;
     }
     // Else:
-// TODO: do we really need the following save()?
-    $voipcall->save();
     return TRUE;
   }
 

@@ -278,8 +278,8 @@ function voipcall_admin_form() {
 
   $form['voipcall_phone_prefix'] = array(
     '#type' => 'textfield',
-    '#title' => t('Phone prefix'),
-    '#description' => t('Prefix to be checked for phone numbers that do not start with "sip:" or the "+" sign. Prefixes usually include the country and sometimes the area codes associated with the geographic location the system is being used. Multiple prefixes should be provided as comma-separated lists such as: 1, 55, 99.'),
+    '#title' => t('Accepted phone prefixes'),
+    '#description' => t('Prefixes to be checked for phone numbers used in the system. Phone numbers that do not start with "sip:", the "+" sign, or any of the prefixes listed above will automatically receive a \'+\' sign in front of them. The remaining numbers will be left as is. Prefixes usually include the country and sometimes the area codes associated with the geographic location the system is being used. Multiple prefixes should be provided as comma-separated lists such as: 1, 55, 99.'),
     '#default_value' => variable_get('voipcall_phone_prefix', '1'),
   );
 
