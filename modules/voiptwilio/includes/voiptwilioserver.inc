@@ -67,26 +67,40 @@ class VoipTwilioServer extends VoipServer {
     $api_version = '2010-04-01';
     $account_sid = $server_config['voiptwilio_account_sid'];
     $auth_token = $server_config['voiptwilio_auth_token'];
-
-    // Update call variables
-    $voipcall->setSource('drupal');
-    $voipcall->setDirection(VoipCall::OUTBOUND);
-
-    // save the call in order to generate a cid
-    $voipcall->save();
-
-    // Instantiate a new Twilio Rest Client
-    $client = new TwilioRestClient($account_sid, $auth_token);
-
-    // Initiate a new outbound call by POST'ing to the Calls resource
-    $twilio_path = "/$api_version/Accounts/$account_sid/Calls";
+	
+	
     $caller_number = ($voipcall->getCallerNumber())
       ? $voipcall->getCallerNumber()
       : variable_get('voipcall_cid_number', NULL);
     $dest_number = $voipcall->getDestNumber();
 
-    $menu_path = 'voip/twilio/callhandler';
-    $cid = $voipcall->getCid();
+	// (re)start the session associated with the call
+    $voip_session = VoipSession::getSessionByNumber($caller_number, $dest_number);
+    if ($voip_session) {
+      $voip_session->resetTimer();
+	   //we must preserve cid
+	  $cid = $voip_session->getCid();
+	  //load existing call
+	  $voipcall = VoipCall::load($cid);
+    }
+    else {
+      $voip_session = new VoipSession();
+      $voip_session->setOriginNumber($caller_number);
+      $voip_session->setDestinationNumber($dest_number);
+	  
+	  // Update call variables
+      $voipcall->setSource('drupal');
+      $voipcall->setDirection(VoipCall::OUTBOUND);
+	  $voipcall->save();
+      $cid = $voipcall->getCid();
+	  $voip_session->setCid($cid);
+    }
+    $voip_session->save();
+    
+    //$cid = $voipcall->getCid();
+	// Initiate a new outbound call by POST'ing to the Calls resource
+	$twilio_path = "/$api_version/Accounts/$account_sid/Calls";
+	$menu_path = 'voip/twilio/callhandler';
     $response_url = $menu_path . '/process_outbound_calls/' . $cid;
     $call_handler_url = url($response_url, array('absolute' => TRUE));
     $response_url = $menu_path . '/process_hangup/' . $cid;
@@ -112,7 +126,9 @@ class VoipTwilioServer extends VoipServer {
       //       to the call. To prevent that, 'IfMachine' has to be NULL
       $vars['IfMachine'] = 'Continue';
     }
-
+	
+	// Instantiate a new Twilio Rest Client
+    $client = new TwilioRestClient($account_sid, $auth_token);
     $response = $client->request($twilio_path, "POST", $vars);
 
     // update call based on response
@@ -197,26 +213,29 @@ class VoipTwilioServer extends VoipServer {
         : variable_get('voipcall_cid_number', NULL);
     }
 
-    // update call variables
-    $voipcall->setSource('drupal');
-    $voipcall->setDirection(VoipCall::OUTBOUND);
-    $voipcall->setCurrentChannel('text');
-    $voipcall->setCurrentNetwork('sms');
-
-    // save the call to generate a cid
-    $voipcall->save();
-
     // (re)start the session associated with the call
     $voip_session = VoipSession::getSessionByNumber($from, $to);
     if ($voip_session) {
       $voip_session->resetTimer();
+	  $cid = $voip_session->getCid();
+	  //load existing call
+	  $voipcall = VoipCall::load($cid);
     }
     else {
       $voip_session = new VoipSession();
       $voip_session->setOriginNumber($from);
       $voip_session->setDestinationNumber($to);
+	  
+	  // update call variables
+      $voipcall->setSource('drupal');
+      $voipcall->setDirection(VoipCall::OUTBOUND);
+      $voipcall->setCurrentChannel('text');
+      $voipcall->setCurrentNetwork('sms');
+	  $voipcall->save();
+      $cid = $voipcall->getCid();
+	  $voip_session->setCid($cid);
     }
-    $voip_session->setCid($voipcall->getCid());
+    //$voip_session->setCid($voipcall->getCid());
     $voip_session->save();
 
     // send the sms
@@ -241,7 +260,7 @@ class VoipTwilioServer extends VoipServer {
     // Initiate a new outbound text by POST'ing to the SMS/Messages resource
     $twilio_path = "/$api_version/Accounts/$account_sid/SMS/Messages";
     $menu_path = 'voip/twilio/callhandler';
-    $cid = $voipcall->getCid();
+    //$cid = $voipcall->getCid();
     $response_url = $menu_path . '/process_sms_callback/' . $cid;
     $status_callback_url = url($response_url, array('absolute' => TRUE));
 

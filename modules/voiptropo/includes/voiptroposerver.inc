@@ -83,7 +83,8 @@ class VoipTropoServer extends VoipServer {
       $voip_session->resetTimer();
 	  //we must preserve cid
 	  $cid = $voip_session->getCid();
-	  //no need to save the call since we are retrieving existing cid
+	  //load existing call
+	  $voipcall = VoipCall::load($cid);
     }
     else {
       $voip_session = new VoipSession();
@@ -163,14 +164,15 @@ class VoipTropoServer extends VoipServer {
       $voip_session->resetTimer();
 	   //we must preserve cid
 	  $cid = $voip_session->getCid();
-	  //no need to save the call since we are retrieving existing cid
+	  //load existing call
+	  $voipcall = VoipCall::load($cid);
     }
     else {
       $voip_session = new VoipSession();
       $voip_session->setOriginNumber($from);
       $voip_session->setDestinationNumber($to);
 	  
-	   // update call variables
+	  // update call variables
       $voipcall->setSource('drupal');
       $voipcall->setDirection(VoipCall::OUTBOUND);
       $voipcall->setCurrentChannel('text');

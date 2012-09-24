@@ -67,29 +67,43 @@ class VoipPlivoServer extends VoipServer {
     $rest_api_url = $server_config['voipplivo_restapi_url'];
     $account_sid = $server_config['voipplivo_account_sid'];
     $auth_token = $server_config['voipplivo_auth_token'];
+	
+	$caller_number = ($voipcall->getCallerNumber())
+      ? $voipcall->getCallerNumber()
+      : variable_get('voipcall_cid_number', NULL);
+    $dest_number = $voipcall->getDestNumber();
 
-    // Update call variables
-    $voipcall->setSource('drupal');
-    $voipcall->setDirection(VoipCall::OUTBOUND);
-
-    // save the call in order to generate a cid
-    $voipcall->save();
-
-    // Instantiate a new Plivo Rest Client
-    $client = new PlivoRestClient($rest_api_url, $account_sid, $auth_token, $api_version);
+   // (re)start the session associated with the call
+    $voip_session = VoipSession::getSessionByNumber($caller_number, $dest_number);
+    if ($voip_session) {
+      $voip_session->resetTimer();
+	   //we must preserve cid
+	  $cid = $voip_session->getCid();
+	  //load existing call
+	  $voipcall = VoipCall::load($cid);
+    }
+    else {
+      $voip_session = new VoipSession();
+      $voip_session->setOriginNumber($caller_number);
+      $voip_session->setDestinationNumber($dest_number);
+	  
+	  // Update call variables
+      $voipcall->setSource('drupal');
+      $voipcall->setDirection(VoipCall::OUTBOUND);
+	  $voipcall->save();
+      $cid = $voipcall->getCid();
+	  $voip_session->setCid($cid);
+    }
+    $voip_session->save();
 
     # Define Channel Variable - http://wiki.freeswitch.org/wiki/Channel_Variables
     $extra_dial_string = "bridge_early_media=true,hangup_after_bridge=true";
 
     // Initiate a new outbound call by POST'ing to the Calls resource
     //$plivo_path = "/$api_version/Accounts/$account_sid/Calls";
-    $caller_number = ($voipcall->getCallerNumber())
-      ? $voipcall->getCallerNumber()
-      : variable_get('voipcall_cid_number', NULL);
-    $dest_number = $voipcall->getDestNumber();
+    
 
     $menu_path = 'voip/plivo/callhandler';
-    $cid = $voipcall->getCid();
     $response_url = $menu_path . '/process_outbound_calls/' . $cid;
     $call_handler_url = url($response_url, array('absolute' => TRUE));
     $response_url = $menu_path . '/process_hangup/' . $cid;
@@ -121,12 +135,8 @@ class VoipPlivoServer extends VoipServer {
       //'RingUrl' => "http://127.0.0.1:5000/ringing/"
     );
 
-    // Handle answering machine options
-    /* if($voipcall->getCheckMachine() == TRUE) {
-    // TODO: Is there IfMachine variable in Plivo?
-      //$vars['IfMachine'] = 'Continue';
-    }*/
-
+    // Instantiate a new Plivo Rest Client
+    $client = new PlivoRestClient($rest_api_url, $account_sid, $auth_token, $api_version);
     $response = $client->call($vars);
 
     // update call based on response
@@ -154,14 +164,7 @@ class VoipPlivoServer extends VoipServer {
     }
     else {
       $rc = TRUE;
-      // get the new id and status associated with the call
-      //TODO: There is no responseXML
-      /*$xml = $response->ResponseXml;
-      $call_id = (string)$xml->Call->Sid;
-      $plivo_call_status = (string)$xml->Call->Status;
-      $voipcall->setCallId($call_id);
-      $voipcall = voipplivo_update_call_status($voipcall, $plivo_call_status);*/
-      $voipcall->save();
+      //$voipcall->save();
     }
 
     return $rc;
@@ -190,26 +193,29 @@ class VoipPlivoServer extends VoipServer {
         : variable_get('voipcall_cid_number', NULL);
     }
 
-    // update call variables
-    $voipcall->setSource('drupal');
-    $voipcall->setDirection(VoipCall::OUTBOUND);
-    $voipcall->setCurrentChannel('text');
-    $voipcall->setCurrentNetwork('sms');
-
-    // save the call to generate a cid
-    $voipcall->save();
-
     // (re)start the session associated with the call
     $voip_session = VoipSession::getSessionByNumber($from, $to);
     if ($voip_session) {
       $voip_session->resetTimer();
+	  $cid = $voip_session->getCid();
+	  //load existing call
+	  $voipcall = VoipCall::load($cid);
     }
     else {
       $voip_session = new VoipSession();
       $voip_session->setOriginNumber($from);
       $voip_session->setDestinationNumber($to);
+	  
+	  // update call variables
+      $voipcall->setSource('drupal');
+      $voipcall->setDirection(VoipCall::OUTBOUND);
+      $voipcall->setCurrentChannel('text');
+      $voipcall->setCurrentNetwork('sms');
+	  $voipcall->save();
+      $cid = $voipcall->getCid();
+	  $voip_session->setCid($cid);
     }
-    $voip_session->setCid($voipcall->getCid());
+
     $voip_session->save();
 
     // send the sms
