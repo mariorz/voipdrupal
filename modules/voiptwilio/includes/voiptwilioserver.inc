@@ -55,7 +55,6 @@ class VoipTwilioServer extends VoipServer {
    * Implementation of the VoipServer dial() API method
    */
   function dial($voipcall, $server_config = NULL) {
-
     $rc = FALSE;
     voip_error_reset();
 

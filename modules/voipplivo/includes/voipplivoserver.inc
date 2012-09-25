@@ -99,10 +99,6 @@ class VoipPlivoServer extends VoipServer {
     # Define Channel Variable - http://wiki.freeswitch.org/wiki/Channel_Variables
     $extra_dial_string = "bridge_early_media=true,hangup_after_bridge=true";
 
-    // Initiate a new outbound call by POST'ing to the Calls resource
-    //$plivo_path = "/$api_version/Accounts/$account_sid/Calls";
-    
-
     $menu_path = 'voip/plivo/callhandler';
     $response_url = $menu_path . '/process_outbound_calls/' . $cid;
     $call_handler_url = url($response_url, array('absolute' => TRUE));
@@ -164,7 +160,6 @@ class VoipPlivoServer extends VoipServer {
     }
     else {
       $rc = TRUE;
-      //$voipcall->save();
     }
 
     return $rc;

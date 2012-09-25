@@ -64,7 +64,6 @@ class VoipTropoServer extends VoipServer {
    * Implementation of the VoipServer dial() API method
    */
   function dial($voipcall, $server_config = NULL) {
-
     voip_error_reset();
 
     if (!$server_config) {
