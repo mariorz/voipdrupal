@@ -5,16 +5,17 @@
  * @file
  * Enables communication between Drupal and VoIP servers.
  */
-
+/*
 foreach (array(
            'voip_error.inc',
            'voipserver.inc',
            'voiplogserver.inc'
          ) as $file) {
   require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . 'includes' . DIRECTORY_SEPARATOR . $file);
-}
-
-
+}*/
+module_load_include('inc', 'voip', 'includes/voip_error');
+module_load_include('inc', 'voip', 'includes/voipserver');
+module_load_include('inc', 'voip', 'includes/voiplogserver');
 /**
  * Make a phone call
  *

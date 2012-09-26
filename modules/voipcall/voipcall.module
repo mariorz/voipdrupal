@@ -6,7 +6,7 @@
  * @file
  * Implementation of core functionality associated with voip calls
  */
-
+/*
 foreach (array(
            'voipscript.inc',
            'voipcall.inc',
@@ -14,8 +14,12 @@ foreach (array(
            'voipvoice.inc'
          ) as $file) {
   require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . $file);
-}
+}*/
 
+module_load_include('inc', 'voipcall', 'voipscript');
+module_load_include('inc', 'voipcall', 'voipcall');
+module_load_include('inc', 'voipcall', 'voipsession');
+module_load_include('inc', 'voipcall', 'voipvoice');
 
 /**
  * Public functions

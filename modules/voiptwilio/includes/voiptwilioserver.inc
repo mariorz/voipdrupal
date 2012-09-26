@@ -12,14 +12,10 @@
  * File dependencies
  */
 
-foreach (array('twilio.php', 'voiptwilio.inc') as $file) {
-  require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . $file);
-}
+//module_load_include('inc', 'voip', 'includes/voipserver');
+//module_load_include('inc', 'voipcall', 'voipcall');
 
 module_load_include('inc', 'voip', 'includes/voipserver');
-module_load_include('inc', 'voipcall', 'voipcall');
-
-
 /**
  * Class definitions
  */

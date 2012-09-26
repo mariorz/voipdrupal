@@ -37,18 +37,18 @@ foreach (array('plivo.php') as $file) {
  *
  * @return void
  */
-function _voipplivo_call_handler($plivo_action, $cid = NULL) {
+function voipplivocore_call_handler($plivo_action, $cid = NULL) {
 
   if (voip_debug()) {
-    $msg = "in voipplivo_call_handler() with plivo_action: $plivo_action, cid: $cid, and _REQUEST: " . print_r($_REQUEST, TRUE);
+    $msg = "in voipplivocore_call_handler() with plivo_action: $plivo_action, cid: $cid, and _REQUEST: " . print_r($_REQUEST, TRUE);
     $vars = array();
-    watchdog('voipplivo', $msg, $vars, WATCHDOG_INFO);
+    watchdog('voipplivocore', $msg, $vars, WATCHDOG_INFO);
   }
   // validate $_REQUEST to avoid hack attempts
-  if (!_voipplivo_validate_request()) {
+  if (!_voipplivocore_validate_request()) {
     $msg = '_voip_plivo_call_handler called with invalid AccountSid: @sid';
     $params = array('@sid' => $incoming_sid);
-    watchdog('voipplivo', $msg, $params, WATCHDOG_WARNING);
+    watchdog('voipplivocore', $msg, $params, WATCHDOG_WARNING);
     return FALSE; // TODO: should we return an error response to the server?
   }
 
@@ -176,7 +176,7 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
   $stored_user = $user;
   $call->loadGlobalUser();
   if (voip_debug()) {
-    watchdog('voipplivo', 'Logged user %uid in.', array('%uid' => $user->uid));
+    watchdog('voipplivocore', 'Logged user %uid in.', array('%uid' => $user->uid));
   }
   //Left because offline_text
   if (in_array($channel, array('offline_text', 'text'))) {
@@ -223,7 +223,7 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
     }
   }
 
-//watchdog('voipplivo', "plivo status: $plivo_call_status, call status: " . $call->getCallStatus());
+//watchdog('voipplivocore', "plivo status: $plivo_call_status, call status: " . $call->getCallStatus());
 
   // update call status
   // NOTE: sms callbacks do not have a call status associated with them
@@ -232,8 +232,8 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
   }
   else{*/
   //TODO: Check if Plivo statuses are same as Twilio?
-  //watchdog('voipplivo', 'Check if Plivo statuses are same as Twilio ' . print_r($plivo_call_status, TRUE));
-  $call = voipplivo_update_call_status($call, $plivo_call_status);
+  //watchdog('voipplivocore', 'Check if Plivo statuses are same as Twilio ' . print_r($plivo_call_status, TRUE));
+  $call = voipplivocore_update_call_status($call, $plivo_call_status);
   // }
 
   // save the call and initialize its script before setting internal variables
@@ -263,7 +263,7 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
       default:
         $msg = 'Invalid plivo_action: @action';
         $params = array('action' => $plivo_action);
-        $call->report_error('voipplivo', $msg, $params);
+        $call->report_error('voipplivocore', $msg, $params);
         return FALSE;
         break;
       case 'process_inbound_calls':
@@ -279,8 +279,8 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
         //       and, therefore, should be processed in the same way
       case 'process_dial':
         //TODO: Test request parameters
-        //watchdog('voipplivo', "Dial response: " . print_r($_REQUEST, TRUE));
-        $call = _voipplivo_process_dial_response($call, $_REQUEST);
+        //watchdog('voipplivocore', "Dial response: " . print_r($_REQUEST, TRUE));
+        $call = _voipplivocore_process_dial_response($call, $_REQUEST);
         break;
       case 'process_get_input':
         $script = $call->getScript();
@@ -294,9 +294,9 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
         $script = $call->getScript();
         $plivo_record_url = $_REQUEST['RecordFile'];
         //TODO: is only local path supported? Yes
-        //watchdog('voipplivo', "Record response: " . print_r($_REQUEST, TRUE));
+        //watchdog('voipplivocore', "Record response: " . print_r($_REQUEST, TRUE));
         //Transfer the file to local server
-        $file = _voipplivo_transfer_file($plivo_record_url);
+        $file = _voipplivocore_transfer_file($plivo_record_url);
         $script->setVar('recording_path', file_create_url($file['filepath']));
         //For now we set this to same recording_path because public url is not available in Plivo
         $script->setVar('recording_public_url', file_create_url($file['filepath']));
@@ -317,7 +317,7 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
 
       /* case 'process_send_sms':
     case 'process_sms_callback':
-      $call = _voipplivo_process_sms_response($call, $_REQUEST);
+      $call = _voipplivocore_process_sms_response($call, $_REQUEST);
       if(strtolower($call->getCurrentChannel()) == 'text') {
         // update sms status
         $call->save();
@@ -379,14 +379,14 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
     }
   }*/
   // process the call script
-  $rc = _voipplivo_script_handler($call);
+  $rc = _voipplivocore_script_handler($call);
 
   // If global user has been replaced for call user.
   // Process shouldn't go further, so just for good practice.
   if (!empty($stored_user)) {
     $user = $stored_user;
     if (voip_debug()) {
-      watchdog('voipplivo', 'Reverted to logged in user %uid', array('%uid' => $user->uid));
+      watchdog('voipplivocore', 'Reverted to logged in user %uid', array('%uid' => $user->uid));
     }
   }
 
@@ -401,10 +401,10 @@ function _voipplivo_call_handler($plivo_action, $cid = NULL) {
  *
  * @return boolean.  TRUE on success or FALSE on failure.  Check voip_error() for processing failure.
  */
-function _voipplivo_script_handler($call) {
+function voipplivocore_script_handler($call) {
   if (voip_debug()) {
     $msg = 'Entering script_handler with voipcall: ' . print_r($call, TRUE);
-    watchdog('voipplivo', $msg, array(), WATCHDOG_INFO);
+    watchdog('voipplivocore', $msg, array(), WATCHDOG_INFO);
   }
   $rc = TRUE;
 
@@ -426,7 +426,7 @@ function _voipplivo_script_handler($call) {
       if ($script->isError()) {
         $msg = $script->getErrorMessage();
         $params = array();
-        $call->report_error('voipplivo', $msg, $params);
+        $call->report_error('voipplivocore', $msg, $params);
         return FALSE;
       }
       else {
@@ -459,7 +459,7 @@ function _voipplivo_script_handler($call) {
             $response .= '<Hangup/>';
             $msg = 'Script @name ended without a "hangup" command.';
             $params = array('@name' => $script->getName());
-            watchdog('voipplivo', $msg, $params, WATCHDOG_WARNING);
+            watchdog('voipplivocore', $msg, $params, WATCHDOG_WARNING);
             $call->setHangupReason(VoipCall::HANGUP_SCRIPT_END);
           }
         }
@@ -479,7 +479,7 @@ function _voipplivo_script_handler($call) {
             '@script_name' => $script->getName(),
             '@script' => print_r($script, TRUE)
           );
-          $call->report_error('voipplivo', $msg, $params);
+          $call->report_error('voipplivocore', $msg, $params);
           $rc = FALSE;
           $processing = FALSE;
           break;
@@ -558,7 +558,7 @@ function _voipplivo_script_handler($call) {
           }
           $response .= '" >';
           if ($prompt) {
-            $response .= _voipplivo_generate_audio_response($script, $prompt);
+            $response .= _voipplivocore_generate_audio_response($script, $prompt);
           }
           $response .= '</GetDigits>';
           // in case of timeout or empty input, set Digits to 'no_input'
@@ -582,7 +582,7 @@ function _voipplivo_script_handler($call) {
           if ($script->isError()) {
             $msg = $script->getErrorMessage();
             $params = array();
-            $call->report_error('voipplivo', $msg, $params);
+            $call->report_error('voipplivocore', $msg, $params);
             $rc = FALSE;
             $processing = FALSE;
             $found = TRUE;
@@ -599,7 +599,7 @@ function _voipplivo_script_handler($call) {
           if ($script->isError()) {
             $msg = $script->getErrorMessage();
             $params = array();
-            $call->report_error('voipplivo', $msg, $params);
+            $call->report_error('voipplivocore', $msg, $params);
             $rc = FALSE;
             $processing = FALSE;
             $found = TRUE;
@@ -618,7 +618,7 @@ function _voipplivo_script_handler($call) {
             if ($script->isError()) {
               $msg = $script->getErrorMessage();
               $params = array();
-              $call->report_error('voipplivo', $msg, $params);
+              $call->report_error('voipplivocore', $msg, $params);
               $rc = FALSE;
               $processing = FALSE;
               $found = TRUE;
@@ -747,7 +747,7 @@ function _voipplivo_script_handler($call) {
           $play_beep = $script->evalString($cmd->getParam('play_beep'));
           $play_beep = $play_beep ? 'true' : 'false';
           if ($prompt) {
-            $response .= _voipplivo_generate_audio_response($script, $prompt);
+            $response .= _voipplivocore_generate_audio_response($script, $prompt);
           }
 //TODO: Check what the Plivo returns in response? Documentation mentiones only support for saving file to local filesystem?
           $response .= '<Record action="' . $action
@@ -782,7 +782,7 @@ function _voipplivo_script_handler($call) {
           if ($script->isError()) {
             $msg = $script->getErrorMessage();
             $params = array();
-            $call->report_error('voipplivo', $msg, $params);
+            $call->report_error('voipplivocore', $msg, $params);
             $rc = FALSE;
             $processing = FALSE;
             $found = TRUE;
@@ -814,7 +814,7 @@ function _voipplivo_script_handler($call) {
           $prompt = $cmd->getParam('prompt');
           $loop = $script->evalString($cmd->getParam('loop'));
           $response .=
-            _voipplivo_generate_audio_response($script, $prompt, $loop);
+            _voipplivocore_generate_audio_response($script, $prompt, $loop);
           break;
 
         case 'VoipCmdSendText';
@@ -834,7 +834,7 @@ function _voipplivo_script_handler($call) {
               $to = $script->evalString($script->getVar('dest_number'));
             }
             if (!$to) {
-              watchdog('voipplivo', 'Attempt to send ' . $network . ' to empty number', array(), WATCHDOG_ERROR);
+              watchdog('voipplivocore', 'Attempt to send ' . $network . ' to empty number', array(), WATCHDOG_ERROR);
               $processing = TRUE;
               break;
             }
@@ -853,7 +853,7 @@ function _voipplivo_script_handler($call) {
               $processing = TRUE;
             }
             else {
-              watchdog('voipplivo', 'Attempt to send an SMS without SMS Framework', array(), WATCHDOG_ERROR);
+              watchdog('voipplivocore', 'Attempt to send an SMS without SMS Framework', array(), WATCHDOG_ERROR);
               $processing = TRUE;
             }
           }
@@ -903,7 +903,7 @@ function _voipplivo_script_handler($call) {
 //$response .= '<!--' . "_REQUEST: " . print_r($_REQUEST,true) .  "\n" . '-->';
 //$response .= '<!--' . "voipcall: " . print_r($call,true) .  "\n" . '-->';
 
-    _voipplivo_send_response($response);
+    _voipplivocore_send_response($response);
   }
 
   return $rc;
@@ -912,7 +912,7 @@ function _voipplivo_script_handler($call) {
 /**
  * Send responses to Plivo
  */
-function _voipplivo_send_response($response) {
+function _voipplivocore_send_response($response) {
   $output .= '<?xml version="1.0" encoding="UTF-8" ?>';
   $output .= '<Response>';
   $output .= $response;
@@ -927,13 +927,13 @@ function _voipplivo_send_response($response) {
 /**
  * Update 'call status' and 'hangup reason' based on Plivo's response
  */
-function voipplivo_update_call_status($call, $plivo_call_status = 'in-progress') {
+function voipplivocore_update_call_status($call, $plivo_call_status = 'in-progress') {
   switch ($plivo_call_status) {
     default:
       $msg = 'Invalid CallStatus: @status for call cid: @cid';
       $cid = $call->getCid();
       $params = array('@status' => $plivo_call_status, '@cid' => $cid);
-      $call->report_error('voipplivo', $msg, $params);
+      $call->report_error('voipplivocore', $msg, $params);
       return NULL;
       break;
     case 'failed': // call failed, most likely due to invalid number
@@ -976,7 +976,7 @@ function voipplivo_update_call_status($call, $plivo_call_status = 'in-progress')
 /**
  * Process the response to a "dial" script command
  */
-function _voipplivo_process_dial_response($call, $request) {
+function _voipplivocore_process_dial_response($call, $request) {
   $script = $call->getScript();
 
   // update the 'dial_sid' script variable
@@ -989,7 +989,7 @@ function _voipplivo_process_dial_response($call, $request) {
       $cid = $call->getCid();
       $msg = 'Invalid DialCallStatus: @status for call cid: @cid';
       $params = array('@status' => $dial_status, '@cid' => $cid);
-      $call->report_error('voipplivo', $msg, $params);
+      $call->report_error('voipplivocore', $msg, $params);
       return NULL;
       break;
     case 'answered':
@@ -1023,26 +1023,26 @@ function _voipplivo_process_dial_response($call, $request) {
 /**
  * Process the response to a 'send text' script command
  */
-/*function _voipplivo_process_sms_response($call, $request){
+/*function _voipplivocore_process_sms_response($call, $request){
   $cid = $call->getCid();
   $sms_status_tmp = $request['SmsStatus'];
   switch($sms_status_tmp) {
     default:
       $msg = 'Invalid SmsStatus: @status for call cid: @cid';
       $params = array('@status' => $sms_status_tmp, '@cid' => $cid);
-      $call->report_error('voipplivo', $msg, $params);
+      $call->report_error('voipplivocore', $msg, $params);
       return NULL;
       break;
     case 'failed':
       $msg = 'SMS sending failed for call cid: @cid. Make sure your Plivo number is sms-enabled.';
       $params = array('@cid' => $cid);
-      watchdog('voipplivo', $msg, $params, WATCHDOG_WARNING);
+      watchdog('voipplivocore', $msg, $params, WATCHDOG_WARNING);
       $text_status = VoipCall::TEXT_FAILED;
       break;
     case 'invalid':
       $msg = 'Invalid SMS parameter for call cid: @cid';
       $params = array('@cid' => $cid);
-      watchdog('voipplivo', $msg, $params, WATCHDOG_WARNING);
+      watchdog('voipplivocore', $msg, $params, WATCHDOG_WARNING);
       $text_status = VoipCall::TEXT_INVALID;
       break;
     case 'sending':
@@ -1060,7 +1060,7 @@ function _voipplivo_process_dial_response($call, $request) {
   return $call;
 }*/
 
-define('VOIPPlivo_URL_CHECK', '#(https?://\S+(?<![,.;?\:\!]))#');
+define('voipplivocore_URL_CHECK', '#(https?://\S+(?<![,.;?\:\!]))#');
 
 /**
  * Generate a prompt to be played to the user
@@ -1081,7 +1081,7 @@ define('VOIPPlivo_URL_CHECK', '#(https?://\S+(?<![,.;?\:\!]))#');
  * @return
  *   The prompt as a PlivoML sequence to be sent to Plivo
  */
-function _voipplivo_generate_audio_response($script, $prompt, $loop = 1) {
+function _voipplivocore_generate_audio_response($script, $prompt, $loop = 1) {
   if (is_string($prompt) && (substr($prompt, 0, 1) == '^')) {
     $prompt = $script->evalString($prompt);
   }
@@ -1110,14 +1110,14 @@ function _voipplivo_generate_audio_response($script, $prompt, $loop = 1) {
 
     // split the text into audio URLs and text elements
     $elements =
-      preg_split(VOIPPlivo_URL_CHECK, $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+      preg_split(voipplivocore_URL_CHECK, $text, -1, PREG_SPLIT_DELIM_CAPTURE);
 
     // process each element
     $url_flag = FALSE;
     foreach ($elements as $element) {
       $element = trim($element);
       if ($element) {
-        if (_voipplivo_is_url($element)) {
+        if (_voipplivocore_is_url($element)) {
           $response .= "<Play>$element</Play>";
           $url_flag = TRUE;
         }
@@ -1131,7 +1131,7 @@ function _voipplivo_generate_audio_response($script, $prompt, $loop = 1) {
           if ($element) {
             if ($as == 'digits') {
               //Convert numbers into digits
-              $element = _voipplivo_parse_numbers($element);
+              $element = _voipplivocore_parse_numbers($element);
             }
             $response .= "<Speak voice='$voice_id' language='$language'>$element</Speak>";
           }
@@ -1154,26 +1154,26 @@ function _voipplivo_generate_audio_response($script, $prompt, $loop = 1) {
 /**
  * Check if the given string is a url
  */
-function _voipplivo_is_url($str) {
+function _voipplivocore_is_url($str) {
   // Note: Although the checking performed is not as complete as
   //       http://stackoverflow.com/questions/161738/what-is-the-best-regular-expression-to-check-if-a-string-is-a-valid-url , it seems to serve our purposes!
-  $rc = preg_match(VOIPPlivo_URL_CHECK, $str);
+  $rc = preg_match(voipplivocore_URL_CHECK, $str);
   return $rc;
 }
 
-function _voipplivo_parse_numbers($str) {
+function _voipplivocore_parse_numbers($str) {
 //preg_match_all("{(\d+)}", $str, $result, PREG_PATTERN_ORDER);
 //return $result;
-  return preg_replace_callback('{(\d+)}', '_voipplivo_numbers_add_space', $str);
+  return preg_replace_callback('{(\d+)}', '_voipplivocore_numbers_add_space', $str);
 }
 
-function _voipplivo_numbers_add_space($matches) {
+function _voipplivocore_numbers_add_space($matches) {
   $string_array = str_split($matches[0]);
   $number_with_space = implode(" ", $string_array);
   return $number_with_space;
 }
 
-function _voipplivo_transfer_file($url) {
+function _voipplivocore_transfer_file($url) {
   $filename = rawurldecode(basename($url));
   $filepath = file_create_filename($filename, file_directory_temp());
 
@@ -1186,7 +1186,7 @@ function _voipplivo_transfer_file($url) {
     fclose($fp);
   }
 
-  $file = _voipplivo_file_save_upload($filepath);
+  $file = _voipplivocore_file_save_upload($filepath);
 
   // Delete the temporary file.
   @unlink($filepath);
@@ -1198,7 +1198,7 @@ function _voipplivo_transfer_file($url) {
   return NULL;
 }
 
-function _voipplivo_file_save_upload($filepath) {
+function _voipplivocore_file_save_upload($filepath) {
   global $user;
   $dest = file_directory_path();
   $file = new stdClass();
@@ -1212,11 +1212,11 @@ function _voipplivo_file_save_upload($filepath) {
     return 0;
   }
 
-  $file->source = 'voipplivo';
+  $file->source = 'voipplivocore';
   $file->destination = file_destination(file_create_path($dest . '/' . $file->filename), FILE_EXISTS_RENAME);
   $file->filesize = filesize($filepath);
   if (!file_copy($file, $file->destination, FILE_EXISTS_RENAME)) {
-    watchdog('voipplivo', 'Upload error. Could not move file %file to destination %destination.', array(
+    watchdog('voipplivocore', 'Upload error. Could not move file %file to destination %destination.', array(
       '%file' => $file->filename,
       '%destination' => $file->destination
     ));
@@ -1232,11 +1232,11 @@ function _voipplivo_file_save_upload($filepath) {
   return (array) $file;
 }
 
-function _voipplivo_validate_request() {
+function _voipplivocore_validate_request() {
   $server = VoipServer::getServer('plivo');
   $server_config = $server->getConfig();
-  $account_sid = $server_config['voipplivo_account_sid'];
-  $auth_token = $server_config['voipplivo_auth_token'];
+  $account_sid = $server_config['voipplivocore_account_sid'];
+  $auth_token = $server_config['voipplivocore_auth_token'];
   // Create a new PlivoUtils object
   $utils = new PlivoUtils($account_sid, $auth_token);
 
@@ -1268,7 +1268,7 @@ function _voipplivo_validate_request() {
   }
 
   $expected_signature = $_SERVER["HTTP_X_PLIVO_SIGNATURE"];
-//watchdog('voipplivo', "VALIDAITION S=$expected_signature URL=$url TOKEN=$auth_token SID:$account_sid SIG:".$utils->validateRequest($expected_signature, $url, $data), $vars, WATCHDOG_INFO);
+//watchdog('voipplivocore', "VALIDAITION S=$expected_signature URL=$url TOKEN=$auth_token SID:$account_sid SIG:".$utils->validateRequest($expected_signature, $url, $data), $vars, WATCHDOG_INFO);
   if ($utils->validateRequest($expected_signature, $url, $data)) {
     return TRUE;
   }

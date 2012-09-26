@@ -7,7 +7,7 @@
  * Implementation of the VoipLogServer class
  */
 
-require_once('voipserver.inc');
+//require_once('voipserver.inc');
 
 
 /**
