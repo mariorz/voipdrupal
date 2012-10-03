@@ -871,7 +871,8 @@ function _voiptwilio_script_handler($call) {
                     $response .= '" from="' . $caller_id;
                   }
                   $response .= '" >';
-                  $response .= $text;
+				  // replace special chars for their html equivalent (http://www.twilio.com/docs/errors/12100)
+                  $response .= htmlspecialchars($text, ENT_NOQUOTES | ENT_HTML401);
                   $response .= '</Sms>';
                   // since the 'action' parameter prevents other commands from
                   // being executed, set $processing to FALSE
