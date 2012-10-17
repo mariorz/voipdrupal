@@ -1374,7 +1374,7 @@ function _voiptropo_handle_ongoing_calls($result, $tropo_action, $cid, $event_ty
       case 'process_get_input':
         $script = $call->getScript();
         if ($event_type == 'incomplete') {
-          $digits = 'no_input';
+          $digits = '';
         }
         else {
           $digits = str_replace(" ", "", $result->getValue());
@@ -1385,11 +1385,12 @@ function _voiptropo_handle_ongoing_calls($result, $tropo_action, $cid, $event_ty
       case 'process_get_voice_input':
         $script = $call->getScript();
         if ($event_type == 'incomplete') {
-          $digits = 'no_input';
+          $digits = '';
         }
         else {
-          $script->setVar('input_digits', $result->getValue());
+          $digits = str_replace(" ", "", $result->getValue());
         }
+		$script->setVar('input_digits', $digits);
         $call->setScript($script);
         break;
       case 'process_record':
