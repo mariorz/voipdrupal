@@ -933,10 +933,10 @@ function voipplivocore_script_handler($server, $call) {
           break;
 
         case 'VoipCmdSetVoice';
-          $voice = $script->evalString($cmd->getParam('voice'));
+          $voice_id = $script->evalString($cmd->getParam('voice'));
           $voice = VoipVoice::getVoice($voice_id);
           $voice_id = $voice->getVoiceId();
-          $script->setVoice($voice);
+          $script->setVoice($voice_id);
           break;
 
         case 'VoipCmdUnset';
@@ -1188,6 +1188,9 @@ function _voipplivocore_generate_audio_response($server, $script, $prompt, $loop
 
   foreach ($prompt_list as $p) {
     $text = $script->evalString($p->getText());
+    //encoding the sentence to handle special characters like in some foreign languages
+    $convmap = array(0x80, 0xffff, 0, 0xffff);
+    $text = mb_encode_numericentity($text, $convmap, 'UTF-8');
     $voice_id = $p->getVoice() ? $p->getVoice() : $default_voice_id;
     $voice = VoipVoice::getVoice($voice_id);
     $gender = $voice->getGender();

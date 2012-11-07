@@ -59,6 +59,7 @@ class VoipVoice {
    *   VoipVoice instance associated with $voice_id
    */
   public static function getVoice($voice_id = NULL) {
+    $voice_id = strtolower($voice_id);
     $server = VoipServer::getDefaultServer();
     if ($voice_id == 'man') {
       return $server->getDefaultManVoice();

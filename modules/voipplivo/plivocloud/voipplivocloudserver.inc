@@ -422,171 +422,171 @@ class VoipPlivoCloudServer extends VoipServer {
     $voices = array();
     $voices['plivo-arabic'] = array(
       'language' => 'arabic', 'voice' => 'man',
-      'description' => t('Male voice in Arabic')
+      'description' => 'plivo-arabic (' . t('Male voice in Arabic') . ')'
     );
 
 	$voices['plivo-chinese-woman'] = array(
       'language' => 'zh', 'region' => 'CN', 'voice' => 'woman',
-      'description' => t('Female voice in Chinese')
+      'description' => 'plivo-chinese-woman (' . t('Female voice in Chinese'). ')'
     );
 	$voices['plivo-chinese-man'] = array(
       'language' => 'zh', 'region' => 'CN', 'voice' => 'man',
-      'description' => t('Male voice in Chinese')
+      'description' => 'plivo-chinese-man (' . t('Male voice in Chinese'). ')'
     );
 
 	$voices['plivo-czech-woman'] = array(
       'language' => 'cs', 'region' => 'CZ', 'voice' => 'woman',
-      'description' => t('Female voice in Czech')
+      'description' => 'plivo-czech-woman (' . t('Female voice in Czech'). ')'
     );
 
 	$voices['plivo-danish-woman'] = array(
       'language' => 'da', 'region' => 'dk', 'voice' => 'woman',
-      'description' => t('Female voice in Danish')
+      'description' => 'plivo-danish-woman (' . t('Female voice in Danish'). ')'
     );
 
 	$voices['plivo-german-woman'] = array(
       'language' => 'de', 'region' => 'DE', 'voice' => 'woman',
-      'description' => t('Female voice in German')
+      'description' => 'plivo-german-woman (' . t('Female voice in German'). ')'
     );
 	$voices['plivo-german-man'] = array(
       'language' => 'de', 'region' => 'DE', 'voice' => 'man',
-      'description' => t('Male voice in German')
+      'description' => 'plivo-german-man (' . t('Male voice in German'). ')'
     );
 
 	$voices['plivo-greek-woman'] = array(
       'language' => 'el', 'region' => 'GR', 'voice' => 'woman',
-      'description' => t('Female voice in Greek')
+      'description' => 'plivo-greek-woman (' . t('Female voice in Greek'). ')'
     );
 
 	$voices['plivo-australian-woman'] = array(
       'language' => 'en', 'region' => 'AU', 'voice' => 'woman',
-      'description' => t('Female voice in English (Australia)')
+      'description' => 'plivo-australian-woman (' . t('Female voice in English (Australia)'). ')'
     );
 
     $voices['plivo-canada-woman'] = array(
       'language' => 'en', 'region' => 'CA', 'voice' => 'woman',
-      'description' => t('Female voice in English (Canada)')
+      'description' => 'plivo-canada-woman (' . t('Female voice in English (Canada)'). ')'
     );
 
     $voices['plivo-uk-woman'] = array(
       'language' => 'en', 'region' => 'GB', 'voice' => 'woman',
-      'description' => t('Female voice in English (UK)')
+      'description' => 'plivo-uk-woman (' . t('Female voice in English (UK)'). ')'
     );
 	$voices['plivo-uk-man'] = array(
       'language' => 'en', 'region' => 'GB', 'voice' => 'man',
-      'description' => t('Male voice in English (UK)')
+      'description' => 'plivo-uk-man (' . t('Male voice in English (UK)'). ')'
     );
 
 	$voices['plivo-us-woman'] = array(
       'language' => 'en', 'region' => 'US', 'voice' => 'woman',
-      'description' => t('Female voice in English (US)')
+      'description' => 'plivo-us-woman (' . t('Female voice in English (US)'). ')'
     );
 	$voices['plivo-us-man'] = array(
       'language' => 'en', 'region' => 'US', 'voice' => 'man',
-      'description' => t('Male voice in English (US)')
+      'description' => 'plivo-us-man (' . t('Male voice in English (US)'). ')'
     );
 
 	$voices['plivo-spanish-woman'] = array(
       'language' => 'es', 'region' => 'ES', 'voice' => 'woman',
-      'description' => t('Female voice in Spanish')
+      'description' => 'plivo-spanish-woman (' . t('Female voice in Spanish'). ')'
     );
 	$voices['plivo-spanish-man'] = array(
       'language' => 'es', 'region' => 'ES', 'voice' => 'man',
-      'description' => t('Male voice in Spanish')
+      'description' => 'plivo-spanish-man (' . t('Male voice in Spanish'). ')'
     );
 
 	$voices['plivo-usspanish-woman'] = array(
       'language' => 'es', 'region' => 'US', 'voice' => 'woman',
-      'description' => t('Female voice in Spanish (US)')
+      'description' => 'plivo-usspanish-woman (' . t('Female voice in Spanish (US)'). ')'
     );
 	$voices['plivo-usspanish-man'] = array(
       'language' => 'es', 'region' => 'US', 'voice' => 'man',
-      'description' => t('Male voice in Spanish (US)')
+      'description' => 'plivo-usspanish-man (' . t('Male voice in Spanish (US)'). ')'
     );
 
 	$voices['plivo-finland-woman'] = array(
       'language' => 'fi', 'region' => 'FI', 'voice' => 'woman',
-      'description' => t('Female voice in Finnish')
+      'description' => 'plivo-finland-woman (' . t('Female voice in Finnish'). ')'
     );
 
 	$voices['plivo-franceca-woman'] = array(
       'language' => 'fr', 'region' => 'CA', 'voice' => 'woman',
-      'description' => t('Female voice in French (Canada)')
+      'description' => 'plivo-franceca-woman (' . t('Female voice in French (Canada)'). ')'
     );
 	$voices['plivo-franceca-man'] = array(
       'language' => 'fr', 'region' => 'CA', 'voice' => 'man',
-      'description' => t('Male voice in French (Canada)')
+      'description' => 'plivo-franceca-man (' . t('Male voice in French (Canada)'). ')'
     );
 
 	$voices['plivo-france-woman'] = array(
       'language' => 'fr', 'region' => 'FR', 'voice' => 'woman',
-      'description' => t('Female voice in French')
+      'description' => 'plivo-france-woman (' . t('Female voice in French'). ')'
     );
 	$voices['plivo-france-man'] = array(
       'language' => 'fr', 'region' => 'FR', 'voice' => 'man',
-      'description' => t('Male voice in French')
+      'description' => 'plivo-france-man (' . t('Male voice in French'). ')'
     );
 
 	$voices['plivo-hungary-woman'] = array(
       'language' => 'hu', 'region' => 'HU', 'voice' => 'woman',
-      'description' => t('Female voice in Hungarian')
+      'description' => 'plivo-hungary-woman (' . t('Female voice in Hungarian'). ')'
     );
 
 	$voices['plivo-italy-woman'] = array(
       'language' => 'it', 'region' => 'IT', 'voice' => 'woman',
-      'description' => t('Female voice in Italian')
+      'description' => 'plivo-italy-woman (' . t('Female voice in Italian'). ')'
     );
 	$voices['plivo-italy-man'] = array(
       'language' => 'it', 'region' => 'IT', 'voice' => 'man',
-      'description' => t('Male voice in Italian')
+      'description' => 'plivo-italy-man (' . t('Male voice in Italian'). ')'
     );
 
 	//bug in Plivo cloud it should be ja-JP instead of jp-JP
 	$voices['plivo-japan-woman'] = array(
       'language' => 'ja', 'region' => 'JP', 'voice' => 'woman',
-      'description' => t('Female voice in Japanese')
+      'description' => 'plivo-japan-woman (' . t('Female voice in Japanese'). ')'
     );
 	$voices['plivo-japan-man'] = array(
       'language' => 'jp', 'region' => 'JP', 'voice' => 'man',
-      'description' => t('Male voice in Japanese')
+      'description' => 'plivo-japan-man (' . t('Male voice in Japanese')
     );
 
 	$voices['plivo-dutch-woman'] = array(
       'language' => 'nl', 'region' => 'NL', 'voice' => 'woman',
-      'description' => t('Female voice in Dutch')
+      'description' => 'plivo-dutch-woman (' . t('Female voice in Dutch'). ')'
     );
 	$voices['plivo-dutch-man'] = array(
       'language' => 'nl', 'region' => 'NL', 'voice' => 'man',
-      'description' => t('Male voice in Dutch')
+      'description' => 'plivo-dutch-man (' . t('Male voice in Dutch'). ')'
     );
 
 	$voices['plivo-poland-woman'] = array(
       'language' => 'pl', 'region' => 'PL', 'voice' => 'woman',
-      'description' => t('Female voice in Polish')
+      'description' => 'plivo-poland-woman (' . t('Female voice in Polish'). ')'
     );
 
 	$voices['plivo-brazil-woman'] = array(
       'language' => 'pt', 'region' => 'BR', 'voice' => 'woman',
-      'description' => t('Female voice in Portuguese (Brazil)')
+      'description' => 'plivo-brazil-woman (' . t('Female voice in Portuguese (Brazil)'). ')'
     );
 
 	$voices['plivo-portugal-woman'] = array(
       'language' => 'pt', 'region' => 'PT', 'voice' => 'woman',
-      'description' => t('Female voice in Portuguese (Portugal)')
+      'description' => 'plivo-portugal-woman (' . t('Female voice in Portuguese (Portugal)'). ')'
     );
 
 	$voices['plivo-russian-woman'] = array(
       'language' => 'ru', 'region' => 'RU', 'voice' => 'woman',
-      'description' => t('Female voice in Russian')
+      'description' => 'plivo-russian-woman (' . t('Female voice in Russian'). ')'
     );
 	$voices['plivo-russian-man'] = array(
       'language' => 'ru', 'region' => 'RU', 'voice' => 'man',
-      'description' => t('Male voice in Russian')
+      'description' => 'plivo-russian-man (' . t('Male voice in Russian'). ')'
     );
 
 	$voices['plivo-sweden-woman'] = array(
       'language' => 'sv', 'region' => 'SE', 'voice' => 'woman',
-      'description' => t('Female voice in Swedish')
+      'description' => 'plivo-sweden-woman (' . t('Female voice in Swedish'). ')'
     );
 
     return $voices;
