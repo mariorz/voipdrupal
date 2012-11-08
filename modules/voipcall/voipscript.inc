@@ -1148,6 +1148,7 @@ function voipscript_get_run_ivr_menu_script($options) {
   $script->addLabel('play_menu_options');
   $script->addSet('_counter', '^%_counter - 1');
   $script->addGotoIf('go_back', '^%_counter < 0');
+
   $script->addGetInput("^VoipPrompt::decode(%_menu_options)", 1, '', '%_timeout');
   $script->addGotoIf('no_input_received', "^%input_digits == ''");
   /**

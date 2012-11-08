@@ -31,21 +31,21 @@ function voipplivoframework_admin_form($configuration) {
     '#type' => 'textfield',
     '#title' => t('Plivo REST API Url'),
     '#description' => t("The URL of your Plivo installation. Change it only if its not installed on same server as your website."),
-    '#default_value' => ($configuration['voipplivoframework_restapi_url'] ? $configuration['voipplivoframework_restapi_url'] : 'http://127.0.0.1:8088'),
+    '#default_value' => isset($configuration['voipplivoframework_restapi_url']) ? $configuration['voipplivoframework_restapi_url'] : 'http://127.0.0.1:8088',
   );
 
   $form['voipplivoframework_account_sid'] = array(
     '#type' => 'textfield',
     '#title' => t('Plivo Account SID'),
     '#description' => t("The account SID defined in your Plivo configuration."),
-    '#default_value' => ($configuration['voipplivoframework_account_sid'] ? $configuration['voipplivoframework_account_sid'] : ''),
+    '#default_value' => isset($configuration['voipplivoframework_account_sid']) ? $configuration['voipplivoframework_account_sid'] : '',
   );
 
   $form['voipplivoframework_auth_token'] = array(
     '#type' => 'password',
     '#title' => t('Plivo Auth Token'),
     '#description' => t("The authorization token defined in your Plivo configuration."),
-    '#default_value' => ($configuration['voipplivoframework_auth_token'] ? $configuration['voipplivoframework_auth_token'] : ''),
+    '#default_value' => isset($configuration['voipplivoframework_auth_token']) ? $configuration['voipplivoframework_auth_token'] : '',
   );
 
   $server = voipplivoframework_voipserver_info();
@@ -87,28 +87,28 @@ function voipplivoframework_admin_form($configuration) {
     '#type' => 'textfield',
     '#title' => t('Freeswitch Call Gateways'),
     '#description' => t("This should be valid FreeSWITCH gateway strings separated by comma. If multiple gateways are specified, all the gateways will be tried sequentially for failover for the specified number of retries. E.g. 'user/,sofia/gateway/PSTNgateway1/,sofia/gateway/PSTNgateway2/'."),
-    '#default_value' => ($configuration['voipplivoframework_call_gateways'] ? $configuration['voipplivoframework_call_gateways'] : 'user/'),
+    '#default_value' => isset($configuration['voipplivoframework_call_gateways']) ? $configuration['voipplivoframework_call_gateways'] : 'user/',
   );
 
   $form['voipplivoframework_config_outbound_call']['voipplivoframework_call_gateway_codec'] = array(
     '#type' => 'textfield',
     '#title' => t('Freeswitch Call Gateway Codecs'),
     '#description' => t("Through this parameter you can choose the valid codec(s) to be used for each FreeSWITCH gateway. E.g.'PCMA,PCMU','G729,PCMU','PCMA,G729'."),
-    '#default_value' => ($configuration['voipplivoframework_call_gateway_codec'] ? $configuration['voipplivoframework_call_gateway_codec'] : "'PCMA,PCMU'"),
+    '#default_value' => isset($configuration['voipplivoframework_call_gateway_codec']) ? $configuration['voipplivoframework_call_gateway_codec'] : "'PCMA,PCMU'",
   );
 
   $form['voipplivoframework_config_outbound_call']['voipplivoframework_call_gateway_timeouts'] = array(
     '#type' => 'textfield',
     '#title' => t('Freeswitch Call Gateway Timeouts'),
     '#description' => t("gatewayTimeouts indicates the timeouts (in seconds) for each FreeSWITCH gateway. E.g 10,10,10. Here Plivo will use 10 seconds timeouts while trying to dial a call through each of the three gateways."),
-    '#default_value' => ($configuration['voipplivoframework_call_gateway_timeouts'] ? $configuration['voipplivoframework_call_gateway_timeouts'] : '60'),
+    '#default_value' => isset($configuration['voipplivoframework_call_gateway_timeouts']) ? $configuration['voipplivoframework_call_gateway_timeouts'] : '60',
   );
 
   $form['voipplivoframework_config_outbound_call']['voipplivoframework_call_gateway_retries'] = array(
     '#type' => 'textfield',
     '#title' => t('Freeswitch Call Gateway Retries'),
     '#description' => t("The number of times each of the gateways must be tried."),
-    '#default_value' => ($configuration['voipplivoframework_call_gateway_retries'] ? $configuration['voipplivoframework_call_gateway_retries'] : '1'),
+    '#default_value' => isset($configuration['voipplivoframework_call_gateway_retries']) ? $configuration['voipplivoframework_call_gateway_retries'] : '1',
   );
 
   return $form;

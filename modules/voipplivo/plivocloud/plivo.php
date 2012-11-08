@@ -11,7 +11,7 @@ function validate_signature($uri, $post_params=array(), $signature, $auth_token)
         $uri .= "$key$value";
     }
     $generated_signature = base64_encode(hash_hmac("sha1",$uri, $auth_token, true));
-  watchdog('voipplivocore', "auth_token:$auth_token generated_signature:$generated_signature signature:$signature");
+  //watchdog('voipplivocore', "uri $uri auth_token:$auth_token generated_signature:$generated_signature signature:$signature");
 
   return $generated_signature == $signature;
 }
