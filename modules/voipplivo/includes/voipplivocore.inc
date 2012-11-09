@@ -1027,6 +1027,7 @@ function voipplivocore_update_call_status($call, $plivo_call_status = 'in-progre
       $call->setHangupReason(VoipCall::HANGUP_NO_ANSWER);
       break;
     case 'canceled':
+	case 'cancel':
       $call->setCallStatus(VoipCall::CANCELED);
       $call->setHangupReason(VoipCall::HANGUP_API_REQUEST);
       break;
