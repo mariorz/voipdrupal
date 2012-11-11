@@ -310,12 +310,22 @@ function _voipscriptui_reverse_parser($script_name) {
         break;
       case 'VoipCmdRunIvrMenu':
         $prompt = $cmd->getParam('prompt');
+        $prompt_str = _voipscriptui_get_complex_param($prompt);
         $input_options = $cmd->getParam('input_options');
+        $input_options_str = _voipscriptui_get_complex_param($input_options);
         $invalid_msg = $cmd->getParam('invalid_msg');
+        $invalid_msg_str = _voipscriptui_get_complex_param($invalid_msg);
         $no_input_msg = $cmd->getParam('no_input_msg');
+        $no_input_msg_str = _voipscriptui_get_complex_param($no_input_msg);
         $max_attempts = $cmd->getParam('max_attempts');
         $timeout = $cmd->getParam('timeout');
-        $output .= '$prompt = ' . _voipscriptui_get_complex_param($prompt) . ' <br>$input_options = "' . $input_options . '"; <br>$invalid_msg = "' . $invalid_msg . '"; <br>$no_input_msg = "' . $no_input_msg . '"; <br>$max_attempts = ' . $max_attempts . '; <br>$timeout = ' . $timeout . '; <br>';
+        $output .= '$prompt = ' . $prompt_str
+          . '<br>$input_options = ' . $input_options_str
+          . '<br>$invalid_msg = ' . $invalid_msg_str
+          . '<br>$no_input_msg = ' . $no_input_msg_str
+          . '<br>$max_attempts = ' . $max_attempts . ';'
+          . '<br>$timeout = ' . $timeout . ';'
+          . '<br>';
         $output .= '$script->addRunIvrMenu($prompt, $input_options, $invalid_msg, $no_input_msg, $max_attempts, $timeout);<br>';
         break;
       case 'VoipCmdSay':
