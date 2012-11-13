@@ -282,9 +282,10 @@ class VoipTropoServer extends VoipServer {
     $server_config = $this->getConfig();
     $length = 20;
     $characters = '0123456789abcdefghijklmnopqrstuvwxyz';
+	$characters_len = strlen($characters) - 1;
     $random_string = '';
     for ($p = 0; $p < $length; $p++) {
-      $random_string .= $characters[mt_rand(0, strlen($characters))];
+      $random_string .= $characters[mt_rand(0, $characters_len)];
     }
     $vars->session->id = $random_string;
     $vars->session->initialText = $text_content;
