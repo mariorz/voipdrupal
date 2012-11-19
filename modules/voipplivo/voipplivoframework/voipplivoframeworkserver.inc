@@ -12,10 +12,7 @@
  * File dependencies
  */
 
-foreach (array('plivo.php') as $file) {
-  require_once(dirname(__FILE__) . DIRECTORY_SEPARATOR . $file);
-}
-
+module_load_include('php', 'voipplivoframework', 'plivo');
 module_load_include('inc', 'voip', 'includes/voipserver');
 /**
  * Class definitions

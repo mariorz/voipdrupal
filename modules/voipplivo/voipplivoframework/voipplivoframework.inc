@@ -34,7 +34,7 @@
  * @return void
  */
 function _voipplivoframework_call_handler($plivo_action, $cid = NULL) {
-  module_load_include('inc', 'voipplivoframework', 'includes/voipplivocore');
+  module_load_include('inc', 'voip', 'modules/voipplivo/includes/voipplivocore');
   $server = 'plivoframework';
   return voipplivocore_call_handler($server, $plivo_action, $cid);
 }

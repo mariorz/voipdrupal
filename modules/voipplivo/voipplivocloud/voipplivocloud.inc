@@ -34,7 +34,7 @@
  * @return void
  */
 function _voipplivocloud_call_handler($plivo_action, $cid = NULL) {
-  module_load_include('inc', 'voipplivocloud', 'includes/voipplivocore');
+  module_load_include('inc', 'voip', 'modules/voipplivo/includes/voipplivocore');
   $server = 'plivocloud';
   return voipplivocore_call_handler($server, $plivo_action, $cid);
 }
@@ -68,10 +68,13 @@ function _voipplivocloud_validate_request() {
     $http = "http://";
   }
 
-  $url = $http . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']."/";
+  //$url = $http . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']."/";
+  $url = "http://". $_SERVER["SERVER_NAME"] . $_SERVER["PHP_SELF"]."/";
 
-  if (isset($_POST)) {
-    // copy the post data
+  if(isset($_GET)) {
+    $post_params = $_GET;
+  }
+  else if(isset($_POST)) {
     $post_params = $_POST;
   }
 

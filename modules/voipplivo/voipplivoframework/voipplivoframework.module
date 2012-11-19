@@ -10,8 +10,8 @@
 // Include files
 //-----------------------------------------------------------------------------
 
-module_load_include('inc', 'voipplivoframework', 'plivoframework/voipplivoframework');
-module_load_include('inc', 'voipplivoframework', 'plivoframework/voipplivoframeworkserver');
+module_load_include('inc', 'voipplivoframework', 'voipplivoframework');
+module_load_include('inc', 'voipplivoframework', 'voipplivoframeworkserver');
 
 //-----------------------------------------------------------------------------
 // Public functions

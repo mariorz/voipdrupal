@@ -9,9 +9,9 @@
 //-----------------------------------------------------------------------------
 // Include files
 //-----------------------------------------------------------------------------
-module_load_include('php', 'voipplivocloud', 'plivocloud/plivo');
-module_load_include('inc', 'voipplivocloud', 'plivocloud/voipplivocloud');
-module_load_include('inc', 'voipplivocloud', 'plivocloud/voipplivocloudserver');
+module_load_include('php', 'voipplivocloud', 'plivo');
+module_load_include('inc', 'voipplivocloud', 'voipplivocloud');
+module_load_include('inc', 'voipplivocloud', 'voipplivocloudserver');
 
 //-----------------------------------------------------------------------------
 // Public functions
@@ -26,7 +26,7 @@ function voipplivocloud_voipserver_info() {
 }
 
 function voipplivocloud_admin_form($configuration) {
-  
+
   $form['voipplivocloud_auth_id'] = array(
     '#type' => 'textfield',
     '#title' => t('Plivo Auth ID'),
