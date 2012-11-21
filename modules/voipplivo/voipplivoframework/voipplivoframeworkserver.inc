@@ -119,10 +119,7 @@ class VoipPlivoFrameworkServer extends VoipServer {
       # Retry String for Gateways separated by comma, on how many times each gateway should be retried
       'ExtraDialString' => $extra_dial_string,
       'AnswerUrl' => $call_handler_url,
-      //TODO: Check that hangup_url works
       'HangupUrl' => $status_callback_url,
-      //TODO: Whats the purpose of ringing URLs? Is it optional?
-      //'RingUrl' => "http://127.0.0.1:5000/ringing/"
     );
 
     // Instantiate a new Plivo Rest Client
@@ -279,10 +276,18 @@ class VoipPlivoFrameworkServer extends VoipServer {
     $request_url = $menu_path . '/process_inbound_text/';
     $url = url($request_url, array('absolute' => TRUE));
 
+    $length = 20;
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyz';
+    $characters_len = strlen($characters) - 1;
+    $random_string = '';
+    for ($p = 0; $p < $length; $p++) {
+      $random_string .= $characters[mt_rand(0, $characters_len)];
+    }
+
     $server_config = $this->getConfig();
     $vars = array(
       'AccountSid' => $server_config['voipplivoframework_account_sid'],
-      'SmsSid' => $todo,
+      'SmsSid' => $random_string,
       'From' => $origin,
       'To' => $destination,
       'Body' => $text_content,
@@ -350,7 +355,6 @@ class VoipPlivoFrameworkServer extends VoipServer {
   /**
    * Private methods
    */
-// TODO:  private static function _get_available_voices() {
   static function _get_available_voices() {
     // Note: check http://festvox.org/voicedemos.html for demos of the different voices
     $voices = array();

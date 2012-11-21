@@ -73,7 +73,7 @@ class VoipTropoServer extends VoipServer {
     $caller_number = ($voipcall->getCallerNumber())
       ? $voipcall->getCallerNumber()
       : variable_get('voipcall_cid_number', NULL);
-    
+
     $dest_number = $voipcall->getDestNumber();
 
     // (re)start the session associated with the call
@@ -89,7 +89,7 @@ class VoipTropoServer extends VoipServer {
       $voip_session = new VoipSession();
       $voip_session->setOriginNumber($caller_number);
       $voip_session->setDestinationNumber($dest_number);
-	  
+
 	  // update call variables
 	  $voipcall->setCallerNumber($caller_number);
       $voipcall->setSource('drupal');
@@ -170,7 +170,7 @@ class VoipTropoServer extends VoipServer {
       $voip_session = new VoipSession();
       $voip_session->setOriginNumber($from);
       $voip_session->setDestinationNumber($to);
-	  
+
 	  // update call variables
       $voipcall->setSource('drupal');
       $voipcall->setDirection(VoipCall::OUTBOUND);
@@ -282,7 +282,7 @@ class VoipTropoServer extends VoipServer {
     $server_config = $this->getConfig();
     $length = 20;
     $characters = '0123456789abcdefghijklmnopqrstuvwxyz';
-	$characters_len = strlen($characters) - 1;
+	  $characters_len = strlen($characters) - 1;
     $random_string = '';
     for ($p = 0; $p < $length; $p++) {
       $random_string .= $characters[mt_rand(0, $characters_len)];

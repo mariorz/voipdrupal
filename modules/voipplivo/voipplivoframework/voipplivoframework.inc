@@ -75,7 +75,6 @@ function _voipplivoframework_validate_request() {
   }
 
   $expected_signature = $_SERVER["HTTP_X_PLIVO_SIGNATURE"];
-//watchdog('voipplivocore', "VALIDAITION S=$expected_signature URL=$url TOKEN=$auth_token SID:$account_sid SIG:".$utils->validateRequest($expected_signature, $url, $data), $vars, WATCHDOG_INFO);
   if ($utils->validateRequest($expected_signature, $url, $data)) {
     return TRUE;
   }

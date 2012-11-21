@@ -111,17 +111,15 @@ class VoipPlivoCloudServer extends VoipServer {
     $params = array(
       'to' => $dest_number,
       'from' => $caller_number,
-      //TODO: Check what is ring_url purpose and if we need it?
-      //'ring_url' => 'http://example.com/ring_url',
       'answer_url' => $answer_url,
       'hangup_url' => $hangup_url,
+      'machine_detection' => 'true', //Used to detect if the call has been answered by a machine.
     );
 
     // Instantiate a new Plivo Client
     try{
       $client = new RestAPI($auth_id, $auth_token);
       $response = $client->make_call($params);
-      watchdog('plivocloud',print_r($response,true));
       if(isset($response['response']['error'])){
         switch($response['status']) {
           case '400':
@@ -222,13 +220,6 @@ class VoipPlivoCloudServer extends VoipServer {
     $auth_id = $server_config['voipplivocloud_auth_id'];
     $auth_token = $server_config['voipplivocloud_auth_token'];
 
-    //todo: Does plivo have response url?
-    /*$menu_path = 'voip/plivocloud/callhandler';
-    //$cid = $voipcall->getCid();
-    $response_url = $menu_path . '/process_sms_callback/' . $cid;
-    $status_callback_url = url($response_url, array('absolute' => TRUE));
-    */
-
     try {
       // Instantiate a new Plivo Rest Client
       $client  = new RestAPI($auth_id, $auth_token);
@@ -239,7 +230,6 @@ class VoipPlivoCloudServer extends VoipServer {
         'type' => 'sms',
       );
       $response = $client->send_message($params);
-      watchdog('plivocloud',print_r($response,true));
 
       if(isset($response['response']['error'])){
         switch($response['status']) {
@@ -343,16 +333,22 @@ class VoipPlivoCloudServer extends VoipServer {
   /**
    * Implementation of the VoipServer text_handler() API method
    */
-  //todo
   function text_handler($text_content, $origin, $destination, $time, $network, $server_name) {
     $menu_path = 'voip/plivocloud/callhandler';
     $request_url = $menu_path . '/process_inbound_text/';
     $url = url($request_url, array('absolute' => TRUE));
 
+    $length = 20;
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyz';
+    $characters_len = strlen($characters) - 1;
+    $random_string = '';
+    for ($p = 0; $p < $length; $p++) {
+      $random_string .= $characters[mt_rand(0, $characters_len)];
+    }
     $server_config = $this->getConfig();
     $vars = array(
       'AccountSid' => $server_config['voipplivocloud_auth_id'],
-      'SmsSid' => $todo,
+      'SmsSid' => $random_string,
       'From' => $origin,
       'To' => $destination,
       'Body' => $text_content,
