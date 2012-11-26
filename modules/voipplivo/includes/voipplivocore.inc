@@ -1039,7 +1039,6 @@ function _voipplivocore_process_dial_response($server, $call, $request) {
     $script->setVar('dial_sid', $request['DialCallSid']);
   }
   else {
-    //@todo: Check if we should use DialALegUUID? https://www.plivo.com/docs/xml/dial/#dialactionreqparam
     $script->setVar('dial_sid', $request['DialBLegUUID']);
   }
 
