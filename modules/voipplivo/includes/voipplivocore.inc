@@ -27,7 +27,6 @@
  *   - process_record, process_record_mp3 and process_empty_recording, to handle
  *     responses to 'record' script commands
  *   - process_wait, to continue after wait command
- *   - process_send_sms, to handle responses to 'send sms' script commands
  *   - process_sms_callback, to handle final responses to 'send sms'.
  *
  * @param string $cid with the cid of the call
@@ -203,7 +202,6 @@ function voipplivocore_call_handler($server, $plivo_action, $cid = NULL) {
 
   if ($plivo_action == 'process_sms_callback'
     || $plivo_action == 'process_inbound_text'
-    || $plivo_action == 'process_send_sms'
     || $plivo_action == 'process_record'
     || $plivo_action == 'process_record_mp3'
     || $plivo_action == 'process_empty_recording'
@@ -309,7 +307,6 @@ function voipplivocore_call_handler($server, $plivo_action, $cid = NULL) {
         $call->setScript($script);
         break;
 
-       case 'process_send_sms':
        case 'process_sms_callback':
          $call = _voipplivocore_process_sms_response($call, $_REQUEST);
          if(strtolower($call->getCurrentChannel()) == 'text') {
@@ -858,8 +855,6 @@ function voipplivocore_script_handler($server, $call) {
               else {
                 $menu_path = 'voip/'.$server.'/callhandler';
                 $cid = $call->getCid();
-                //$response_url = $menu_path . '/process_send_sms/' . $cid;
-                //$action = url($response_url, array('absolute' => TRUE));
                 $callback_url = $menu_path . '/process_sms_callback/' . $cid;
                 $callback = url($callback_url, array('absolute' => TRUE));
                 $method = 'POST';
@@ -886,7 +881,6 @@ function voipplivocore_script_handler($server, $call) {
                     break;
 
                   case 'sms':
-                    //@todo: where is action param in Plivo Cloud?
                     $response .= '<Message callbackUrl="' . $callback
                       . '" callbackMethod="' . $method;
                     if ($to) {
