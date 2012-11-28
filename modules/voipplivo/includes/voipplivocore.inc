@@ -268,7 +268,6 @@ function voipplivocore_call_handler($server, $plivo_action, $cid = NULL) {
           ? '' : $_REQUEST['Digits'];
         $script->setVar('input_digits', $input);
         $call->setScript($script);
-        //watchdog('plivotodo', 'digits '.$_REQUEST['Digits']);
         break;
       case 'process_record':
       case 'process_record_mp3':
@@ -545,7 +544,13 @@ function voipplivocore_script_handler($server, $call) {
           $action = url($response_url, array('absolute' => TRUE));
           $method = 'POST';
           $timeout = $script->evalString($cmd->getParam('timeout', 5));
-          $end_key = $script->evalString($cmd->getParam('end_key', ''));
+          if($server == 'plivocloud') {
+            $end_key = $script->evalString($cmd->getParam('end_key', 'none'));
+          }
+          else {
+            $end_key = $script->evalString($cmd->getParam('end_key', ''));
+          }
+
           $num_digits = $script->evalString($cmd->getParam('num_digits'));
           $prompt = $cmd->getParam('prompt');
           $response .= '<GetDigits action="' . $action
