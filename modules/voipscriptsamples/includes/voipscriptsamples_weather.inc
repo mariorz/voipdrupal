@@ -112,12 +112,13 @@ function _voipscriptsamples_get_forecast($zip) {
  */
 
 function _voipscriptsamples_get_weather_info($woeid, $unit = 'f') {
+  if (!extension_loaded('libxml')) {
+    //this script requires libxml PHP extension enabled
+    watchdog('voipscriptsamples', 'VoIP Script "voipscript_weather_report" requires libxml PHP extension', array(), WATCHDOG_ERROR);
+    return NULL;
+  }
   require_once('class.xml.parser.php');
-
   $yahoo_url = "http://weather.yahooapis.com/forecastrss?w=$woeid&u=$unit";
-  $yahoo_ns = "http://xml.weather.yahoo.com/ns/rss/1.0";
-
-  $weather_feed = file_get_contents($yahoo_url);
 
   $parser = new xmlParser();
   $parser->parse($yahoo_url);
