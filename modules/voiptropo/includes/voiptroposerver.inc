@@ -73,32 +73,31 @@ class VoipTropoServer extends VoipServer {
     $caller_number = ($voipcall->getCallerNumber())
       ? $voipcall->getCallerNumber()
       : variable_get('voipcall_cid_number', NULL);
-
     $dest_number = $voipcall->getDestNumber();
 
     // (re)start the session associated with the call
     $voip_session = VoipSession::getSessionByNumber($caller_number, $dest_number);
     if ($voip_session) {
       $voip_session->resetTimer();
-	  //we must preserve cid
-	  $cid = $voip_session->getCid();
-	  //load existing call
-	  $voipcall = VoipCall::load($cid);
+	    //we must preserve cid
+	    $cid = $voip_session->getCid();
+	    //load existing call
+	    $voipcall = VoipCall::load($cid);
     }
     else {
       $voip_session = new VoipSession();
       $voip_session->setOriginNumber($caller_number);
       $voip_session->setDestinationNumber($dest_number);
 
-	  // update call variables
-	  $voipcall->setCallerNumber($caller_number);
+	    // update call variables
+	    $voipcall->setCallerNumber($caller_number);
       $voipcall->setSource('drupal');
       $voipcall->setDirection(VoipCall::OUTBOUND);
       $voipcall->setCurrentChannel('voice');
       $voipcall->setCurrentNetwork('voip');
-	  $voipcall->save();
+	    $voipcall->save();
       $cid = $voipcall->getCid();
-	  $voip_session->setCid($cid);
+	    $voip_session->setCid($cid);
     }
 
     $voip_session->save();
@@ -121,7 +120,7 @@ class VoipTropoServer extends VoipServer {
       'cid' => $cid,
     );
 
-    // TODO: Handle answering machine detection
+    //@todo: Handle answering machine detection
 
     try {
       $response = $client->createSession($token, $vars);
@@ -154,7 +153,6 @@ class VoipTropoServer extends VoipServer {
       $from = ($voipcall->getCallerNumber())
         ? $voipcall->getCallerNumber()
         : variable_get('voipcall_cid_number', NULL);
-
     }
 
     // (re)start the session associated with the call
@@ -176,9 +174,9 @@ class VoipTropoServer extends VoipServer {
       $voipcall->setDirection(VoipCall::OUTBOUND);
       $voipcall->setCurrentChannel('text');
       $voipcall->setCurrentNetwork('sms');
-	  $voipcall->save();
+	    $voipcall->save();
       $cid = $voipcall->getCid();
-	  $voip_session->setCid($cid);
+	    $voip_session->setCid($cid);
     }
     $voip_session->save();
 
@@ -205,7 +203,7 @@ class VoipTropoServer extends VoipServer {
       'action' => 'create',
       'username' => $username,
       'password' => $password,
-      'caller_number' => $from,
+      'caller_number' =>$from,
       'dest_number' => $to,
       'tropo_action' => 'process_outbound_text',
       'cid' => $cid,
@@ -242,7 +240,6 @@ class VoipTropoServer extends VoipServer {
     // tropo configuration
     $username = $server_config['voiptropo_account_username'];
     $password = $server_config['voiptropo_account_password'];
-    //$token = $server_config['voiptropo_voice_token'];
 
     // Instantiate a new Tropo Event API
     $client = new EventAPI($username, $password);
@@ -505,5 +502,21 @@ class VoipTropoServer extends VoipServer {
       'description' => t('Empar (female voice in Valencian)')
     );
     return $voices;
+  }
+
+  /*
+   * Tropo implementation of NormalizeNumber
+   * Takes into consideration that call between two numbers in same country will use domestic format.
+   * In case of SMS Tropo doesn't return + sign so we need to add it.
+   */
+  public static function NormalizeNumber($number){
+    if(strlen($number)<11) {
+      //This is domestic number, don't do anything
+      return $number;
+    }
+    else {
+      //Normalize number by adding '+' prefix
+      return VoipCall::NormalizeNumber($number);
+    }
   }
 }

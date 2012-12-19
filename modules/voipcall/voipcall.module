@@ -209,7 +209,14 @@ function voipcall_admin_form() {
   $form['voipcall_cid_number'] = array(
     '#type' => 'textfield',
     '#title' => t('Caller id number'),
-    '#description' => t('Caller id number to be used in VoIP Drupal calls.'),
+    '#description' => t('Caller id number to be used in VoIP Drupal calls.
+    Number must be in <a target="_blank" href="http://en.wikipedia.org/wiki/E.164">E.164</a> format.
+    Supported formats include:
+    <ul>
+    <li>tel: Phone Number - must be proceeded by a + and the country code (ie - +14155551212 for a US #)</li>
+    <li>sip: SIP protocol address (ie - sip:username@doamin.com)</li>
+    </ul>
+    '),
     '#size' => 40,
     '#maxlength' => 255,
     '#default_value' => variable_get('voipcall_cid_number', ''),
@@ -280,13 +287,6 @@ function voipcall_admin_form() {
     '#default_value' => variable_get('voipcall_default_session_time', 0),
   );
 
-  $form['voipcall_phone_prefix'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Phone prefix conversion'),
-    '#description' => t('Prefixes to be checked for phone numbers used in the system. Phone numbers that do not start with "sip:", the "+" sign, or any of the prefixes listed above will automatically receive a \'+\' sign in front of them. The remaining numbers will be left as is. Prefixes usually include the country and sometimes the area codes associated with the geographic location the system is being used. Multiple prefixes should be provided as comma-separated lists such as: 1, 55, 99.'),
-    '#default_value' => variable_get('voipcall_phone_prefix', '1'),
-  );
-
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
@@ -332,19 +332,14 @@ function voipcall_admin_form_submit($form, &$form_state) {
 
   // store values
   variable_set('voipcall_cid_name', $form_state['values']['voipcall_cid_name']);
-
-  $number = voipcall_normalize_phone_number($form_state['values']['voipcall_cid_number']);
-  variable_set('voipcall_cid_number', $number);
-
-  $text_number = voipcall_normalize_phone_number($form_state['values']['voipcall_text_number']);
-  variable_set('voipcall_text_number', $text_number);
+  variable_set('voipcall_cid_number', $form_state['values']['voipcall_cid_number']);
+  variable_set('voipcall_text_number', $form_state['values']['voipcall_text_number']);
 
   variable_set('voipcall_inbound_call_script_name', $form_state['values']['voipcall_inbound_call_script_name']);
   variable_set('voipcall_outbound_call_script_name', $form_state['values']['voipcall_outbound_call_script_name']);
   variable_set('voipcall_use_sms_framework', $form_state['values']['voipcall_use_sms_framework']);
   variable_set('voipcall_inbound_text_script_name', $form_state['values']['voipcall_inbound_text_script_name']);
   variable_set('voipcall_default_session_time', $form_state['values']['voipcall_default_session_time']);
-  variable_set('voipcall_phone_prefix', $form_state['values']['voipcall_phone_prefix']);
   drupal_set_message(t('The default call settings have been saved.'));
 
   $form_state['redirect'] = 'admin/voip';
@@ -534,54 +529,3 @@ function voipcall_session_delete($sid) {
 function voipcall_cron() {
   VoipSession::deleteExpiredSessions();
 }
-
-
-/**
- * Normalize the phone number to fit the +CCCXXXYYYY (E.164) format used by
- * most voip servers. This function also handles SIP addresses.
- *
- * Examples for prefix == (1, 55):
- *   16174890199 => +16174890199
- *   6174890199 => +16174890199
- *   +551196664471 => +551196664471
- *   +55 (11) 9666.4471 => +551196664471
- *   55 (11) 9666.4471 => +551196664471
- *   sip:jim@sip.com => sip:jim@sip.com
- */
-function voipcall_normalize_phone_number($number) {
-  $chars = array(' ', '-', '.', '(', ')');
-  if (!strncmp($number, '+', 1)) {
-    // remove special characters
-    $rc = str_replace($chars, '', $number);
-  }
-  else {
-    if (!strncasecmp($number, 'sip:', 4)) {
-      $rc = $number;
-    }
-    else {
-      $n = str_replace($chars, '', $number);
-      if (ctype_digit($n)) {
-        $found = FALSE;
-        $prefix_string = variable_get('voipcall_phone_prefix', '1');
-        $prefix_string = str_replace(' ', '', $prefix_string);
-        $prefix_list = explode(',', $prefix_string);
-        $default_prefix = $prefix_list[0];
-        foreach ($prefix_list as $prefix) {
-          if (!strncmp($n, $prefix, strlen($prefix))) {
-            $rc = '+' . $n;
-            $found = TRUE;
-            break;
-          }
-        }
-        if (!$found) {
-          $rc = '+' . $default_prefix . $n;
-        }
-      }
-      else {
-        $rc = $number; // Note: this number might contain characters
-      }
-    }
-  }
-  return $rc;
-}
-

@@ -587,5 +587,14 @@ class VoipPlivoCloudServer extends VoipServer {
 
     return $voices;
   }
+
+  /*
+  * Plivo Cloud implementation of NormalizeNumber
+  * Tropo doesn't return + sign so we need to add it
+  *
+  */
+  static function NormalizeNumber($number){
+    return VoipCall::NormalizeNumber($number);
+  }
 }
 

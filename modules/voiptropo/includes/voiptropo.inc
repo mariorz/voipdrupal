@@ -851,7 +851,7 @@ function voiptropo_update_call_status($call, $result, $call_status) {
 function _voiptropo_process_dial_response($call, $request, $event_type) {
   $script = $call->getScript();
   // update the 'dial_sid' script variable
-  $script->setVar('dial_sid', $request->getSessionId()); //TODO: What is this? I used session id
+  $script->setVar('dial_sid', $request->getSessionId());
 
   // update the 'dial_status' script variable
   switch ($event_type) {
@@ -1097,6 +1097,10 @@ function _voiptropo_handle_new_calls($tropo_action, $session) {
     $tmp = $session->getTo();
     $to = $tmp['id'];
   }
+
+  //Normalize the numbers
+  $from = VoipTropoServer::NormalizeNumber($from);
+  $to = VoipTropoServer::NormalizeNumber($to);
 
   // determine the cid and voip_session
   $cid = $session->getParameters('cid');

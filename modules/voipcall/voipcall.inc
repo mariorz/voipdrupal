@@ -140,6 +140,33 @@ class VoipCall {
     return $cid;
   }
 
+  /**
+   * Normalize the phone number to fit the +CCCXXXYYYY (E.164) format used by
+   * most voip servers. This function also handles SIP addresses.
+   *  Examples:
+   *   16174890199 => +16174890199
+   *   6174890199 => +16174890199
+   *   +551196664471 => +551196664471
+   *   +55 (11) 9666.4471 => +551196664471
+   *   55 (11) 9666.4471 => +551196664471
+   *   sip:jim@sip.com => sip:jim@sip.com
+   */
+  public static function NormalizeNumber($number) {
+    //Remove special chars from number
+    $chars = array(' ', '-', '.', '(', ')', '+');
+    $number = str_replace($chars, '', $number);
+
+    //If this is sip address
+    if (!strncasecmp($number, 'sip:', 4)) {
+      return $number;
+    }
+    //Else:
+    //Remove 00 from begining of number
+    $pattern = '/^00/';
+    $number = preg_replace($pattern, '', $number);
+    $number = '+'.$number;
+    return $number;
+  }
 
   /*
   * Public methods
@@ -265,7 +292,7 @@ class VoipCall {
   }
 
   public function setDestNumber($number) {
-    $this->call_data->dest_number = voipcall_normalize_phone_number($number);
+    $this->call_data->dest_number = $number;
   }
 
   public function getDestName() {
@@ -281,7 +308,7 @@ class VoipCall {
   }
 
   public function setCallerNumber($number) {
-    $this->call_data->caller_number = voipcall_normalize_phone_number($number);
+    $this->call_data->caller_number = $number;
   }
 
   public function getCallerName() {
@@ -672,7 +699,7 @@ class VoipCall {
       if (!isset($details->hangup_reason)) {
         $data->hangup_reason = NULL;
       }
-	  
+
 	  // initialize 'Error message' field
       if (!isset($details->error_message)) {
         $data->error_message = NULL;

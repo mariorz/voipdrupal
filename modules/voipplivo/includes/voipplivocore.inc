@@ -65,6 +65,12 @@ function voipplivocore_call_handler($server, $plivo_action, $cid = NULL) {
   $from = $_REQUEST['From'];
   $to = $_REQUEST['To'];
 
+  if($server == 'plivocloud') {
+    //Normalize numbers
+    $from = VoipPlivoCloudServer::NormalizeNumber($from);
+    $to = VoipPlivoCloudServer::NormalizeNumber($to);
+  }
+
   //At hangup the response returns only From value, making it impossible to track session, so making this hack to prevent creating new sessions.
   /*if($_REQUEST['HangupCause'] == 'NORMAL_CLEARING') {
     return;
@@ -164,13 +170,13 @@ function voipplivocore_call_handler($server, $plivo_action, $cid = NULL) {
     $call->setCurrentNetwork($network);
   }
   if (!$call->getCallerNumber()) {
-    $call->setCallerNumber($_REQUEST['From']);
+    $call->setCallerNumber($from);
   }
   if (!$call->getCallerName()) {
     $call->setCallerName($_REQUEST['CallerName']);
   }
   if (!$call->getDestNumber()) {
-    $call->setDestNumber($_REQUEST['To']);
+    $call->setDestNumber($to);
   }
 
   // get the cid of the call
@@ -217,7 +223,7 @@ function voipplivocore_call_handler($server, $plivo_action, $cid = NULL) {
 
   // set text channel variables
   if (in_array($channel, array('offline_text', 'text'))) {
-    $call->setTextVariables($_REQUEST['Text'], $_REQUEST['From'], $_REQUEST['To'], $network);
+    $call->setTextVariables($_REQUEST['Text'], $from, $to, $network);
   }
 
   // update script variables with call location, if available
