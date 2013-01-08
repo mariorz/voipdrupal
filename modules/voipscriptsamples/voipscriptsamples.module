@@ -484,7 +484,6 @@ function voipscriptsamples_text_handler_demo($message, $caller_number, $dest_num
 function _voipscript_exec_callback($original_call) {
   $original_script = $original_call->getScript();
   $caller_number = $original_call->getCallerNumber();
-  $caller_number = VoipCall::NormalizeNumber('16174108647');
   $callback_script_name = $original_script->getVar('callback_script_name');
   // wait a little for the caller to hang up
   sleep(10);
