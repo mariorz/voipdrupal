@@ -51,17 +51,12 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     // user script to be executed on hangup
     $callback_script_name = 'voipscript_main_menu';
     $script->addSet('callback_script_name', $callback_script_name);
-    $script->addSet('voipscript_callback_result', "^voipscript_set_callback(%cid)");
+    //Set function to be called upon hangup
+    $script->addSet('voipscript_hangup_callback', '_voipscript_exec_callback');
     $script->addSay('About to hang up the current script to execute its associated callback function. The system should be calling you in about 10 seconds after the hang up.');
     $script->addBeep();
     // $script->addReject();
     $script->addHangup();
-  }
-
-  // callback script to be executed upon hangup
-  if ($script_name == 'voipscript_exec_callback_script') {
-    $script = new VoipScript('voipscript_exec_callback_script');
-    $script->addSet('voipscript_callback_result', '^_voipscript_exec_callback(%caller_number, %callback_script_name)');
   }
 
   if ($script_name == 'voipscript_dial_test') {
@@ -486,13 +481,11 @@ function voipscriptsamples_text_handler_demo($message, $caller_number, $dest_num
 /**
  * Callback-related functions
  */
-function voipscript_set_callback($cid) {
-  $call = VoipCall::load($cid);
-  $call->setHangupScriptName('voipscript_exec_callback_script');
-  $call->save();
-}
-
-function _voipscript_exec_callback($caller_number, $callback_script_name) {
+function _voipscript_exec_callback($original_call) {
+  $original_script = $original_call->getScript();
+  $caller_number = $original_call->getCallerNumber();
+  $caller_number = VoipCall::NormalizeNumber('16174108647');
+  $callback_script_name = $original_script->getVar('callback_script_name');
   // wait a little for the caller to hang up
   sleep(10);
   // create the new call
@@ -504,4 +497,3 @@ function _voipscript_exec_callback($caller_number, $callback_script_name) {
   // Execute the callback
   voip_dial($call);
 }
-

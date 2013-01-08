@@ -400,28 +400,9 @@ function _voiptwilio_script_handler($call) {
 
   // check if call is in a hangup state
   $is_hangup = $call->isHangup();
-  $processing_hangup = $call->getProcessingHangup();
-  if ($is_hangup && !$processing_hangup) {
-    $hangup_script_name = $call->getHangupScriptName();
-    // Stop processing if no hangup script defined
-    if (!$hangup_script_name) {
-      return TRUE;
-    }
-    else {
-      // load hangup script commands
-      $rc = $script->runGosub($hangup_script_name);
-      if ($script->isError()) {
-        $msg = $script->getErrorMessage();
-        $params = array();
-        $call->report_error('voiptwilio', $msg, $params);
-        return FALSE;
-      }
-      else {
-        // make sure the call does not reload the hangup script once again
-        $call->setProcessingHangup(TRUE);
-        $call->setCallStatus(VoipCall::IN_PROGRESS);
-      }
-    }
+  if ($is_hangup) {
+    voipcall_process_hangup($call);
+    return TRUE;
   }
 
   // process script commands
@@ -442,13 +423,11 @@ function _voiptwilio_script_handler($call) {
       else {
         if ($call->getCurrentChannel() != 'text') {
           // for voice channel send a final hangup request
-          if (!$call->getProcessingHangup()) {
             $response .= '<Hangup/>';
             $msg = 'Script @name ended without a "hangup" command.';
             $params = array('@name' => $script->getName());
             watchdog('voiptwilio', $msg, $params, WATCHDOG_WARNING);
             $call->setHangupReason(VoipCall::HANGUP_SCRIPT_END);
-          }
         }
       }
 

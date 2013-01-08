@@ -206,24 +206,6 @@ function voipcall_views_data() {
     ),
   );
 
-  $data['voipcall']['hangup_script'] = array(
-    'title' => t('Hangup script'),
-    'help' => t('Hangup script'),
-    'field' => array(
-      'handler' => 'views_handler_field_xss',
-      'click sortable' => TRUE,
-    ),
-    'sort' => array(
-      'handler' => 'views_handler_sort',
-    ),
-    'filter' => array(
-      'handler' => 'views_handler_filter_string',
-    ),
-    'argument' => array(
-      'handler' => 'views_handler_argument_string',
-    ),
-  );
-
   $data['voipcall']['script'] = array(
     'title' => t('Script'),
     'help' => t('Serialised script used for the call'),

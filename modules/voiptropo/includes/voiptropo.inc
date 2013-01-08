@@ -124,28 +124,9 @@ function _voiptropo_script_handler($call, &$tropo) {
   $script = $call->getScript();
   // check if call is in a hangup state
   $is_hangup = $call->isHangup();
-  $processing_hangup = $call->getProcessingHangup();
-  if ($is_hangup && !$processing_hangup) {
-    $hangup_script_name = $call->getHangupScriptName();
-    // Stop processing if no hangup script defined
-    if (!$hangup_script_name) {
-      return TRUE;
-    }
-    else {
-      // load hangup script commands
-      $rc = $script->runGosub($hangup_script_name);
-      if ($script->isError()) {
-        $msg = $script->getErrorMessage();
-        $params = array();
-        $call->report_error('voiptropo', $msg, $params);
-        return FALSE;
-      }
-      else {
-        // make sure the call does not reload the hangup script once again
-        $call->setProcessingHangup(TRUE);
-        $call->setCallStatus(VoipCall::IN_PROGRESS);
-      }
-    }
+  if ($is_hangup) {
+    voipcall_process_hangup($call);
+    return TRUE;
   }
 
   $processing = TRUE;
@@ -170,7 +151,6 @@ function _voiptropo_script_handler($call, &$tropo) {
       else {
         if ($call->getCurrentChannel() != 'text') {
           // for voice channel send a final hangup request
-          if (!$call->getProcessingHangup()) {
             $tropo->hangup();
             $msg = 'Script @name ended without a "hangup" command.';
             $params = array('@name' => $script->getName());
@@ -178,7 +158,6 @@ function _voiptropo_script_handler($call, &$tropo) {
             $call->SetCallStatus(VoipCall::COMPLETED);
             $call->setHangupReason(VoipCall::HANGUP_SCRIPT_END);
             $call->setEndTime();
-          }
         }
       }
       //for text channel don't do anything

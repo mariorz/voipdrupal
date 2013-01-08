@@ -376,14 +376,6 @@ class VoipCall {
     return $description;
   }
 
-  public function getProcessingHangup() {
-    return $this->call_data->processing_hangup;
-  }
-
-  public function setProcessingHangup($processing_hangup) {
-    $this->call_data->processing_hangup = $processing_hangup;
-  }
-
   public function getAnsweredBy() {
     return $this->call_data->answered_by;
   }
@@ -474,14 +466,6 @@ class VoipCall {
       $this->report_error('VoipCall', 'Scripts must be an object of type VoipScript when calling VoipCall::setScript()  Input: @script', array('@script' => $script));
     }
     $this->call_data->script = $script;
-  }
-
-  public function getHangupScriptName() {
-    return $this->call_data->hangup_script;
-  }
-
-  public function setHangupScriptName($name) {
-    $this->call_data->hangup_script = $name;
   }
 
   public function getHangupReason() {
@@ -705,16 +689,10 @@ class VoipCall {
         $data->error_message = NULL;
       }
 
-      // initialize 'Processing Hangup'' field
-      if (!isset($details->processing_hangup)) {
-        $data->processing_hangup = FALSE;
-      }
-
       // initialize 'Check Machine' field
       if (!isset($details->check_machine)) {
         $data->check_machine = FALSE;
       }
-
     }
     else {
       // load the data
@@ -833,19 +811,9 @@ class VoipCall {
       $data->script = serialize($new_script);
     }
 
-    $new_hangup_script_name = $details->hangup_script;
-    if (isset($new_hangup_script_name)) {
-      $data->hangup_script = $new_hangup_script_name;
-    }
-
     $new_hangup_reason = $details->hangup_reason;
     if (isset($new_hangup_reason)) {
       $data->hangup_reason = $new_hangup_reason;
-    }
-
-    $processing_hangup = $details->processing_hangup;
-    if (isset($processing_hangup)) {
-      $data->processing_hangup = $processing_hangup;
     }
 
     $new_check = $details->check_machine;
@@ -931,9 +899,6 @@ class VoipCall {
     $script->setVar('hangup_reason',
       $call_data->hangup_reason);
 
-    $script->setVar('processing_hangup',
-      $call_data->processing_hangup);
-
     $script->setVar('current_channel',
       $call_data->current_channel);
 
@@ -944,5 +909,24 @@ class VoipCall {
       $call_data->check_machine);
 
     return $script;
+  }
+}
+
+/*
+ * to be called from VoIP Servers whenever a call ends (via hangup, via
+ * end of script, or via any other way -- with the exception of errors)
+ * voipcall_process_hangup() should call a user defined my_hangup($voipcall)
+ * function. The name of the actual function to be called will be stored in a
+ * %voipscript_hangup_callback variable set (or reset) as part of the script.
+ * Once that functionality is working, we might have to remove the old hangup
+ * processing code that we currently have in voipcall as well as in the voip
+ * server modules
+*/
+function voipcall_process_hangup($call) {
+  $script = $call->getScript();
+  $voipscript_hangup_callback = $script->getVar('voipscript_hangup_callback');
+  if($voipscript_hangup_callback) {
+    $args[0] = $call;
+    call_user_func_array($voipscript_hangup_callback, $args);
   }
 }
