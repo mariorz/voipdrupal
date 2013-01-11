@@ -913,14 +913,11 @@ class VoipCall {
 }
 
 /*
- * to be called from VoIP Servers whenever a call ends (via hangup, via
- * end of script, or via any other way -- with the exception of errors)
- * voipcall_process_hangup() should call a user defined my_hangup($voipcall)
- * function. The name of the actual function to be called will be stored in a
- * %voipscript_hangup_callback variable set (or reset) as part of the script.
- * Once that functionality is working, we might have to remove the old hangup
- * processing code that we currently have in voipcall as well as in the voip
- * server modules
+ * This function calls a user-defined my_hangup($voipcall) callback function
+ * whenever a VoIP call ends (via hangup, via end of script, or via any other
+ * way -- with the exception of errors). The name of the actual callback is
+ * stored in a %voipscript_hangup_callback variable set (or reset) as part of
+ * the script.
 */
 function voipcall_process_hangup($call) {
   $script = $call->getScript();
