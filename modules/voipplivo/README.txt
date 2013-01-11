@@ -1,6 +1,6 @@
 == Introduction ==
 
-The VoIP Plivo modules make it possible for the VoIP Drupal platform to make and receive voice calls via the Plivo Cloud (http://plivo.com/) as well as the Plivo Framework (http://www.plivo.com/framework/) APIs.
+The VoIP Plivo module makes it possible for the VoIP Drupal platform to make and receive voice calls via the Plivo Cloud (http://plivo.com/) as well as the Plivo Framework (http://www.plivo.com/framework/) APIs.
 
 Plivo Cloud is a cloud-based platform to build voice & SMS applications. It helps you build powerful telephony apps without having to worry about the telecom infrastructure. To use it, follow the instructions described in voipplivocloud/README.txt.
 
