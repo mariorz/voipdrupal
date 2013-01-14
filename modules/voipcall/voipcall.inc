@@ -152,15 +152,15 @@ class VoipCall {
    *   sip:jim@sip.com => sip:jim@sip.com
    */
   public static function NormalizeNumber($number) {
-    //Remove special chars from number
-    $chars = array(' ', '-', '.', '(', ')', '+');
-    $number = str_replace($chars, '', $number);
-
     //If this is sip address
     if (!strncasecmp($number, 'sip:', 4)) {
       return $number;
     }
     //Else:
+    //Remove special chars from number
+    $chars = array(' ', '-', '.', '(', ')', '+');
+    $number = str_replace($chars, '', $number);
+
     //Remove 00 from begining of number
     $pattern = '/^00/';
     $number = preg_replace($pattern, '', $number);

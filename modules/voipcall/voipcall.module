@@ -214,7 +214,7 @@ function voipcall_admin_form() {
     Supported formats include:
     <ul>
     <li>tel: Phone Number - must be proceeded by a + and the country code (ie - +14155551212 for a US #)</li>
-    <li>sip: SIP protocol address (ie - sip:username@doamin.com)</li>
+    <li>sip: SIP protocol address (ie - sip:username@domain.com)</li>
     </ul>
     '),
     '#size' => 40,
