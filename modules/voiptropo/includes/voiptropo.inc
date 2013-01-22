@@ -561,23 +561,33 @@ function _voiptropo_script_handler($call, &$tropo) {
           $to = $script->evalString($cmd->getParam('to'));
           //If "to" is empty then send message to the caller
           if (!$to) {
-            $to = $script->evalString($script->getVar('caller_number'));
+            $direction = $call->getDirection();
+            if ($direction == 'inbound') {
+              $to = $script->evalString($script->getVar('caller_number'));
+            }
+            else {
+              $to = $script->evalString($script->getVar('dest_number'));
+            }
+            if (!$to) {
+              watchdog('voiptropo', 'Attempt to send '.$network.' to empty number', array(), WATCHDOG_ERROR);
+              $processing = TRUE;
+              break;
+            }
           }
           $text = $script->evalString($cmd->getParam('text'));
           $network = $script->evalString($cmd->getParam('network'));
-          if (voipscript_use_sms_framework() && (strtolower($network) == 'sms' || strtolower($call->getCurrentNetwork()) == 'sms')) {
+          if (voipscript_use_sms_framework()) {
             //Use SMS Framework to send SMS message if user enabled this option
             voipscript_send_sms_framework($to, $text);
           }
+          else if (strtolower($call->getCurrentChannel()) == 'offline_text') {
+            //Use voip_text()
+            $reply = TRUE;
+            $call->setCurrentChannel('text');
+            $call->save();
+            voip_text($text, $call, $reply);
+          }
           else {
-            if (strtolower($call->getCurrentChannel()) == 'offline_text') {
-              //Use voip_text()
-              $reply = TRUE;
-              $call->setCurrentChannel('text');
-              voip_text($text, $call, $reply);
-              $processing = TRUE;
-            }
-            else {
               $params = array(
                 'to' => $to,
                 'channel' => 'TEXT',
@@ -588,7 +598,7 @@ function _voiptropo_script_handler($call, &$tropo) {
                 // Note: If no caller number provided, use the system's number as the default caller id
                 $default_cid_number = variable_get('voipcall_cid_number', NULL);
                 $caller_id = $script->evalString($cmd->getParam('caller_id', $default_cid_number));
-                //$params['from'] = $caller_id;
+                $params['from'] = $caller_id;
               }
               $tropo->message($text, $params);
               //Register events:
@@ -608,11 +618,6 @@ function _voiptropo_script_handler($call, &$tropo) {
                 "next" => $callback_incomplete
               ));
 
-              //$callback_hangup = url($callback_url . '/hangup', array('absolute' => TRUE));
-              //$response_url = $menu_path . '/process_hangup/' . $cid ;
-              //$action = url($response_url, array('absolute' => TRUE));
-              //$tropo->on(array("event" => "hangup", "next" => $action));
-            }
           }
           $rc = TRUE;
           $processing = TRUE;
@@ -1216,7 +1221,10 @@ function _voiptropo_handle_new_calls($tropo_action, $session) {
     }
     else {
       if ($tropo_action == 'process_outbound_text') {
-        $to = $call->getDestNumber();
+        //When using send_text then $to is already filled from dest_number param
+        if(!$to) {
+          $to = $call->getDestNumber();
+        }
         $text = $session->getParameters('text');
         $params = array(
           'to' => $to,

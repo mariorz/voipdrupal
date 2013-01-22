@@ -135,6 +135,7 @@ class VoipTropoServer extends VoipServer {
 
   /**
    * Implementation of the VoipServer send_text() API method
+   * $text - Body of text message being sent. Should be shorter than 160 chars.
    */
   function send_text($text, $voipcall, $reply = FALSE, $server_config = NULL) {
     voip_error_reset();
@@ -286,20 +287,26 @@ class VoipTropoServer extends VoipServer {
     }
     $vars->session->id = $random_string;
     $vars->session->initialText = $text_content;
-    $vars->session->to->id = $origin;
+    $vars->session->from->id = $origin;
+    $vars->session->from->channel = 'offline_text';
+    $vars->session->from->network = 'sms';
+    $vars->session->to->id = $destination;
     $vars->session->to->channel = 'offline_text';
     $vars->session->to->network = 'sms';
-    $vars->session->from->id = $destination;
 
     //open connection
     $ch = curl_init();
 
     //set the url, number of POST vars, POST data
     curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-    curl_setopt($ch, CURLOPT_POST, 1);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, array('json' => json_serialize($vars)));
-    //curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $data_string = json_encode($vars);
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+        'Content-Type: application/json',
+        'Content-Length: ' . strlen($data_string))
+    );
 
     //execute post
     $result = curl_exec($ch);
