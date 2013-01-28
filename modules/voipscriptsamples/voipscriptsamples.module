@@ -52,7 +52,7 @@ function _voipscriptsamples_load_sample_scripts($script_name) {
     $callback_script_name = 'voipscript_main_menu';
     $script->addSet('callback_script_name', $callback_script_name);
     //Set function to be called upon hangup
-    $script->addSet('voipscript_hangup_callback', '_voipscript_exec_callback');
+    $script->addSet('voipscript_hangup_callback', '_voipscriptsamples_exec_callback');
     $script->addSay('About to hang up the current script to execute its associated callback function. The system should be calling you in about 10 seconds after the hang up.');
     $script->addBeep();
     // $script->addReject();
@@ -357,11 +357,23 @@ function _voipscriptsamples_get_record_script() {
   $script = new VoipScript('voipscript_record');
 
   $script->addLabel('start_recording');
-  $prompt = t("Please record your message after the beep.  When done, press the pound key.");
+
+// TODO: Remove hangup script attribute from VoipCall
+// TODO: Update D7 version
+
+  // prepare the call to finish processing the recording even in case of hang up
+  $script->addSet('voipscript_hangup_callback', '_voipscriptsamples_record_on_hang_up');
+$script->addLog('About to start recording (%voipscript_hangup_callback)');
+
+  $prompt = t("Please record your message after the beep.  When done, either hang up or press the pound key for additional options.");
   $timeout = 5;
   $end_key = '#';
   $max_length = 20;
   $script->addRecord($prompt, $timeout, $end_key, $max_length);
+
+$script->addLog('Back from recording (%voipscript_hangup_callback)');
+  // reset the hang up handler
+  $script->addSet('voipscript_hangup_callback', '');
 
   $script->addLabel('play_menu');
   $options_menu = t('To listen to your recording, press 1. To accept it, press 2. To record it once again, press 3. To hangup, press the pound key. ');
@@ -385,7 +397,7 @@ function _voipscriptsamples_get_record_script() {
   $script->addLabel('accept_recording');
   $script->addSay(t('About to start processing the recorded file.'));
   $script->addSet('callback_result',
-    '^_voipscriptsamples_record_callback(%call_id, %recording_public_url, %recording_duration)');
+    '^_voipscriptsamples_record_callback(%cid, %recording_public_url, %recording_duration)');
   $args = array('@result' => '%callback_result');
   $script->addSay(t('The callback returned: @result', $args));
   $script->addGoto('hang_up');
@@ -401,8 +413,8 @@ function _voipscriptsamples_get_record_script() {
  * Callback function associated with the script voipscript_record.  It is called
  * whenever that script records a new entry from the user.
  */
-function _voipscriptsamples_record_callback($call_id, $recording_url, $recording_duration = NULL) {
-  watchdog('voipscriptsamples', "in _voipscriptsamples_record_callback($call_id, $recording_url, $recording_duration)");
+function _voipscriptsamples_record_callback($cid, $recording_url, $recording_duration = NULL) {
+  watchdog('voipscriptsamples', "in _voipscriptsamples_record_callback($cid, $recording_url, $recording_duration)");
 
   return 'Success';
 }
@@ -475,9 +487,9 @@ function voipscriptsamples_text_handler_demo($message, $caller_number, $dest_num
 }
 
 /**
- * Callback-related functions
+ * Function executed on hang up as part of voipscript_callback script
  */
-function _voipscript_exec_callback($original_call) {
+function _voipscriptsamples_exec_callback($original_call) {
   $original_script = $original_call->getScript();
   $caller_number = $original_call->getCallerNumber();
   $callback_script_name = $original_script->getVar('callback_script_name');
@@ -491,4 +503,19 @@ function _voipscript_exec_callback($original_call) {
   $call->save();
   // Execute the callback
   voip_dial($call);
+}
+
+/**
+ * Function executed on hang up as part of voipscript_record script
+ */
+function _voipscriptsamples_record_on_hang_up($original_call) {
+  $args = array();
+  watchdog('voipscriptsamples', 'About to start processing record on hang up.', $args, WATCHDOG_INFO);
+  $original_script = $original_call->getScript();
+  $cid = $original_call->getCid();
+  $recording_public_url = $original_script->getVar('recording_public_url');
+  $recording_duration = $original_script->getVar('recording_duration');
+  $result = _voipscriptsamples_record_callback($cid, $recording_public_url, $recording_duration);
+  $args = array('@result' => $result);
+  watchdog('voipscriptsamples', 'The callback returned: @result', $args, WATCHDOG_INFO);
 }

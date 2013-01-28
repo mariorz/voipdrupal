@@ -43,6 +43,7 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
     $vars = array();
     watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
   }
+watchdog('voiptwilio', "action: $twilio_action, cid: $cid");
   // validate $_REQUEST['AccountSid'] to avoid hack attempts
   $server = VoipServer::getServer('twilio');
   $server_config = $server->getConfig();
@@ -75,7 +76,6 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
     $to = $_REQUEST['Called'];
   }
 
-//watchdog('debug', '0');
   // load session and cid based on request parameters
 
   // 'process_hangup' for incoming calls does not come with a $cid
@@ -104,14 +104,26 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
     $call = VoipCall::load($cid);
   }
   else {
-//watchdog('debug', '1 : new call object');
     $call = new VoipCall();
+  }
+
+  // if the call is already hang up, ignore everything
+  // Note: This happens whenever a call is hang up in the middle of a recording.
+  // In that case, Twilio sends a notification both as part of the record
+  // response as well as via a hangup request
+  $is_hangup = $call->isHangup();
+  if($is_hangup){
+    if (voip_debug()) {
+      $msg = "Call with cid: $cid is already hang up.";
+      $vars = array();
+      watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
+    }
+watchdog('voiptwilio', "Call already hang up :: cid: $cid");
+    return;
   }
 
   // handle incoming call and text requests
   if ($twilio_action == 'process_inbound_calls') {
-//watchdog('debug', '2: incoming call');
-
     $call_sid = $_REQUEST['CallSid']; // unique identifier of the call, 34 char
     $call->setCallId($call_sid);
     $call->setSource('twilio');
@@ -126,11 +138,10 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
     $call->setDestNumber($to);
     $call->setCurrentChannel($channel);
     $call->setCurrentNetwork($network);
-//watchdog('debug', "3 :: cid: $cid, to: $to, from: $from, call: " . print_r($call, true));
   }
   else {
+// TODO: inbound texts should only change call direction, start time, answered by, etc. if the call is a new call. Perhaps we should create a special function just to do that in the appropriate way according to the current call status. For new calls, the function should initialize the core call attributes. For new and ongoing calls, the function should fill in the sms-related variables.
     if ($twilio_action == 'process_inbound_text') {
-//watchdog('debug', '4: incoming text');
       $call_sid = $_REQUEST['SmsSid']; // unique identifier of the text, 34 char
       $call->setCallId($call_sid);
       $call->setSource('twilio');
@@ -143,7 +154,6 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
       $call->setDestNumber($to);
       $call->setCurrentChannel($channel);
       $call->setCurrentNetwork($network);
-//watchdog('debug', "5 :: cid: $cid, to: $to, from: $from, call: " . print_r($call, true));
     }
     else {
       // handle ongoing calls
@@ -283,6 +293,10 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
         $script->setVar('recording_digits', $_REQUEST['Digits']);
         $script->setVar('recording_fid', $file['fid']);
         $call->setScript($script);
+        // check if the call hang up in the middle of the recording
+        if($_REQUEST['Digits'] == 'hangup'){
+          voiptwilio_update_call_status($call, 'completed');
+        }
         break;
       case 'process_empty_recording':
         $script = $call->getScript();
@@ -400,7 +414,9 @@ function _voiptwilio_script_handler($call) {
 
   // check if call is in a hangup state
   $is_hangup = $call->isHangup();
+watchdog('voiptwilio', "is hangup: $is_hangup");
   if ($is_hangup) {
+watchdog('voiptwilio', 'about to process hangup');
     voipcall_process_hangup($call);
     return TRUE;
   }
@@ -437,7 +453,11 @@ function _voiptwilio_script_handler($call) {
     // process current command
     else {
       $cmd_id = $cmd->getId();
-
+$filter_list = array('VoipCmdUnset', 'VoipCmdGotoIf');
+$filtered_cmd = in_array($cmd_id, $filter_list);
+if(!$filtered_cmd){
+watchdog('voiptwilio', "next cmd: $cmd_id");
+}
       switch ($cmd_id) {
         default:
           $msg = "Invalid command id '@cmd_id' in script '@script_name': @script";
