@@ -518,12 +518,11 @@ class VoipTropoServer extends VoipServer {
    */
   public static function NormalizeNumber($number){
     if(strlen($number)<11) {
-      //This is domestic number, don't do anything
-      return $number;
+      //This is domestic number, Tropo uses it only for USA/Canada
+      //so we'll explicity add country code
+      $number = '+1' . $number;
     }
-    else {
-      //Normalize number by adding '+' prefix
-      return VoipCall::NormalizeNumber($number);
-    }
+    //Normalize number by adding '+' prefix
+    return VoipCall::NormalizeNumber($number);
   }
 }
