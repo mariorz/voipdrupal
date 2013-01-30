@@ -564,9 +564,11 @@ function _voiptropo_script_handler($call, &$tropo) {
             $direction = $call->getDirection();
             if ($direction == 'inbound') {
               $to = $script->evalString($script->getVar('caller_number'));
+              $from = $script->evalString($script->getVar('dest_number'));
             }
             else {
               $to = $script->evalString($script->getVar('dest_number'));
+              $from = $script->evalString($script->getVar('caller_number'));
             }
             if (!$to) {
               watchdog('voiptropo', 'Attempt to send '.$network.' to empty number', array(), WATCHDOG_ERROR);
@@ -588,18 +590,21 @@ function _voiptropo_script_handler($call, &$tropo) {
             voip_text($text, $call, $reply);
           }
           else {
-              $params = array(
-                'to' => $to,
-                'channel' => 'TEXT',
-                'network' => $network,
-              );
-              if (strtolower($network) == 'sms') {
+
+              if (!$from && strtolower($network) == 'sms') {
                 //We need caller id only for sms
                 // Note: If no caller number provided, use the system's number as the default caller id
                 $default_cid_number = variable_get('voipcall_cid_number', NULL);
                 $caller_id = $script->evalString($cmd->getParam('caller_id', $default_cid_number));
-                $params['from'] = $caller_id;
+                $from = $caller_id;
               }
+
+            $params = array(
+              'from' => $from,
+              'to' => $to,
+              'channel' => 'TEXT',
+              'network' => $network,
+            );
               $tropo->message($text, $params);
               //Register events:
               $menu_path = 'voip/tropo/callhandler';
