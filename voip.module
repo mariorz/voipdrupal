@@ -151,10 +151,16 @@ function voip_text_handler($text_content, $origin, $destination, $time, $network
 function voip_sms_incoming($op, $number, $message, $options) {
   if ($op == 'process') {
     if (voip_debug()) {
-      $msg = "in voipcall_sms_incoming() with number: $number and message: $message ";
+      $msg = "in voip_sms_incoming() with number: $number and message: $message options: ".print_r($options, true);
       watchdog('voipcall', $msg);
     }
-    voip_text_handler($message, $number, '', time());
+
+    $accept_sms_framework = variable_get('voipcall_accept_sms_framework', 0);
+    if($accept_sms_framework) {
+      //Accept incoming text messages from SMS Framework only if flag is set.
+      $gateway_number = isset($options['gw_number']) ? VoipCall::NormalizeNumber($options['gw_number']) : '';
+      voip_text_handler($message, $number, $gateway_number, time());
+    }
   }
 }
 

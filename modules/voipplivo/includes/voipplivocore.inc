@@ -813,9 +813,11 @@ function voipplivocore_script_handler($server, $call) {
             $direction = $call->getDirection();
             if ($direction == 'inbound') {
               $to = $script->evalString($script->getVar('caller_number'));
+              $from = $script->evalString($script->getVar('dest_number'));
             }
             else {
               $to = $script->evalString($script->getVar('dest_number'));
+              $from = $script->evalString($script->getVar('caller_number'));
             }
             if (!$to) {
               watchdog('voipplivocore', 'Attempt to send ' . $network . ' to empty number', array(), WATCHDOG_ERROR);
@@ -849,13 +851,15 @@ function voipplivocore_script_handler($server, $call) {
                 $callback = url($callback_url, array('absolute' => TRUE));
                 $method = 'POST';
 
-                // Note: If no caller number provided, Twilio will automatically try
-                //       to determine an appropriate value depending on whether the
-                //       call is inbound or outbound. However, since that number might
-                //       not be sms capable, it might incur in a processing error.
-                // Use the system's number as the default caller id
-                $default_cid_number = variable_get('voipcall_cid_number', NULL);
-                $caller_id = $script->evalString($cmd->getParam('caller_id', $default_cid_number));
+                if(!$from) {
+                  // Note: If no caller number provided, Twilio will automatically try
+                  //       to determine an appropriate value depending on whether the
+                  //       call is inbound or outbound. However, since that number might
+                  //       not be sms capable, it might incur in a processing error.
+                  // Use the system's number as the default caller id
+                  $default_cid_number = variable_get('voipcall_cid_number', NULL);
+                  $from = $script->evalString($cmd->getParam('caller_id', $default_cid_number));
+                }
                 $rc = TRUE;
                 switch (strtolower($network)) {
                   default:
@@ -876,8 +880,8 @@ function voipplivocore_script_handler($server, $call) {
                     if ($to) {
                       $response .= '" dst="' . $to;
                     }
-                    if ($caller_id) {
-                      $response .= '" src="' . $caller_id;
+                    if ($from) {
+                      $response .= '" src="' . $from;
                     }
                     $response .= '" >';
                     // replace special chars for their html equivalent (http://www.twilio.com/docs/errors/12100)

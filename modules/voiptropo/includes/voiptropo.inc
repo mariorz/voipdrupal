@@ -1272,7 +1272,6 @@ function _voiptropo_handle_new_calls($tropo_action, $session) {
     //TODO: This shouldn't be called twice
     $tropo->renderJSON();
   }
-
   // special processing for incoming text messages
   else {
     if ($tropo_action == 'process_inbound_calls' && in_array($call->getCurrentChannel(), array(

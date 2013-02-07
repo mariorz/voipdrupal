@@ -517,6 +517,10 @@ class VoipTropoServer extends VoipServer {
    * In case of SMS Tropo doesn't return + sign so we need to add it.
    */
   public static function NormalizeNumber($number){
+    if(!$number) {
+      //Empty number
+      return $number;
+    }
     if(strlen($number)<11) {
       //This is domestic number, Tropo uses it only for USA/Canada
       //so we'll explicity add country code
