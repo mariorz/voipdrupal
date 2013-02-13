@@ -93,8 +93,8 @@ class VoipTropoServer extends VoipServer {
 	    $voipcall->setCallerNumber($caller_number);
       $voipcall->setSource('drupal');
       $voipcall->setDirection(VoipCall::OUTBOUND);
-      $voipcall->setCurrentChannel('voice');
-      $voipcall->setCurrentNetwork('voip');
+      $voipcall->setCallChannel('voice');
+      $voipcall->setCallNetwork('voip');
 	    $voipcall->save();
       $cid = $voipcall->getCid();
 	    $voip_session->setCid($cid);
@@ -172,9 +172,16 @@ class VoipTropoServer extends VoipServer {
 
 	  // update call variables
       $voipcall->setSource('drupal');
-      $voipcall->setDirection(VoipCall::OUTBOUND);
-      $voipcall->setCurrentChannel('text');
-      $voipcall->setCurrentNetwork('sms');
+      if(!$voipcall->getDirection()) {
+        $voipcall->setDirection(VoipCall::OUTBOUND);
+      }
+      if(!$voipcall->getCallChannel()) {
+        $voipcall->setCallChannel('text');
+      }
+
+      if (!$voipcall->getCallNetwork()) {
+        $voipcall->setCallNetwork('sms');
+      }
 	    $voipcall->save();
       $cid = $voipcall->getCid();
 	    $voip_session->setCid($cid);
@@ -274,7 +281,7 @@ class VoipTropoServer extends VoipServer {
    */
   function text_handler($text_content, $origin, $destination, $time, $network, $server_name) {
     $menu_path = 'voip/tropo/callhandler';
-    $request_url = $menu_path . '/process_inbound_calls/';
+    $request_url = $menu_path . '/process_sms_framework/';
     $url = url($request_url, array('absolute' => TRUE));
 
     $server_config = $this->getConfig();
@@ -288,10 +295,10 @@ class VoipTropoServer extends VoipServer {
     $vars->session->id = $random_string;
     $vars->session->initialText = $text_content;
     $vars->session->from->id = $origin;
-    $vars->session->from->channel = 'offline_text';
+    $vars->session->from->channel = 'text';
     $vars->session->from->network = 'sms';
     $vars->session->to->id = $destination;
-    $vars->session->to->channel = 'offline_text';
+    $vars->session->to->channel = 'text';
     $vars->session->to->network = 'sms';
 
     //open connection

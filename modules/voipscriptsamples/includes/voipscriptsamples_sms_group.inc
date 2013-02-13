@@ -52,8 +52,6 @@ function voipscriptsamples_sms_group_parse_request($msg, $from) {
             foreach ($group as $number) {
               if ($number != $from) {
                 $call = new VoipCall();
-                $call->setCurrentChannel('text');
-                $call->setCurrentNetwork('sms');
                 $call->setDestNumber($number);
                 $call->setCallerNumber(variable_get('voipcall_cid_number', NULL));
                 voip_text($text, $call);

@@ -191,9 +191,16 @@ class VoipPlivoFrameworkServer extends VoipServer {
 
 	  // update call variables
       $voipcall->setSource('drupal');
-      $voipcall->setDirection(VoipCall::OUTBOUND);
-      $voipcall->setCurrentChannel('text');
-      $voipcall->setCurrentNetwork('sms');
+      if(!$voipcall->getDirection()) {
+        $voipcall->setDirection(VoipCall::OUTBOUND);
+      }
+      if(!$voipcall->getCallChannel()) {
+        $voipcall->setCallChannel('text');
+      }
+
+      if (!$voipcall->getCallNetwork()) {
+        $voipcall->setCallNetwork('sms');
+      }
 	    $voipcall->save();
       $cid = $voipcall->getCid();
 	    $voip_session->setCid($cid);
@@ -273,7 +280,7 @@ class VoipPlivoFrameworkServer extends VoipServer {
    */
   function text_handler($text_content, $origin, $destination, $time, $network, $server_name) {
     $menu_path = 'voip/plivoframework/callhandler';
-    $request_url = $menu_path . '/process_inbound_text/';
+    $request_url = $menu_path . '/process_sms_framework/';
     $url = url($request_url, array('absolute' => TRUE));
 
     $length = 20;
@@ -292,7 +299,7 @@ class VoipPlivoFrameworkServer extends VoipServer {
       'To' => $destination,
       'Body' => $text_content,
       'Direction' => 'inbound',
-      'Channel' => 'offline_text'
+      'Channel' => 'text'
     );
 
     //url-ify the data for the POST

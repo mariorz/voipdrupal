@@ -26,6 +26,7 @@
  *   - process_wait, to continue after wait command
  *   - process_send_sms, to handle responses to 'send sms' script commands
  *   - process_sms_callback, to handle final responses to 'send sms'.
+ *   - process_outbound_text, to send new text message
  *
  * @param string $cid with the id of the call associated with the response
  *
@@ -37,8 +38,6 @@ function _voiptropo_call_handler($tropo_action = '', $cid = NULL, $event_type = 
     watchdog('voiptropo', $msg);
   }
   // TODO: How to validate requests to make sure they are from Tropo?
-  //$server = VoipServer::getServer('tropo');
-  //$server_config = $server->getConfig();
 
   // process the special case of save_record, which does not have a json
   // object associated with it
@@ -63,7 +62,7 @@ function _voiptropo_call_handler($tropo_action = '', $cid = NULL, $event_type = 
   try {
     // attempt to handle new outbound and inbound voice/text calls
     $session = new Session();
-    $tropo_action = $session->getParameters('tropo_action');
+    $tropo_action = empty($tropo_action) ? $session->getParameters('tropo_action') : $tropo_action;
     if (empty($tropo_action)) {
       $tropo_action = 'process_inbound_calls';
     }
@@ -149,7 +148,7 @@ function _voiptropo_script_handler($call, &$tropo) {
         $processing = TRUE;
       }
       else {
-        if ($call->getCurrentChannel() != 'text') {
+        if (strtolower($call->getCallChannel()) != 'text') {
           // for voice channel send a final hangup request
             $tropo->hangup();
             $msg = 'Script @name ended without a "hangup" command.';
@@ -183,7 +182,7 @@ function _voiptropo_script_handler($call, &$tropo) {
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $number = $script->evalString($cmd->getParam('number'));
           $number = str_replace(" ", "", $number); //remove any spaces from number
-          if ($call->getCurrentChannel() == 'text' || $call->getCurrentChannel() == 'offline_text') {
+          if (strtolower($call->getCallChannel()) == 'text') {
             //In case VoipCmdDial is called within text channel then instead of transfer we call the sender.
             //we are starting a call, hangup() the existing session
             $tropo->hangup();
@@ -332,7 +331,7 @@ function _voiptropo_script_handler($call, &$tropo) {
               }
               break;
           }
-          if ($call->getCurrentChannel() != 'text') {
+          if (strtolower($call->getCallChannel()) != 'text') {
             // send the hangup request and stop processing script commands
             $tropo->hangup();
           }
@@ -578,19 +577,22 @@ function _voiptropo_script_handler($call, &$tropo) {
           }
           $text = $script->evalString($cmd->getParam('text'));
           $network = $script->evalString($cmd->getParam('network'));
+          $sms_origin = $call->getCallOrigin();
+
           if (voipscript_use_sms_framework()) {
             //Use SMS Framework to send SMS message if user enabled this option
             voipscript_send_sms_framework($to, $text);
           }
-          else if (strtolower($call->getCurrentChannel()) == 'offline_text') {
+          else if ($sms_origin == 'smsframework') {
             //Use voip_text()
             $reply = TRUE;
-            $call->setCurrentChannel('text');
-            $call->save();
+            //We must unset dest_number because it will be number of SMS Framework gateway
+            $call->setDestNumber('');
+            $call = $call->save();
             voip_text($text, $call, $reply);
+            $call = $call->save();
           }
           else {
-
               if (!$from && strtolower($network) == 'sms') {
                 //We need caller id only for sms
                 // Note: If no caller number provided, use the system's number as the default caller id
@@ -1065,17 +1067,15 @@ function _voiptropo_handle_new_calls($tropo_action, $session) {
     $channel = 'voice';
     $network = 'voip';
   }
+  else if ($tropo_action == 'process_outbound_text') {
+    $channel = 'text';
+    $network = 'sms';
+  }
   else {
-    if ($tropo_action == 'process_outbound_text') {
-      $channel = 'text';
-      $network = 'sms';
-    }
-    else {
-      // handle process_inbound_calls
-      $tmp = $session->getTo();
-      $channel = strtolower($tmp['channel']);
-      $network = strtolower($tmp['network']);
-    }
+    // handle process_inbound_calls
+    $tmp = $session->getTo();
+    $channel = strtolower($tmp['channel']);
+    $network = strtolower($tmp['network']);
   }
 
   // Determine call origin and destination
@@ -1130,7 +1130,8 @@ function _voiptropo_handle_new_calls($tropo_action, $session) {
   }
 
   // handle incoming call requests (both text and voice)
-  if ($tropo_action == 'process_inbound_calls') {
+  if ($tropo_action == 'process_inbound_calls'
+    || $tropo_action == 'process_sms_framework') {
     $call_id = $session->getId();
     $call->setCallId($call_id);
     $call->setSource('tropo');
@@ -1155,15 +1156,15 @@ function _voiptropo_handle_new_calls($tropo_action, $session) {
     $call->setCallId($call_id);
   }
 
-  // update common call variables
-  $call->setCurrentChannel($channel);
-  $call->setCurrentNetwork($network);
   // set text channel variables
-  if (in_array($channel, array('offline_text', 'text'))) {
+  if (strtolower($channel) == 'text') {
     $call->SetCallStatus(VoipCall::IN_PROGRESS);
     $inbound_text_contents = $session->getInitialText();
     //Must save call before calling setTextVariables()
     $call = $call->save();
+    if($tropo_action == 'process_sms_framework') {
+      $call->setCallOrigin('smsframework');
+    }
     $call->setTextVariables($inbound_text_contents, $from, $to, $network);
   }
   else {
@@ -1269,16 +1270,13 @@ function _voiptropo_handle_new_calls($tropo_action, $session) {
     }
 
     // send the request to Tropo
-    //TODO: This shouldn't be called twice
     $tropo->renderJSON();
   }
   // special processing for incoming text messages
   else {
-    if ($tropo_action == 'process_inbound_calls' && in_array($call->getCurrentChannel(), array(
-      'offline_text',
-      'text'
-    ))
-    ) {
+    if (($tropo_action == 'process_inbound_calls'
+      || $tropo_action == 'process_sms_framework')
+      && strtolower($call->getCallChannel()) == 'text') {
       $script = $call->getScript();
       $text_handler = $script->getVar('text_handler');
       if ($text_handler) {
@@ -1288,13 +1286,13 @@ function _voiptropo_handle_new_calls($tropo_action, $session) {
           $call->getCallerNumber(),
           $call->getDestNumber(),
           $call,
-          $call->getCurrentNetwork()
+          $call->getCallNetwork()
         ));
       }
     }
   }
 
-  if ($tropo_action == 'process_inbound_calls') {
+  if ($tropo_action == 'process_inbound_calls' || $tropo_action == 'process_sms_framework') {
     // return inbound calls so that they can have their scripts processed
     $rc = $call;
   }

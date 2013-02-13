@@ -337,45 +337,9 @@ function voipcall_views_data() {
     ),
   );
 
-  $data['voipcall']['current_channel'] = array(
-    'title' => t('Current channel'),
-    'help' => t('Channel type: voice, text'),
-    'field' => array(
-      'handler' => 'views_handler_field_xss',
-      'click sortable' => TRUE,
-    ),
-    'sort' => array(
-      'handler' => 'views_handler_sort',
-    ),
-    'filter' => array(
-      'handler' => 'views_handler_filter_string',
-    ),
-    'argument' => array(
-      'handler' => 'views_handler_argument_string',
-    ),
-  );
-
   $data['voipcall']['call_channel'] = array(
     'title' => t('Call channel'),
     'help' => t('Channel type: voice, text'),
-    'field' => array(
-      'handler' => 'views_handler_field_xss',
-      'click sortable' => TRUE,
-    ),
-    'sort' => array(
-      'handler' => 'views_handler_sort',
-    ),
-    'filter' => array(
-      'handler' => 'views_handler_filter_string',
-    ),
-    'argument' => array(
-      'handler' => 'views_handler_argument_string',
-    ),
-  );
-
-  $data['voipcall']['current_network'] = array(
-    'title' => t('Current network'),
-    'help' => t('Network. Eg: voip, sms'),
     'field' => array(
       'handler' => 'views_handler_field_xss',
       'click sortable' => TRUE,

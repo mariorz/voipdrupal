@@ -43,7 +43,7 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
     $vars = array();
     watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
   }
-watchdog('voiptwilio', "action: $twilio_action, cid: $cid");
+
   // validate $_REQUEST['AccountSid'] to avoid hack attempts
   $server = VoipServer::getServer('twilio');
   $server_config = $server->getConfig();
@@ -57,7 +57,8 @@ watchdog('voiptwilio', "action: $twilio_action, cid: $cid");
   }
 
   // determine channel, network, to and from attributes
-  if ($twilio_action == 'process_inbound_text') {
+  if ($twilio_action == 'process_inbound_text'
+    || $twilio_action == 'process_sms_framework') {
     if (isset($_REQUEST['Channel'])) {
       $channel = $_REQUEST['Channel'];
     }
@@ -136,12 +137,13 @@ watchdog('voiptwilio', "Call already hang up :: cid: $cid");
     $call->setStartTime(time());
     $call->setCallerNumber($from);
     $call->setDestNumber($to);
-    $call->setCurrentChannel($channel);
-    $call->setCurrentNetwork($network);
+    $call->setCallChannel($channel);
+    $call->setCallNetwork($network);
   }
   else {
 // TODO: inbound texts should only change call direction, start time, answered by, etc. if the call is a new call. Perhaps we should create a special function just to do that in the appropriate way according to the current call status. For new calls, the function should initialize the core call attributes. For new and ongoing calls, the function should fill in the sms-related variables.
-    if ($twilio_action == 'process_inbound_text') {
+    if ($twilio_action == 'process_inbound_text'
+      || $twilio_action == 'process_sms_framework') {
       $call_sid = $_REQUEST['SmsSid']; // unique identifier of the text, 34 char
       $call->setCallId($call_sid);
       $call->setSource('twilio');
@@ -152,8 +154,11 @@ watchdog('voiptwilio', "Call already hang up :: cid: $cid");
       $call->setStartTime(time());
       $call->setCallerNumber($from);
       $call->setDestNumber($to);
-      $call->setCurrentChannel($channel);
-      $call->setCurrentNetwork($network);
+      $call->setCallChannel($channel);
+      $call->setCallNetwork($network);
+      if($twilio_action == 'process_sms_framework') {
+        $call->setCallOrigin('smsframework');
+      }
     }
     else {
       // handle ongoing calls
@@ -173,11 +178,11 @@ watchdog('voiptwilio', "Call already hang up :: cid: $cid");
   }
 
   // update common call variables
-  if (!$call->getCurrentChannel()) {
-    $call->setCurrentChannel($channel);
+  if (!$call->getCallChannel()) {
+    $call->setCallChannel($channel);
   }
-  if (!$call->getCurrentNetwork()) {
-    $call->setCurrentNetwork($network);
+  if (!$call->getCallNetwork()) {
+    $call->setCallNetwork($network);
   }
   if (!$call->getCallerNumber()) {
     $call->setCallerNumber($_REQUEST['Caller']);
@@ -211,6 +216,7 @@ watchdog('voiptwilio', "Call already hang up :: cid: $cid");
 
   if ($twilio_action == 'process_sms_callback'
     || $twilio_action == 'process_inbound_text'
+    || $twilio_action == 'process_sms_framework'
     || $twilio_action == 'process_send_sms'
     || $twilio_action == 'process_record'
     || $twilio_action == 'process_record_mp3'
@@ -228,7 +234,7 @@ watchdog('voiptwilio', "Call already hang up :: cid: $cid");
   // update script variables
 
   // set text channel variables
-  if (in_array($channel, array('offline_text', 'text'))) {
+  if (strtolower($channel) == 'text') {
     $call->setTextVariables($_REQUEST['Body'], $_REQUEST['From'], $_REQUEST['To'], $network);
   }
 
@@ -263,6 +269,7 @@ watchdog('voiptwilio', "Call already hang up :: cid: $cid");
       case 'process_outbound_calls':
       case 'process_hangup':
       case 'process_inbound_text':
+      case 'process_sms_framework':
       case 'process_wait':
         // nothing special to be done here. the above commands have already
         // been processed in the previous lines
@@ -310,7 +317,7 @@ watchdog('voiptwilio', "Call already hang up :: cid: $cid");
       case 'process_send_sms':
       case 'process_sms_callback':
         $call = _voiptwilio_process_sms_response($call, $_REQUEST);
-        if (strtolower($call->getCurrentChannel()) == 'text') {
+        if (strtolower($call->getCallChannel()) == 'text') {
           // update sms status
           $call->save();
           // since 'process_sms_callback' is asynchronous, go back
@@ -367,7 +374,7 @@ watchdog('voiptwilio', "Call already hang up :: cid: $cid");
         $call->getCallerNumber(),
         $call->getDestNumber(),
         $call,
-        $call->getCurrentNetwork()
+        $call->getCallNetwork()
       ));
       return;
     }
@@ -437,7 +444,7 @@ watchdog('voiptwilio', 'about to process hangup');
         $processing = TRUE;
       }
       else {
-        if ($call->getCurrentChannel() != 'text') {
+        if (strtolower($call->getCallChannel()) != 'text') {
           // for voice channel send a final hangup request
             $response .= '<Hangup/>';
             $msg = 'Script @name ended without a "hangup" command.';
@@ -479,7 +486,7 @@ watchdog('voiptwilio', "next cmd: $cmd_id");
         case 'VoipCmdDial';
           $call->setCallStatus(VoipCall::IN_PROGRESS);
           $number = $script->evalString($cmd->getParam('number'));
-          if ($call->getCurrentChannel() == 'text' || $call->getCurrentChannel() == 'offline_text') {
+          if ($call->getCallChannel() == 'text') {
             //In case VoipCmdDial is called within text channel then instead of transfer we call the sender.
             //we are starting a call, hangup() the existing session
             $response .= '<Hangup/>';
@@ -619,7 +626,7 @@ watchdog('voiptwilio', "next cmd: $cmd_id");
 
           switch ($hangup_mode) {
             case 'resume':
-              if ($call->getCurrentChannel() != 'text') {
+              if (strtolower($call->getCallChannel()) != 'text') {
                 // send the hangup request and stop processing script commands
                 // Note: this will trigger a response from Twilio with $twilio_action = process_hangup and CallStatus = completed
                 $response .= '<Hangup/>';
@@ -637,7 +644,7 @@ watchdog('voiptwilio', "next cmd: $cmd_id");
                 $session->destroy();
               }
 
-              if ($call->getCurrentChannel() != 'text') {
+              if (strtolower($call->getCallChannel()) != 'text') {
                 // send the hangup request and stop processing script commands
                 // Note: this will trigger a response from Twilio with $twilio_action = process_hangup and CallStatus = completed
                 $response .= '<Hangup/>';
@@ -799,6 +806,7 @@ watchdog('voiptwilio', "next cmd: $cmd_id");
           $to = $script->evalString($cmd->getParam('to'));
           $text = $script->evalString($cmd->getParam('text'));
           $network = $script->evalString($cmd->getParam('network'));
+          $sms_origin = $call->getCallOrigin();
           // If "to" is empty then send message to the person on the other
           // side of the phone. Depending on the direction of the call, that
           // might be either the caller or the callee.
@@ -822,15 +830,16 @@ watchdog('voiptwilio', "next cmd: $cmd_id");
             // Use SMS Framework to send SMS message if user enabled this option
             voipscript_send_sms_framework($to, $text);
           }
+          else if($sms_origin == 'smsframework'){
+            //Use voip_text()
+            $reply = TRUE;
+            //We must unset dest_number because it will be number of SMS Framework gateway
+            $call->setDestNumber('');
+            $call = $call->save();
+            voip_text($text, $call, $reply);
+            $processing = TRUE;
+          }
           else {
-            if (strtolower($call->getCurrentChannel()) == 'offline_text') {
-              //Use voip_text()
-              $reply = TRUE;
-              $call->setCurrentChannel('text');
-              voip_text($text, $call, $reply);
-              $processing = TRUE;
-            }
-            else {
               $menu_path = 'voip/twilio/callhandler';
               $cid = $call->getCid();
               $response_url = $menu_path . '/process_send_sms/' . $cid;
@@ -882,7 +891,6 @@ watchdog('voiptwilio', "next cmd: $cmd_id");
                   $processing = FALSE;
                   break;
               }
-            }
           }
           break;
 
