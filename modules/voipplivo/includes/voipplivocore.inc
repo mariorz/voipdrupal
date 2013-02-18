@@ -271,21 +271,20 @@ function voipplivocore_call_handler($server, $plivo_action, $cid = NULL) {
           $plivo_record_url = $_REQUEST['RecordFile'];
           //only local path supported in Plivo Framework however we need to transfer in Drupal files dir
           $file = _voipplivocore_transfer_file($plivo_record_url);
-          $file_url = file_create_url($file['filepath']);
+          $file_url = file_create_url($file->filepath);
           $script->setVar('recording_path', $file_url);
           //We set this to same as recording_path because public url is not available in Plivo
           $script->setVar('recording_public_url', $file_url);
+          $duration = $_REQUEST['RecordingDuration'];
+          $digits = $_REQUEST['Digits'];
         }
         else {
-          watchdog('plivocore',"request ".print_r($_REQUEST,true));
-          //@todo: waiting for Plivo to fix #1470
           //Plivo Cloud
           $plivo_record_url = $_REQUEST['RecordUrl'];
           //Transfer the file to local server
           $file = _voipplivocore_transfer_file($plivo_record_url);
-          $script->setVar('recording_path', file_create_url($file['filepath']));
+          $script->setVar('recording_path', file_create_url($file->filepath));
           $script->setVar('recording_public_url', $plivo_record_url);
-          $script->setVar('recording_fid', $file['fid']);
 
           if ($_REQUEST['RecordingDuration'] > 0) {
             $duration = $_REQUEST['RecordingDuration'];
@@ -296,21 +295,23 @@ function voipplivocore_call_handler($server, $plivo_action, $cid = NULL) {
               $digits = 'hangup';
               $call->SetCallStatus(VoipCall::COMPLETED);
               $call->setHangupReason(VoipCall::HANGUP_BY_USER);
-              if (preg_match('/\.(mp3)$/i', $file['filename'])) {
+              if (preg_match('/\.(mp3)$/i', $file->filename)) {
                 //Mp3 file
-                $mp3 = new mp3file($file['filepath']);
+                $mp3 = new mp3file($file->filepath);
                 $metadata = $mp3->get_metadata();
                 $duration = isset($metadata['Length']) ? $metadata['Length'] : 0;
               }
               else {
                 //Wav file
-                $duration = voipcall_get_wav_duration($file['filepath']);
+                $duration = voipcall_get_wav_duration($file->filepath);
               }
           }
         }
         //Common variables
         $script->setVar('recording_duration', $duration);
         $script->setVar('recording_digits', $digits);
+        $script->setVar('recording_fid', $file->fid);
+
         $call->setScript($script);
 
         break;
@@ -947,10 +948,6 @@ function voipplivocore_script_handler($server, $call) {
 
   // send response back to Plivo
   if ($response) {
-
-//$response .= '<!--' . "_REQUEST: " . print_r($_REQUEST,true) .  "\n" . '-->';
-//$response .= '<!--' . "voipcall: " . print_r($call,true) .  "\n" . '-->';
-
     _voipplivocore_send_response($response);
   }
 
@@ -1314,5 +1311,5 @@ function _voipplivocore_file_save_upload($filepath) {
   // Insert new record to the database.
   drupal_write_record('files', $file);
 
-  return (array) $file;
+  return $file;
 }
