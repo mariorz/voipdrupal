@@ -358,12 +358,9 @@ function _voipscriptsamples_get_record_script() {
 
   $script->addLabel('start_recording');
 
-// TODO: Remove hangup script attribute from VoipCall
-// TODO: Update D7 version
-
   // prepare the call to finish processing the recording even in case of hang up
   $script->addSet('voipscript_hangup_callback', '_voipscriptsamples_record_on_hang_up');
-$script->addLog('About to start recording (%voipscript_hangup_callback)');
+  $script->addLog('About to start recording (%voipscript_hangup_callback)');
 
   $prompt = t("Please record your message after the beep.  When done, either hang up or press the pound key for additional options.");
   $timeout = 5;
