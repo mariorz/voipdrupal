@@ -640,6 +640,11 @@ class VoipCall {
         $data->call_network = 'voip';
       }
 
+      // initialize 'Origin' field
+      if (!isset($details->call_origin)) {
+        $data->call_origin = 'voipprovider';
+      }
+
       // initialize voice call script with the default inbound/outbound one
       $dir_tmp = $details->direction;
       $direction = $dir_tmp ? $dir_tmp

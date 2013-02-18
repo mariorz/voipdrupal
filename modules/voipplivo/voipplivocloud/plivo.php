@@ -46,7 +46,8 @@ class RestAPI {
                 $req->setBody(json_encode($params));
             }
         } else if (!strcmp($method, "GET")) {
-            $req = new HTTP_Request2($url, HTTP_Request2::METHOD_GET);
+          watchdog('debug',"url $url");
+          $req = new HTTP_Request2($url, HTTP_Request2::METHOD_GET);
             $url = $req->getUrl();
             $url->setQueryVariables($params);
         } else if (!strcmp($method, "DELETE")) {

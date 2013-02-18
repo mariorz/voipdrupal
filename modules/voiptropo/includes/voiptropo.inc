@@ -1397,13 +1397,30 @@ function _voiptropo_handle_ongoing_calls($result, $tropo_action, $cid, $event_ty
         $rec_actions = $result->getActions();
         $script = $call->getScript();
         if($rec_actions->duration) {
-// TODO: Unfortunately, Tropo does not return the audio duration when the recording is hang up in the middle. Audio file duration might have to be calculated directly using some of the algorithms provided on the web.
           $duration = (int) ($rec_actions->duration / 1000);
           $script->setVar('recording_duration', $duration);
         }
+        else {
+          //Unfortunately, Tropo does not return the audio duration when the
+          //recording is hang up in the middle. Audio file duration need
+          //to be calculated directly using some of the algorithms found on the web.
+          $rec_fid = $script->getVar('recording_fid');
+          $file = db_fetch_object(db_query("SELECT * FROM {files} WHERE fid=%d", $rec_fid));
+          if($file) {
+            if (preg_match('/\.(mp3)$/i', $file->filename)) {
+              //Mp3 file
+              $mp3 = new mp3file($file->filepath);
+              $metadata = $mp3->get_metadata();
+              $duration = isset($metadata['Length']) ? $metadata['Length'] : 0;
+            }
+            else {
+              //Wav file
+              $duration = voipcall_get_wav_duration($file->filepath);
+            }
+            $script->setVar('recording_duration', $duration);
+          }
+        }
         if ($tropo_action == 'process_record_hangup') {
-watchdog('voiptropo', 'result: ' . print_r($result, true));
-watchdog('voiptropo', 'proces_record_hangup. ' . print_r($rec_actions, true));
           $digits = 'hangup';
           $call->SetCallStatus(VoipCall::COMPLETED);
           $call->setHangupReason(VoipCall::HANGUP_BY_USER);

@@ -369,7 +369,8 @@ $script->addLog('About to start recording (%voipscript_hangup_callback)');
   $timeout = 5;
   $end_key = '#';
   $max_length = 20;
-  $script->addRecord($prompt, $timeout, $end_key, $max_length);
+  $format = 'wav';
+  $script->addRecord($prompt, $timeout, $end_key, $max_length, $format);
 
 $script->addLog('Back from recording (%voipscript_hangup_callback)');
   // reset the hang up handler

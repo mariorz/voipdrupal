@@ -119,7 +119,6 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
       $vars = array();
       watchdog('voiptwilio', $msg, $vars, WATCHDOG_INFO);
     }
-watchdog('voiptwilio', "Call already hang up :: cid: $cid");
     return;
   }
 
@@ -141,7 +140,6 @@ watchdog('voiptwilio', "Call already hang up :: cid: $cid");
     $call->setCallNetwork($network);
   }
   else {
-// TODO: inbound texts should only change call direction, start time, answered by, etc. if the call is a new call. Perhaps we should create a special function just to do that in the appropriate way according to the current call status. For new calls, the function should initialize the core call attributes. For new and ongoing calls, the function should fill in the sms-related variables.
     if ($twilio_action == 'process_inbound_text'
       || $twilio_action == 'process_sms_framework') {
       $call_sid = $_REQUEST['SmsSid']; // unique identifier of the text, 34 char
@@ -421,9 +419,7 @@ function _voiptwilio_script_handler($call) {
 
   // check if call is in a hangup state
   $is_hangup = $call->isHangup();
-watchdog('voiptwilio', "is hangup: $is_hangup");
   if ($is_hangup) {
-watchdog('voiptwilio', 'about to process hangup');
     voipcall_process_hangup($call);
     return TRUE;
   }
@@ -460,11 +456,6 @@ watchdog('voiptwilio', 'about to process hangup');
     // process current command
     else {
       $cmd_id = $cmd->getId();
-$filter_list = array('VoipCmdUnset', 'VoipCmdGotoIf');
-$filtered_cmd = in_array($cmd_id, $filter_list);
-if(!$filtered_cmd){
-watchdog('voiptwilio', "next cmd: $cmd_id");
-}
       switch ($cmd_id) {
         default:
           $msg = "Invalid command id '@cmd_id' in script '@script_name': @script";
