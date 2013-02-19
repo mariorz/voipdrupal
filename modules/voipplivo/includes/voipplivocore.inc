@@ -105,6 +105,20 @@ function voipplivocore_call_handler($server, $plivo_action, $cid = NULL) {
     $call = new VoipCall();
   }
 
+  // if the call is already hang up, ignore everything
+  // Note: This happens whenever a call is hang up in the middle of a recording.
+  // In that case, Plivo sends a notification both as part of the record
+  // response as well as via a hangup request
+  $is_hangup = $call->isHangup();
+  if($is_hangup){
+    if (voip_debug()) {
+      $msg = "Call with cid: $cid is already hang up.";
+      $vars = array();
+      watchdog('voipplivocore', $msg, $vars, WATCHDOG_INFO);
+    }
+    return;
+  }
+
   // handle incoming call and text requests
   if ($plivo_action == 'process_inbound_calls') {
 
@@ -280,6 +294,14 @@ function voipplivocore_call_handler($server, $plivo_action, $cid = NULL) {
         }
         else {
           //Plivo Cloud
+          if ($_REQUEST['RecordingDuration'] == -1){
+            //we must set hangup before _voipplivocore_transfer_file() as that
+            //function takes long time, therfore resulting in process_hangup
+            //command from Plivo to be executed before this call is set to hangup
+            $call->SetCallStatus(VoipCall::COMPLETED);
+            $call->setHangupReason(VoipCall::HANGUP_BY_USER);
+            $call->save();
+          }
           $plivo_record_url = $_REQUEST['RecordUrl'];
           //Transfer the file to local server
           $file = _voipplivocore_transfer_file($plivo_record_url);
@@ -293,8 +315,6 @@ function voipplivocore_call_handler($server, $plivo_action, $cid = NULL) {
           else if ($_REQUEST['RecordingDuration'] == -1){
             //@RecordingDuration = -1 in case of hangup
               $digits = 'hangup';
-              $call->SetCallStatus(VoipCall::COMPLETED);
-              $call->setHangupReason(VoipCall::HANGUP_BY_USER);
               if (preg_match('/\.(mp3)$/i', $file->filename)) {
                 //Mp3 file
                 $mp3 = new mp3file($file->filepath);
@@ -1257,6 +1277,7 @@ function _voipplivocore_transfer_file($url) {
   // Then make the actual request to download the file.
   $data = file_get_contents($url);
   $i = 0;
+  //File is not immediately available in plivo for download
   while($data === FALSE && $i<=100) {
     $data = file_get_contents($url);
     $i++;
