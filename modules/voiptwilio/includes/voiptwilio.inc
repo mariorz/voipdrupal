@@ -219,6 +219,7 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
     || $twilio_action == 'process_record'
     || $twilio_action == 'process_record_mp3'
     || $twilio_action == 'process_empty_recording'
+    || $twilio_action == 'process_wait'
   ) {
     $call->SetCallStatus(VoipCall::IN_PROGRESS);
   }

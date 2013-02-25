@@ -230,6 +230,7 @@ function voipplivocore_call_handler($server, $plivo_action, $cid = NULL) {
     || $plivo_action == 'process_sms_framework'
     || $plivo_action == 'process_record'
     || $plivo_action == 'process_empty_recording'
+    || $plivo_action == 'process_wait'
   ) {
     $call->SetCallStatus(VoipCall::IN_PROGRESS);
   }
