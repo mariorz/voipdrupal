@@ -865,22 +865,34 @@ function _voiptwilio_script_handler($call) {
                   break;
 
                 case 'sms':
-                  $response .= '<Sms action="' . $action
-                    . '" statusCallback="' . $callback
+                  $response .= '<Sms statusCallback="' . $callback
                     . '" method="' . $method;
+
                   if ($to) {
                     $response .= '" to="' . $to;
                   }
                   if ($from) {
                     $response .= '" from="' . $from;
                   }
+
+                  if (strtolower($call->getCallChannel()) == 'voice') {
+                    //From Twilio support: <Sms action> simply does not work as advertised.
+                    //In the SMS-realm it functions as a status callback URL, and not a continuation URL.
+                    //therefore using action only with voice channel
+                    $response .= '" action="' . $action;
+                    // since the 'action' parameter prevents other commands from
+                    // being executed, set $processing to FALSE
+                    $processing = FALSE;
+                  }
+                  else {
+                    //In sms channel we don't use action callback
+                    $processing = TRUE;
+                  }
+
                   $response .= '" >';
 				          // replace special chars for their html equivalent (http://www.twilio.com/docs/errors/12100)
                   $response .= htmlspecialchars($text, ENT_NOQUOTES | ENT_HTML401);
                   $response .= '</Sms>';
-                  // since the 'action' parameter prevents other commands from
-                  // being executed, set $processing to FALSE
-                  $processing = FALSE;
                   break;
               }
           }
