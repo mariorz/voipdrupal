@@ -917,6 +917,12 @@ function _voiptwilio_script_handler($call) {
           break;
 
         case 'VoipCmdWait';
+          $channel = $call->getCallChannel();
+          if ($channel == 'text' && voipscript_use_sms_framework()) {
+            //Skip wait command in case of text channel when using sms framework
+            $processing = TRUE;
+            break;
+          }
           $time_limit = $script->evalString($cmd->getParam('time_limit'));
           $menu_path = 'voip/twilio/callhandler';
           $cid = $call->getCid();
