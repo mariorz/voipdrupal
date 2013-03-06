@@ -918,8 +918,10 @@ function _voiptwilio_script_handler($call) {
 
         case 'VoipCmdWait';
           $channel = $call->getCallChannel();
-          if ($channel == 'text' && voipscript_use_sms_framework()) {
+          $sms_origin = $call->getCallOrigin();
+          if (($channel == 'text' && voipscript_use_sms_framework()) || $sms_origin == 'smsframework') {
             //Skip wait command in case of text channel when using sms framework
+            //to send messages and in case when we receive text message via sms framework
             $processing = TRUE;
             break;
           }
