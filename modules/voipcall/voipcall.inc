@@ -909,3 +909,36 @@ function voipcall_process_hangup($call) {
     call_user_func_array($voipscript_hangup_callback, $args);
   }
 }
+
+/*
+ * Text handler function which joins long messages back into one
+ * To make it work you must set default session duration to VOIP_MAX_SMS_INTERVAL + 1
+*/
+function voipcall_join_multiple_messages(&$call) {
+  watchdog('debug', "Hello hi ".print_r($call));
+
+  $script = $call->getScript();
+  $ontrackvoip_final_text =  $script->getVar('final_text'). $script->getVar('inbound_text_contents');
+  $script->setVar('final_text', $ontrackvoip_final_text);
+  $script->setVar('sms_time_last_received', $time_current_text);
+  $call->setScript($script);
+  $call->save();
+
+  $sleep_time = VOIP_MAX_SMS_INTERVAL + 1;
+  sleep($sleep_time);
+
+  $cid = $call->getCid();
+  $call = VoipCall::load($cid);
+  $script = $call->getScript();
+  if ($time_current_text == $script->getVar('sms_time_last_received')) {
+    $script->setVar('inbound_text_contents', $script->getVar('final_text'));
+    $call->setScript($script);
+    $call->save();
+    $continue_processing = TRUE;
+  }
+  else {
+    $continue_processing = FALSE;
+  }
+
+  return $continue_processing;
+}

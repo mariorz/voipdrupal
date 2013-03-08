@@ -1280,15 +1280,12 @@ function _voiptropo_handle_new_calls($tropo_action, $session) {
       && strtolower($call->getCallChannel()) == 'text') {
       $script = $call->getScript();
       $text_handler = $script->getVar('text_handler');
+      $text_handler = !empty($text_handler) ? $text_handler : variable_get('voipcall_default_text_handler', '');
       if ($text_handler) {
-        $message = $script->getVar('inbound_text_contents');
-        $res = call_user_func_array($text_handler, array(
-          $message,
-          $call->getCallerNumber(),
-          $call->getDestNumber(),
-          $call,
-          $call->getCallNetwork()
-        ));
+        $continue_processing = call_user_func_array($text_handler, array(&$call));
+        if(!$continue_processing) {
+          return;
+        }
       }
     }
   }

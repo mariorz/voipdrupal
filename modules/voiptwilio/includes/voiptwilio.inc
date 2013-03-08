@@ -366,21 +366,19 @@ function _voiptwilio_call_handler($twilio_action, $cid = NULL) {
   if ($twilio_action == 'process_inbound_text') {
     $script = $call->getScript();
     $text_handler = $script->getVar('text_handler');
+    $text_handler = !empty($text_handler) ? $text_handler : variable_get('voipcall_default_text_handler', '');
+
     if ($text_handler) {
-      $message = $script->getVar('inbound_text_contents');
-      $res = call_user_func_array($text_handler, array(
-        $message,
-        $call->getCallerNumber(),
-        $call->getDestNumber(),
-        $call,
-        $call->getCallNetwork()
-      ));
-      return;
-    }
-    else {
-      if ($call->getCallChannel() != 'text') {
+      //Execute text_handler
+      $continue_processing = call_user_func_array($text_handler,
+        array(&$call));
+      if(!$continue_processing) {
         return;
       }
+    }
+    else if (!(strtolower($call->getCallChannel()) == 'text')) {
+      //If its not text channel then return
+      return;
     }
   }
 

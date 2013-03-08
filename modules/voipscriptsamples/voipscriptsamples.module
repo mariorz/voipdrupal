@@ -474,14 +474,17 @@ function _voipscriptsamples_get_send_sms() {
   return $script;
 }
 
-function voipscriptsamples_text_handler_demo($message, $caller_number, $dest_number, &$call, $network) {
-  watchdog('voipscriptsamples', "In voipscriptsamples_text_handler_demo with $message, $caller_number, $dest_number, $network");
+function voipscriptsamples_text_handler_demo(&$call) {
+  watchdog('voipscriptsamples', "In voipscriptsamples_text_handler_demo with ".print_r($call, TRUE));
 
   //When done with processing, set "text_handler_executed" variable to TRUE.
   $script = $call->getScript();
   $script->setVar('user_address', '%inbound_text_contents');
   $call->setScript($script);
   $call->save();
+
+  $continue_processing = FALSE;
+  return $continue_processing;
 }
 
 /**
