@@ -914,7 +914,7 @@ function voipcall_process_hangup($call) {
  * Text handler function which joins long messages back into one
  * To make it work you must set default session duration to VOIP_MAX_SMS_INTERVAL + 1
 */
-function voipcall_join_multiple_messages(&$call) {
+function voipcall_join_text_messages(&$call) {
   watchdog('debug', "Hello hi ".print_r($call));
 
   $script = $call->getScript();
