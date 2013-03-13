@@ -70,6 +70,9 @@ function voip_text($text, $voipcall, $reply = FALSE) {
     return FALSE;
   }
 
+  //Replace special chars
+  $text = voipcall_special_chars($text);
+
   $voip_server = voip_default_server();
   $response = $voip_server->send_text($text, $voipcall, $reply);
 

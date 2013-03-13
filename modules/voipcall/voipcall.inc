@@ -915,8 +915,6 @@ function voipcall_process_hangup($call) {
  * To make it work you must set default session duration to VOIP_MAX_SMS_INTERVAL + 1
 */
 function voipcall_join_text_messages(&$call) {
-  watchdog('debug', "Hello hi ".print_r($call));
-
   $script = $call->getScript();
   $ontrackvoip_final_text =  $script->getVar('final_text'). $script->getVar('inbound_text_contents');
   $script->setVar('final_text', $ontrackvoip_final_text);

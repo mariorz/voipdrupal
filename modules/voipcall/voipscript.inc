@@ -783,7 +783,7 @@ class VoipScript {
    */
   function addSendText($text, $to = '', $network = 'SMS', $caller_id = '') {
     $params['to'] = $to;
-    $params['text'] = $text;
+    $params['text'] = voipcall_special_chars($text);
     $params['network'] = $network;
     $params['caller_id'] = $caller_id;
     $this->commands[] = new VoipCommand('VoipCmdSendText', $params);
@@ -1212,6 +1212,10 @@ function voipscript_use_sms_framework() {
 
 function voipscript_send_sms_framework($to, $text) {
   //Use SMS Framework to send SMS message if user enabled this option
+
+  //Replace special chars
+  $text = voipcall_special_chars($text);
+
   $res = sms_send($to, $text);
   if (voip_debug()) {
     watchdog('voipcall', "Sending SMS using SMS Framework. To=$to Text=$text Result=$res");
