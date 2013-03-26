@@ -152,8 +152,8 @@ class VoipCall {
    *   sip:jim@sip.com => sip:jim@sip.com
    */
   public static function NormalizeNumber($number) {
-    if(!$number) {
-      //Empty number
+    if(!$number || strlen($number) < 11) {
+      //Empty or local number
       return $number;
     }
     //If this is sip address
