@@ -718,7 +718,9 @@ abstract class BaseClass {
    * @return string
    */
   public function unescapeJSON($json) {
-    return str_replace(array("\\", "\"{", "}\""), array("", "{", "}"), $json);
+    //Fix for #1944786: Non-English voices don't read non-English characters correctly
+    return str_replace(array('\"', "\"{", "}\"", '\\\\\/', '\\\\'), array('"', "{", "}", '/', '\\'), $json);
+    //return str_replace(array("\\", "\"{", "}\""), array("", "{", "}"), $json);
   }
 }
 
