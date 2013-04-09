@@ -1216,7 +1216,12 @@ function voipscript_send_sms_framework($to, $text) {
   //Replace special chars
   $text = voipcall_special_chars($text);
 
+  //Denormalize number
+  $op = 'local';
+  drupal_alter('voip_number', $to, $op);
+
   $res = sms_send($to, $text);
+
   if (voip_debug()) {
     watchdog('voipcall', "Sending SMS using SMS Framework. To=$to Text=$text Result=$res");
   }

@@ -162,6 +162,11 @@ function voip_sms_incoming($op, $number, $message, $options) {
     if($accept_sms_framework) {
       //Accept incoming text messages from SMS Framework only if flag is set.
       $gateway_number = isset($options['gw_number']) ? VoipCall::NormalizeNumber($options['gw_number']) : '';
+
+      // will call all modules implementing hook_voip_number_alter
+      $op = 'e.164';
+      drupal_alter('voip_number', $number, $op, $options['gw_number']);
+
       voip_text_handler($message, $number, $gateway_number, time());
     }
   }
