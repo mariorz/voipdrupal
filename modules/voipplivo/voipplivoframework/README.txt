@@ -1,6 +1,6 @@
 == Introduction ==
 
-Plivo Framework (http://plivo.com/opensource) is an open source communications framework that enables the rapid development of voice-based apps using your existing web infrastructure. 
+Plivo Framework (http://plivo.com/opensource) is an open source communications framework that enables the rapid development of voice-based apps using your existing web infrastructure.
 
 
 == Requirements==
@@ -11,7 +11,7 @@ In order to install the voipplivoframework.module, you will need:
 
 2. The PHP Curl extension in your system. For Debian systems, just run
   $ sudo apt-get install php5-curl
-  $ sudo /etc/init.d/apache2 restart 
+  $ sudo /etc/init.d/apache2 restart
 
 
 == Installation ==
@@ -27,7 +27,7 @@ Plivo configuration:
 
   - DEFAULT_HTTP_METHOD = POST
 
-  - DEFAULT_ANSWER_URL = http://mysite.com/voip/plivo/callhandler/ (for clean URLs) or http://mysite.com/?q=voip/plivo/callhandler/
+  - DEFAULT_ANSWER_URL = http://mysite.com/voip/plivoframework/callhandler/ (for clean URLs) or http://mysite.com/?q=voip/plivoframework/callhandler/
 
   - EXTRA_FS_VARS = variable_duration
 
@@ -50,11 +50,11 @@ Drupal configuration:
   - Click on the Plivo Framework "configure" link
 
   - Fill in the "Account SID" and "Auth Token" fields with your Plivo "AUTH_ID" and "AUTH_TOKEN" values, respectively (see "Plivo configuration" above)
-  
+
   - If your Plivo installation is on a different server than Drupal, change the value of "Plivo REST API Url" to the new server's URL
-  
+
   - Optionally, click "Plivo Outbound Call Parameters", to set up advanced options as per your needs
-  
+
   - Press "Save". That will take you back to admin/voip/servers
 
   - Select the 'Plivo Framework' option
@@ -70,10 +70,10 @@ Drupal configuration:
 
   - Enable the "make outbound calls" permission for the desired roles
 
-  - Press the "save permissions" button   
+  - Press the "save permissions" button
 
-  
-== Try it out ==    
+
+== Try it out ==
 
 Now you should be able to call your VoIP Drupal site on your Plivo's default number (1000@yourserverip:5080). Enjoy!
 
