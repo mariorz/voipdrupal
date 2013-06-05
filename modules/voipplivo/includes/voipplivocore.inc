@@ -1195,6 +1195,22 @@ function _voipplivocore_generate_audio_response($server, $script, $prompt, $loop
     $voice = VoipVoice::getVoice($voice_id);
     $gender = $voice->getGender();
     $language = $voice->getLanguage();
+
+    //we need to get safe voice id
+    $default_server = VoipServer::getDefaultServer();
+    $plivo_voices = $default_server->_get_available_voices();
+    if (!isset($plivo_voices[$voice_id])) {
+      if ($gender == 'man') {
+        $voice_id = $default_server->getDefaultManVoice()->getVoiceId();
+      }
+      else if ($gender == 'woman') {
+        $voice_id = $default_server->getDefaultWomanVoice()->getVoiceId();
+      }
+      else {
+        $voice_id = $default_server->getDefaultVoice()->getVoiceId();
+      }
+    }
+
     $as_tmp = $p->getAs() ? $script->evalString($p->getAs()) : '';
     $as = $as_tmp ? $as_tmp : 'number';
 

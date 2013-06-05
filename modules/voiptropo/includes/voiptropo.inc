@@ -429,11 +429,30 @@ function _voiptropo_script_handler($call, &$tropo) {
           $text = $script->evalString($last_say->getText());
           $text = _voiptropo_strip_special_chars($text);
           $voice_id = $last_say->getVoice() ? $last_say->getVoice() : $default_voice;
+
+          //we need to get safe voice id
+          $server = VoipServer::getServer('tropo');
+          $tropo_voices = $server->_get_available_voices();
+          if (!isset($tropo_voices[$voice_id])) {
+            $voice = VoipVoice::getVoice($voice_id);
+            $gender = $voice->getGender();
+            if ($gender == 'man') {
+              $voice_id = $server->getDefaultManVoice()->getVoiceId();
+            }
+            else if ($gender == 'woman') {
+              $voice_id = $server->getDefaultWomanVoice()->getVoiceId();
+            }
+            else {
+              $voice_id = $server->getDefaultVoice()->getVoiceId();
+            }
+          }
+
           $as = $last_say->getAs() ? $script->evalString($last_say->getAs()) : '';
 
           if (!empty($as) && in_array($as, array('digits', 'date'))) {
             $params['as'] = $as;
           }
+
           $params['voice'] = $voice_id;
           $params['say'] = $text;
 
@@ -441,6 +460,22 @@ function _voiptropo_script_handler($call, &$tropo) {
             $text = $script->evalString($p->getText());
             $text = _voiptropo_strip_special_chars($text);
             $voice_id = $p->getVoice() ? $p->getVoice() : $default_voice;
+            //we need to get safe voice id
+            $server = VoipServer::getServer('tropo');
+            $tropo_voices = $server->_get_available_voices();
+            if (!isset($tropo_voices[$voice_id])) {
+              $voice = VoipVoice::getVoice($voice_id);
+              $gender = $voice->getGender();
+              if ($gender == 'man') {
+                $voice_id = $server->getDefaultManVoice()->getVoiceId();
+              }
+              else if ($gender == 'woman') {
+                $voice_id = $server->getDefaultWomanVoice()->getVoiceId();
+              }
+              else {
+                $voice_id = $server->getDefaultVoice()->getVoiceId();
+              }
+            }
             $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
             $say_params = array();
             if (!empty($as) && in_array($as, array('digits', 'date'))) {
@@ -535,6 +570,23 @@ function _voiptropo_script_handler($call, &$tropo) {
               $text = $script->evalString($p->getText());
               $text = _voiptropo_strip_special_chars($text);
               $voice_id = $p->getVoice() ? $p->getVoice() : $default_voice;
+              //we need to get safe voice id
+              $server = VoipServer::getServer('tropo');
+              $tropo_voices = $server->_get_available_voices();
+              if (!isset($tropo_voices[$voice_id])) {
+                $voice = VoipVoice::getVoice($voice_id);
+                $gender = $voice->getGender();
+                if ($gender == 'man') {
+                  $voice_id = $server->getDefaultManVoice()->getVoiceId();
+                }
+                else if ($gender == 'woman') {
+                  $voice_id = $server->getDefaultWomanVoice()->getVoiceId();
+                }
+                else {
+                  $voice_id = $server->getDefaultVoice()->getVoiceId();
+                }
+              }
+
               $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
               $say_params = array();
               if ($as == 'digits') {
@@ -945,6 +997,24 @@ function _voiptropo_get_input($type, $call, $cmd, $script, &$tropo) {
     $mode = $script->evalString($cmd->getParam('mode'));
 
     $recognize_as_tmp = $script->evalString($cmd->getParam('recognize_as'));
+
+    //we need to get safe voice id
+    $server = VoipServer::getServer('tropo');
+    $tropo_voices = $server->_get_available_voices();
+    if (!isset($tropo_voices[$default_voice])) {
+      $voice = VoipVoice::getVoice($voice_id);
+      $gender = $voice->getGender();
+      if ($gender == 'man') {
+        $default_voice = $server->getDefaultManVoice()->getVoiceId();
+      }
+      else if ($gender == 'woman') {
+        $default_voice = $server->getDefaultWomanVoice()->getVoiceId();
+      }
+      else {
+        $default_voice = $server->getDefaultVoice()->getVoiceId();
+      }
+    }
+
     $default_region = VoipTropoServer::getVoiceRegionId($default_voice, $default_language);
     $recognizer = $recognize_as_tmp ? $recognize_as_tmp : $default_region;
 
@@ -981,6 +1051,24 @@ function _voiptropo_get_input($type, $call, $cmd, $script, &$tropo) {
     $text = $script->evalString($p->getText());
     $text = _voiptropo_strip_special_chars($text);
     $voice_id = $p->getVoice() ? $p->getVoice() : $default_voice;
+
+    //we need to get safe voice id
+    $server = VoipServer::getServer('tropo');
+    $tropo_voices = $server->_get_available_voices();
+    if (!isset($tropo_voices[$voice_id])) {
+      $voice = VoipVoice::getVoice($voice_id);
+      $gender = $voice->getGender();
+      if ($gender == 'man') {
+        $voice_id = $server->getDefaultManVoice()->getVoiceId();
+      }
+      else if ($gender == 'woman') {
+        $voice_id = $server->getDefaultWomanVoice()->getVoiceId();
+      }
+      else {
+        $voice_id = $server->getDefaultVoice()->getVoiceId();
+      }
+    }
+
     $as = $p->getAs() ? $script->evalString($p->getAs()) : '';
     if (empty($as) && !in_array($as, array('digits', 'date'))) {
       $as = 'number';
