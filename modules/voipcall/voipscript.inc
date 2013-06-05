@@ -236,6 +236,8 @@ class VoipScript {
 
   /**
    * Returns the current language of the script
+   *
+   * WARNING: This will be DEPRECATED
    */
   function getLanguage() {
     $language = VoipVoice::getVoice($this->voice_id)->getLanguage();

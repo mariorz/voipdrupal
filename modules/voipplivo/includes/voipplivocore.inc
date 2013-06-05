@@ -803,15 +803,16 @@ function voipplivocore_script_handler($server, $call) {
             $call->report_error('voipplivocore', $msg, $params);
             $rc = FALSE;
             $processing = FALSE;
-            $found = TRUE;
             // report the error to the phone user
-            $language = $script->getLanguage();
-            $voice = $script->getVoice();
+            $voice_id = $script->getVoice();
+            $voice = VoipVoice::getVoice($voice_id);
+            $voice_id = _voipplivocore_get_plivo_voice($voice_id, $server);
+
             $text = 'Processing error. Please contact your system administrator.';
             // translate the text
-            $langcode = $language;
+            $langcode = $voice->getLanguage();
             $text = t($text, NULL, $langcode);
-            $response .= "<Speak voice='$voice' language='$language'>$text</Speak>";
+            $response .= "<Speak voice='$voice_id' language='$language'>$text</Speak>";
           }
           break;
 
@@ -1197,19 +1198,7 @@ function _voipplivocore_generate_audio_response($server, $script, $prompt, $loop
     $language = $voice->getLanguage();
 
     //we need to get safe voice id
-    $default_server = VoipServer::getDefaultServer();
-    $plivo_voices = $default_server->_get_available_voices();
-    if (!isset($plivo_voices[$voice_id])) {
-      if ($gender == 'man') {
-        $voice_id = $default_server->getDefaultManVoice()->getVoiceId();
-      }
-      else if ($gender == 'woman') {
-        $voice_id = $default_server->getDefaultWomanVoice()->getVoiceId();
-      }
-      else {
-        $voice_id = $default_server->getDefaultVoice()->getVoiceId();
-      }
-    }
+    $voice_id = _voipplivocore_get_plivo_voice($voice_id, $server);
 
     $as_tmp = $p->getAs() ? $script->evalString($p->getAs()) : '';
     $as = $as_tmp ? $as_tmp : 'number';
@@ -1352,4 +1341,21 @@ function _voipplivocore_file_save_upload($filepath) {
   drupal_write_record('files', $file);
 
   return $file;
+}
+
+function _voipplivocore_get_plivo_voice($voice_id, $server) {
+  $default_server = VoipServer::getServer($server);
+  $plivo_voices = $default_server->_get_available_voices();
+  if (!isset($plivo_voices[$voice_id])) {
+    if ($gender == 'man') {
+      $voice_id = $default_server->getDefaultManVoice()->getVoiceId();
+    }
+    else if ($gender == 'woman') {
+      $voice_id = $default_server->getDefaultWomanVoice()->getVoiceId();
+    }
+    else {
+      $voice_id = $default_server->getDefaultVoice()->getVoiceId();
+    }
+  }
+  return $voice_id;
 }
