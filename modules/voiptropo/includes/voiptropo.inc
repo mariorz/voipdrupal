@@ -1250,14 +1250,17 @@ function _voiptropo_handle_new_calls($tropo_action, $session) {
        */
     }
     else {
+
       if ($tropo_action == 'process_outbound_text') {
         //When using send_text then $to is already filled from dest_number param
         if(!$to) {
           $to = $call->getDestNumber();
         }
         $text = $session->getParameters('text');
+	$from = variable_get('voipcall_text_number', NULL);
         $params = array(
           'to' => $to,
+	  'from' => $from,
           'channel' => 'TEXT',
           'network' => 'SMS',
         );
